@@ -263,8 +263,8 @@ const SetupWizard: React.FC = () => {
                                 <p>This turns your main PC into the central "brain" for all your kiosks.</p>
                                 <ol>
                                     <li>
-                                        <strong>Open a Terminal in the Server Folder:</strong><br/>
-                                        Navigate into the <code>server_examples</code> folder, and then into the <code>custom_api_local_json</code> folder. You need to open a terminal *inside this specific folder*. On Windows, Shift + Right-click and choose "Open PowerShell window here". On Mac, type <code>cd </code> and drag the folder into the terminal window.
+                                        <strong>Open a Terminal in the `server` Folder:</strong><br/>
+                                        In your project, find the new <code>server</code> directory. You need to open a terminal *inside this specific folder*. On Windows, Shift + Right-click and choose "Open PowerShell window here". On Mac, type <code>cd </code> and drag the folder into the terminal window.
                                     </li>
                                     <li>
                                         <strong>Install Server Dependencies (First time only):</strong><br/>
@@ -273,8 +273,7 @@ const SetupWizard: React.FC = () => {
                                     </li>
                                     <li>
                                         <strong>Create Your Secret API Key:</strong><br/>
-                                        In the <code>custom_api_local_json</code> folder, create a new file named exactly <strong><code>.env</code></strong>. Open it and add this line, replacing the placeholder with your own private password:
-                                        <pre><code>API_KEY=your-super-secret-key-here</code></pre>
+                                        In the <code>server</code> folder, find the file named <strong><code>.env.example</code></strong>. Rename it to exactly <strong><code>.env</code></strong>. Open this new file and replace <code>your-super-secret-key-here</code> with your own private password.
                                     </li>
                                     <li>
                                         <strong>Start the Server:</strong><br/>

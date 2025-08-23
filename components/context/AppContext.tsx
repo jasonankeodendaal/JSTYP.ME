@@ -468,17 +468,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [performAutoSave]);
 
   const updateDataTimestamp = useCallback(() => {
-    setSettings(prev => ({ ...prev, lastUpdated: Date.now() }));
-    if (settings.sync?.autoSyncEnabled && storageProvider !== 'none') {
-        setSyncStatus('pending');
-        debouncedAutoSave();
-    }
-  }, [setSettings, settings.sync?.autoSyncEnabled, storageProvider, debouncedAutoSave]);
+    setSettings(prev => {
+        const newState = { ...prev, lastUpdated: Date.now() };
+        if (newState.sync?.autoSyncEnabled && storageProvider !== 'none') {
+            setSyncStatus('pending');
+            debouncedAutoSave();
+        }
+        return newState;
+    });
+  }, [storageProvider, debouncedAutoSave, setSettings, setSyncStatus]);
 
   const updateSettings = useCallback((newSettings: Partial<Settings>) => {
-      setSettings(prev => deepMerge(prev, newSettings));
-      updateDataTimestamp();
-  }, [setSettings, updateDataTimestamp]);
+    setSettings(prev => {
+      const mergedState = deepMerge(prev, newSettings);
+      // This is basically an inline, combined version of the old updateSettings + updateDataTimestamp
+      const newState = { ...mergedState, lastUpdated: Date.now() };
+      
+      if (newState.sync?.autoSyncEnabled && storageProvider !== 'none') {
+          setSyncStatus('pending');
+          debouncedAutoSave();
+      }
+      
+      return newState;
+    });
+  }, [storageProvider, debouncedAutoSave, setSyncStatus, setSettings]);
 
   const restoreBackup = useCallback((data: Partial<BackupData>) => {
     // Note: The `|| initial...` is a fallback for corrupted/incomplete backup files.
@@ -973,7 +986,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (storageProvider !== 'local' || !directoryHandle) return;
 
-    const LIVE_SYNC_INTERVAL_MS = 30000; // 30 seconds
+    const LIVE_SYNC_INTERVAL_MS = 5000; // 5 seconds
     
     console.log('Starting live sync polling for local/network drive.');
     const intervalId = setInterval(() => {
@@ -992,7 +1005,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (storageProvider !== 'customApi' && storageProvider !== 'sharedUrl') return;
     
-    const LIVE_SYNC_INTERVAL_MS = 30000; // 30 seconds
+    const LIVE_SYNC_INTERVAL_MS = 5000; // 5 seconds
 
     console.log('Starting live sync polling for cloud provider.');
     const intervalId = setInterval(() => {

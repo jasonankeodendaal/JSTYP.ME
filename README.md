@@ -5,8 +5,8 @@ Welcome to your Interactive Kiosk System. This guide provides complete, step-by-
 ## Table of Contents
 
 1.  [**Prerequisites (Required for All Setups)**](#prerequisites-required-for-all-setups)
-2.  [**The Definitive Guide: Cloud Sync Setup**](#the-definitive-guide-cloud-sync-setup-scenario-c) (Recommended for multiple devices)
-3.  [**Alternative Setup: Single Offline Kiosk**](#alternative-setup-single-offline-kiosk-scenario-a)
+2.  [**The Definitive Guide: Cloud Sync Setup**](#the-definitive-guide-cloud-sync-setup) (Recommended for multiple devices)
+3.  [**Alternative Setup: Single Offline Kiosk**](#alternative-setup-single-offline-kiosk)
 4.  [**After Setup: Populating Your Content**](#after-setup-populating-your-content)
 
 ---
@@ -30,14 +30,9 @@ You must complete these steps on your main computer before starting any setup gu
         ```
     *   If it's installed correctly, you will see a version number like `v20.11.0`.
 
-### 2. Prepare the Project Files
-
-1.  Unzip the main project folder you received and place it somewhere permanent, like your `Documents` folder. This is the folder that contains `index.html`, `App.tsx`, etc.
-2.  Inside that folder, you will also find a folder named `server_examples`. This contains the server code needed for the Cloud Sync setup.
-
 ---
 
-## The Definitive Guide: Cloud Sync Setup (Scenario C)
+## The Definitive Guide: Cloud Sync Setup
 
 > **Use this for:** The most powerful setup. Manage a main admin PC and multiple display kiosks (PCs, Android tablets) across different locations, all synced together over the internet.
 
@@ -48,10 +43,10 @@ This guide is in three parts. You will have two terminal windows running on your
 This turns your main PC into the central "brain" for all your kiosks.
 
 **Step 1.1: Open a Terminal in the Server Folder**
-1.  Navigate into the `server_examples` folder, and then into the `custom_api_local_json` folder.
+1.  Navigate into the `server` folder located in your main project directory.
 2.  You need to open a terminal *inside this specific folder*.
-    *   **Windows:** Hold the `Shift` key and Right-click inside the `custom_api_local_json` folder. From the menu, choose **"Open PowerShell window here"** or **"Open in Terminal"**.
-    *   **Mac:** Open the Terminal app. Type `cd ` (the letters `c`, `d`, and a space), then drag the `custom_api_local_json` folder directly from your file manager into the terminal window. The path will appear automatically. Press **Enter**.
+    *   **Windows:** Hold the `Shift` key and Right-click inside the `server` folder. From the menu, choose **"Open PowerShell window here"** or **"Open in Terminal"**.
+    *   **Mac:** Open the Terminal app. Type `cd ` (the letters `c`, `d`, and a space), then drag the `server` folder directly from your file manager into the terminal window. The path will appear automatically. Press **Enter**.
 
 **Step 1.2: Install Server Dependencies**
 1.  This command installs the tools your server needs to run. You only need to do this once.
@@ -61,13 +56,11 @@ This turns your main PC into the central "brain" for all your kiosks.
     ```
 
 **Step 1.3: Create Your Secret API Key**
-1.  In the `custom_api_local_json` folder, create a new file named exactly **`.env`** (a dot followed by "env").
-2.  Open this new file with a simple text editor (like Notepad or TextEdit).
-3.  Copy and paste the following line into the file. **You must replace `your-super-secret-key-here` with a private password of your own.** Make it secure.
-    ```
-    API_KEY=your-super-secret-key-here
-    ```
-4.  Save and close the `.env` file.
+1.  In the `server` folder, find the file named **`.env.example`**.
+2.  Rename this file to exactly **`.env`**.
+3.  Open this new `.env` file with a simple text editor (like Notepad or TextEdit).
+4.  Replace `your-super-secret-key-here` with a private password of your own. Make it secure.
+5.  Save and close the `.env` file.
 
 **Step 1.4: Start the Server**
 1.  Go back to your terminal window.
@@ -106,7 +99,7 @@ This turns your main PC into the central "brain" for all your kiosks.
 
 **Step 3.1: Run the Kiosk App**
 1.  On the device you are configuring, go to the main project folder (the one with `index.html`).
-2.  Follow the steps from [Scenario A](#alternative-setup-single-offline-kiosk-scenario-a) to start the app server and open it in a browser.
+2.  Follow the steps from [Alternative Setup: Single Offline Kiosk](#alternative-setup-single-offline-kiosk) to start the app server and open it in a browser.
 
 **Step 3.2: Log In as Admin**
 1.  On the kiosk app screen, go to the footer and click **Admin Login**.
@@ -136,11 +129,11 @@ This turns your main PC into the central "brain" for all your kiosks.
 1.  On **every device**, go to `Settings` > `Kiosk Mode`.
 2.  Find the **"Enable Auto-Sync"** toggle and turn it **ON**.
 
-Your setup is now complete! Any change you make on your admin PC will automatically appear on all other connected devices within 30 seconds.
+Your setup is now complete! Any change you make on your admin PC will automatically appear on all other connected devices within a few seconds.
 
 ---
 
-## Alternative Setup: Single Offline Kiosk (Scenario A)
+## Alternative Setup: Single Offline Kiosk
 
 > **Use this for:** A single computer or tablet where all data is stored on that one device. No internet is required after setup.
 
