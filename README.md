@@ -8,6 +8,7 @@ Welcome to your Interactive Kiosk System. This guide provides complete, step-by-
 2.  [**The Definitive Guide: Cloud Sync Setup**](#the-definitive-guide-cloud-sync-setup) (Recommended for multiple devices)
 3.  [**Alternative Setup: Single Offline Kiosk**](#alternative-setup-single-offline-kiosk)
 4.  [**After Setup: Populating Your Content**](#after-setup-populating-your-content)
+5.  [**Creating Standalone Applications (EXE/APK)**](#creating-standalone-applications-exeapk)
 
 ---
 
@@ -167,3 +168,9 @@ Once your storage is configured, it's time to add your own content.
 5.  **Use Bulk Import:** For large amounts of products, use the "Bulk Import Products" section on the "Brands" tab. You can upload a structured `.zip` file or a simple `.csv` file. Download the templates to see the required format.
 6.  **Customize Appearance:** Go to `Settings` to change colors, fonts, logos, and layout to match your brand identity.
 7.  If using Cloud Sync, your changes will automatically be sent to all other devices.
+
+---
+
+## Creating Standalone Applications (EXE/APK)
+
+For instructions on how to package this kiosk as a standalone Windows `.exe` or an Android `.apk` file for offline distribution, please see the [**Standalone Application Build Guide](./BUILD_GUIDE.md)**.

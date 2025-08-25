@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -6,6 +7,7 @@ import type { Pamphlet } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext';
 import LocalMedia from '../LocalMedia';
+import { slugify } from '../utils.ts';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.min.mjs`;
 
@@ -24,7 +26,7 @@ const getInitialFormData = (): Pamphlet => ({
 const PamphletEdit: React.FC = () => {
     const { pamphletId } = useParams<{ pamphletId: string }>();
     const navigate = useNavigate();
-    const { pamphlets, addPamphlet, updatePamphlet, saveFileToStorage, loggedInUser } = useAppContext();
+    const { pamphlets, addPamphlet, updatePamphlet, saveFileToStorage, deleteFileFromStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(pamphletId);
     const [formData, setFormData] = useState<Pamphlet>(getInitialFormData());
@@ -60,10 +62,25 @@ const PamphletEdit: React.FC = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const getAssetPath = (subfolder: 'cover' | 'pages') => {
+        if (!formData.title || !formData.startDate) return undefined;
+        const startDate = new Date(formData.startDate);
+        const year = startDate.getFullYear().toString();
+        // JavaScript months are 0-indexed, so add 1
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const pamphletSlug = slugify(formData.title);
+        return ['pamphlets', year, month, `${pamphletSlug}-${formData.id}`, subfolder];
+    };
+
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
+            const path = getAssetPath('cover');
+            if (!path) {
+                alert("Please set a title and start date before uploading a cover image.");
+                return;
+            }
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], path);
                 setFormData(prev => ({ ...prev, imageUrl: fileName }));
             } catch (error) {
                  alert(error instanceof Error ? error.message : "Failed to save image.");
@@ -73,9 +90,14 @@ const PamphletEdit: React.FC = () => {
 
     const handleDocumentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && formData.type === 'image') {
+            const path = getAssetPath('pages');
+            if (!path) {
+                alert("Please set a title and start date before uploading pages.");
+                return;
+            }
              for (const file of Array.from(e.target.files)) {
                 try {
-                    const savedPath = await saveFileToStorage(file);
+                    const savedPath = await saveFileToStorage(file, path);
                     setFormData(prev => {
                         if (prev.type !== 'image') return prev;
                         return { ...prev, imageUrls: [...prev.imageUrls, savedPath] };
@@ -88,6 +110,12 @@ const PamphletEdit: React.FC = () => {
     const handlePdfUploadAndConvert = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || file.type !== 'application/pdf') return;
+
+        const path = getAssetPath('pages');
+        if (!path) {
+            alert("Please set a title and start date before converting a PDF.");
+            return;
+        }
 
         setIsConverting(true);
         setConversionProgress('Starting conversion...');
@@ -115,7 +143,7 @@ const PamphletEdit: React.FC = () => {
                 const blob = await (await fetch(dataUrl)).blob();
                 const imageFile = new File([blob], `page_${i}.png`, { type: 'image/png' });
 
-                const savedPath = await saveFileToStorage(imageFile);
+                const savedPath = await saveFileToStorage(imageFile, path);
                 newImageUrls.push(savedPath);
             }
 
@@ -143,6 +171,8 @@ const PamphletEdit: React.FC = () => {
 
     const removeDocumentImage = (index: number) => {
         if (formData.type === 'image') {
+            const urlToDelete = formData.imageUrls[index];
+            if(urlToDelete) deleteFileFromStorage(urlToDelete);
             const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
             setFormData(prev => ({ ...prev, type: 'image', imageUrls: newImageUrls }));
         }

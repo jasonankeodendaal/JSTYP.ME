@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -296,7 +294,7 @@ const Screensaver: React.FC = () => {
 
     return (
         <div 
-            className="fixed inset-0 bg-black z-50 flex items-center justify-center overflow-hidden cursor-pointer"
+            className="fixed inset-0 bg-black z-[200] flex items-center justify-center overflow-hidden cursor-pointer"
             onClick={handleClick}
             role="button"
             aria-label="Exit screensaver"

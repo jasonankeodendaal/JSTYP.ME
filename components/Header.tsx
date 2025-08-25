@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { SearchIcon, VolumeUpIcon, VolumeOffIcon, Bars3Icon, XIcon, EnterFullScreenIcon, ExitFullScreenIcon, VolumeLowIcon, SunIcon, MoonIcon } from './Icons.tsx';
+import { SearchIcon, VolumeUpIcon, VolumeOffIcon, Bars3Icon, XIcon, EnterFullScreenIcon, ExitFullScreenIcon, VolumeLowIcon, SunIcon, MoonIcon, ArrowUturnLeftIcon, ArrowRightOnRectangleIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 import LocalMedia from './LocalMedia.tsx';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
   const volumeControlTimeout = useRef<number | null>(null);
   
   const navigate = useNavigate();
-  const { settings, localVolume, setLocalVolume, theme, toggleTheme } = useAppContext();
+  const { settings, localVolume, setLocalVolume, theme, toggleTheme, loggedInUser, logout, currentKioskUser, logoutKioskUser } = useAppContext();
 
   useEffect(() => {
     if (localVolume > 0) {
@@ -129,7 +129,41 @@ const Header: React.FC = () => {
             <Link to="/" className="flex items-center group">
                <LocalMedia src={settings.logoUrl} type="image" alt="Company Logo" className="h-16 w-auto object-contain transition-transform group-hover:scale-105" />
             </Link>
-            <div className="flex items-center gap-2 sm:gap-6">
+            <div className="flex items-center gap-2 sm:gap-4">
+              {currentKioskUser && !loggedInUser && (
+                  <>
+                      <div className="text-sm text-right">
+                          <span className="font-medium">Welcome,</span>
+                          <span className="block font-bold text-base -mt-1">{currentKioskUser.name}</span>
+                      </div>
+                      <button
+                          onClick={logoutKioskUser}
+                          className="btn bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-transparent hover:bg-red-200 dark:hover:bg-red-900/80 !px-3"
+                          title="Logout"
+                      >
+                          <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                      </button>
+                      <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                  </>
+              )}
+              {loggedInUser ? (
+                  <>
+                      <Link to="/admin" className="btn bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 border border-transparent hover:bg-indigo-200 dark:hover:bg-indigo-900/80 !px-3" title="Admin Dashboard">
+                          <ArrowUturnLeftIcon className="h-5 w-5" />
+                          <span className="hidden sm:inline">Admin</span>
+                      </Link>
+                      <button
+                          onClick={logout}
+                          className="btn bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-transparent hover:bg-red-200 dark:hover:bg-red-900/80 !px-3"
+                          title="Logout"
+                      >
+                          <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                           <span className="hidden sm:inline">Logout</span>
+                      </button>
+                      <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
+                  </>
+              ) : null}
+
               <nav className="hidden md:flex items-center space-x-8">
                 {navLinks.filter(link => link.enabled).map(link => (
                   <NavLink
@@ -144,6 +178,7 @@ const Header: React.FC = () => {
                   </NavLink>
                 ))}
               </nav>
+
               <form onSubmit={handleSearchSubmit} className="relative w-36 sm:w-48 lg:w-64">
                 <input
                   type="text"
@@ -239,6 +274,29 @@ const Header: React.FC = () => {
                     </button>
                 </div>
                 <nav className="mt-8 flex flex-col space-y-6">
+                    {loggedInUser && (
+                        <>
+                            <Link 
+                                to="/admin"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="text-2xl font-semibold transition-colors text-indigo-400 hover:text-white flex items-center gap-4"
+                            >
+                                <ArrowUturnLeftIcon className="h-6 w-6" />
+                                Admin Dashboard
+                            </Link>
+                            <button 
+                                onClick={() => {
+                                    logout();
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="text-2xl font-semibold transition-colors text-red-400 hover:text-red-300 flex items-center gap-4 text-left"
+                            >
+                                <ArrowRightOnRectangleIcon className="h-6 w-6" />
+                                Logout
+                            </button>
+                            <div className="w-full h-px bg-gray-700 my-4"></div>
+                        </>
+                    )}
                     {navLinks.filter(link => link.enabled).map(link => (
                         <NavLink 
                             key={link.id} 

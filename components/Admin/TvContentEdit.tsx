@@ -1,10 +1,12 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { TvContent } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext';
 import LocalMedia from '../LocalMedia';
+import { slugify } from '../utils.ts';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const selectStyle = inputStyle;
@@ -19,7 +21,7 @@ const getInitialFormData = (): TvContent => ({
 const TvContentEdit: React.FC = () => {
     const { contentId } = useParams<{ contentId: string }>();
     const navigate = useNavigate();
-    const { tvContent, addTvContent, updateTvContent, brands, saveFileToStorage, loggedInUser } = useAppContext();
+    const { tvContent, addTvContent, updateTvContent, brands, saveFileToStorage, deleteFileFromStorage, loggedInUser } = useAppContext();
     const isEditing = Boolean(contentId);
 
     const [formData, setFormData] = useState<TvContent>(getInitialFormData());
@@ -52,12 +54,26 @@ const TvContentEdit: React.FC = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const getAssetPath = () => {
+        if (!formData.brandId || !formData.modelName) return undefined;
+        const brand = brands.find(b => b.id === formData.brandId);
+        if (!brand) return undefined;
+        const brandSlug = slugify(brand.name);
+        const modelSlug = slugify(formData.modelName);
+        return ['tv-content', brandSlug, `${modelSlug}-${formData.id}`];
+    };
+
     const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
+            const path = getAssetPath();
+            if (!path) {
+                alert("Please select a brand and enter a model name before uploading media.");
+                return;
+            }
             for (const file of Array.from(e.target.files)) {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'video';
                 try {
-                    const fileName = await saveFileToStorage(file);
+                    const fileName = await saveFileToStorage(file, path);
                     setFormData(prev => ({ ...prev, media: [...prev.media, { url: fileName, type: fileType }] }));
                 } catch (error) {
                     alert(error instanceof Error ? error.message : "Failed to save media file.");
@@ -68,6 +84,10 @@ const TvContentEdit: React.FC = () => {
     };
 
     const handleMediaDelete = (indexToDelete: number) => {
+        const mediaToDelete = formData.media[indexToDelete];
+        if (mediaToDelete) {
+            deleteFileFromStorage(mediaToDelete.url);
+        }
         setFormData(prev => ({ ...prev, media: prev.media.filter((_, index) => index !== indexToDelete) }));
     };
 

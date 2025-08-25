@@ -11,9 +11,13 @@ import {
     adminUsers as initialAdminUsers,
     tvContent as initialTvContent,
     categories as initialCategories,
+    clients as initialClients,
+    orders as initialOrders,
+    kioskUsers as initialKioskUsers,
 } from '../../data/mockData.ts';
-import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, ThemeColors, StorageProvider, ProductDocument, TvContent, Category } from '../../types.ts';
+import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, ThemeColors, StorageProvider, ProductDocument, TvContent, Category, Client, Order, OrderItem, KioskUser } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
+import { slugify } from '../utils.ts';
 
 // --- PWA MANIFEST UTILITIES (placed outside component) ---
 const resizeImage = (blob: Blob, size: number): Promise<string> => {
@@ -147,6 +151,17 @@ const verifyPermission = async (fileHandle: FileSystemDirectoryHandle, readWrite
     return false;
 };
 
+// NEW HELPER for File System Access API
+const getDirectoryHandleRecursive = async (rootHandle: FileSystemDirectoryHandle, path: string[]): Promise<FileSystemDirectoryHandle> => {
+    let currentHandle = rootHandle;
+    for (const segment of path) {
+        if (!segment) continue; // Skip empty/invalid segments
+        currentHandle = await currentHandle.getDirectoryHandle(segment, { create: true });
+    }
+    return currentHandle;
+};
+
+
 interface ConfirmationState {
   isOpen: boolean;
   message: string;
@@ -165,6 +180,11 @@ interface PdfModalState {
   title: string;
 }
 
+interface ClientDetailsModalState {
+  isOpen: boolean;
+  onComplete: (clientId: string) => void;
+}
+
 type DocumentType = ProductDocument | Catalogue | Pamphlet;
 
 type ViewCounts = {
@@ -177,7 +197,9 @@ type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
 interface AppContextType {
   // Setup
   isSetupComplete: boolean;
+  isAuthLoading: boolean;
   completeSetup: () => void;
+  reInitiateSetup: () => void;
 
   // Data
   brands: Brand[];
@@ -190,11 +212,18 @@ interface AppContextType {
   loggedInUser: AdminUser | null;
   tvContent: TvContent[];
   categories: Category[];
+  clients: Client[];
+  orders: Order[];
+  kioskUsers: KioskUser[];
   viewCounts: ViewCounts;
   
   // Auth
   login: (userId: string, pin: string) => AdminUser | null;
   logout: () => void;
+  currentKioskUser: KioskUser | null;
+  loginKioskUser: (userId: string, pin: string) => boolean;
+  logoutKioskUser: () => void;
+
 
   // Updaters (CRUD)
   addBrand: (brand: Brand) => void;
@@ -228,21 +257,36 @@ interface AppContextType {
   addCategory: (category: Category) => void;
   updateCategory: (category: Category) => void;
   deleteCategory: (categoryId: string) => void;
+  
+  addKioskUser: (user: KioskUser) => void;
+  updateKioskUser: (user: KioskUser) => void;
+  deleteKioskUser: (userId: string) => void;
+
 
   updateSettings: (newSettings: Partial<Settings>) => void;
   restoreBackup: (data: Partial<BackupData>) => void;
+  resetToDefaultData: () => void;
+  
+  // Client and Order CRUD
+  addOrUpdateClient: (clientData: Partial<Client>) => Client;
+  updateClient: (client: Client) => void;
+  deleteClient: (clientId: string) => void;
+  addOrder: (order: Order) => void;
   
   // Trash functions
   restoreBrand: (brandId: string) => void;
-  permanentlyDeleteBrand: (brandId: string) => void;
+  permanentlyDeleteBrand: (brand: Brand) => void;
   restoreProduct: (productId: string) => void;
-  permanentlyDeleteProduct: (productId: string) => void;
+  permanentlyDeleteProduct: (product: Product) => void;
   restoreCatalogue: (catalogueId: string) => void;
-  permanentlyDeleteCatalogue: (catalogueId: string) => void;
+  permanentlyDeleteCatalogue: (catalogue: Catalogue) => void;
   restorePamphlet: (pamphletId: string) => void;
-  permanentlyDeletePamphlet: (pamphletId: string) => void;
+  permanentlyDeletePamphlet: (pamphlet: Pamphlet) => void;
   restoreTvContent: (contentId: string) => void;
-  permanentlyDeleteTvContent: (contentId: string) => void;
+  permanentlyDeleteTvContent: (content: TvContent) => void;
+  restoreKioskUser: (userId: string) => void;
+  permanentlyDeleteKioskUser: (userId: string) => void;
+
 
   // Screensaver & Kiosk
   isScreensaverActive: boolean;
@@ -254,13 +298,18 @@ interface AppContextType {
   activeTvContent: TvContent | null;
   playTvContent: (content: TvContent) => void;
   stopTvContent: () => void;
+  setIsOnAdminPage: React.Dispatch<React.SetStateAction<boolean>>;
+
 
   // Global Modals
   pdfModalState: PdfModalState;
   bookletModalState: BookletModalState;
+  clientDetailsModalState: ClientDetailsModalState;
   openDocument: (document: DocumentType, title: string) => void;
   closePdfModal: () => void;
   closeBookletModal: () => void;
+  openClientDetailsModal: (onComplete: (clientId: string) => void) => void;
+  closeClientDetailsModal: () => void;
   confirmation: ConfirmationState;
   showConfirmation: (message: string, onConfirm: () => void) => void;
   hideConfirmation: () => void;
@@ -281,7 +330,9 @@ interface AppContextType {
   disconnectFromStorage: (silent?: boolean) => void;
   isStorageConnected: boolean;
   directoryHandle: FileSystemDirectoryHandle | null;
-  saveFileToStorage: (file: File) => Promise<string>;
+  saveFileToStorage: (file: File, directoryPath?: string[]) => Promise<string>;
+  deleteFileFromStorage: (filePath: string) => Promise<void>;
+  deleteDirectoryFromStorage: (directoryPath: string[]) => Promise<void>;
   getFileUrl: (fileName: string) => Promise<string>;
   saveDatabaseToLocal: (isAutoSave?: boolean) => Promise<boolean>;
   loadDatabaseFromLocal: (isAutoSync?: boolean) => Promise<boolean>;
@@ -347,6 +398,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [adminUsers, setAdminUsers] = usePersistentState<AdminUser[]>('adminUsers', initialAdminUsers);
     const [tvContent, setTvContent] = usePersistentState<TvContent[]>('tvContent', initialTvContent);
     const [categories, setCategories] = usePersistentState<Category[]>('categories', initialCategories);
+    const [clients, setClients] = usePersistentState<Client[]>('clients', initialClients);
+    const [orders, setOrders] = usePersistentState<Order[]>('orders', initialOrders);
+    const [kioskUsers, setKioskUsers] = usePersistentState<KioskUser[]>('kioskUsers', initialKioskUsers);
     const [viewCounts, setViewCounts] = usePersistentState<ViewCounts>('viewCounts', { brands: {}, products: {} });
 
     const [localVolume, setLocalVolume] = usePersistentState<number>('localVolume', 0.75);
@@ -359,13 +413,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [directoryHandle, setDirectoryHandle] = useState<FileSystemDirectoryHandle | null>(null);
     const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(null);
+  const [currentKioskUser, setCurrentKioskUser] = useState<KioskUser | null>(null);
   const [isScreensaverActive, setIsScreensaverActive] = useState(false);
   const [isScreensaverEnabled, setIsScreensaverEnabled] = useState(true);
+  const [isOnAdminPage, setIsOnAdminPage] = useState(false);
   const inactivityTimer = useRef<number | null>(null);
 
   const [pdfModalState, setPdfModalState] = useState<PdfModalState>({ isOpen: false, url: '', title: '' });
   const [bookletModalState, setBookletModalState] = useState<BookletModalState>({ isOpen: false, title: '', imageUrls: [] });
+  const [clientDetailsModalState, setClientDetailsModalState] = useState<ClientDetailsModalState>({ isOpen: false, onComplete: () => {} });
   const [activeTvContent, setActiveTvContent] = useState<TvContent | null>(null);
 
   const [confirmation, setConfirmation] = useState<ConfirmationState>({
@@ -400,7 +458,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         let lockFileHandle;
         try {
             lockFileHandle = await directoryHandle.getFileHandle('database.lock', { create: true });
-            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, viewCounts };
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, orders, kioskUsers, viewCounts };
             const dataFileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
             const writable = await dataFileHandle.createWritable();
             await writable.write(JSON.stringify(backupData, null, 2));
@@ -415,7 +473,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 await directoryHandle.removeEntry('database.lock');
             }
         }
-    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, viewCounts]);
+    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, orders, kioskUsers, viewCounts]);
     
     const getCloudUrl = useCallback(() => {
         if (storageProvider === 'customApi') return settings.customApiUrl;
@@ -424,7 +482,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [storageProvider, settings]);
 
     const pushToCloud = useCallback(async (isAutoSave = false): Promise<boolean> => {
-        const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, viewCounts };
+        const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, orders, kioskUsers, viewCounts };
         const url = getCloudUrl();
         if (!url) {
             if(!isAutoSave) alert('Not connected to a cloud provider.');
@@ -441,7 +499,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if(!isAutoSave) alert(`Error pushing data to cloud: ${error instanceof Error ? error.message : "Unknown error"}`);
             return false;
         }
-    }, [getCloudUrl, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, viewCounts]);
+    }, [getCloudUrl, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, orders, kioskUsers, viewCounts]);
 
 
     const performAutoSave = useCallback(async () => {
@@ -478,7 +536,67 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [storageProvider, debouncedAutoSave, setSettings, setSyncStatus]);
 
+  const deleteFileFromStorage = useCallback(async (filePath: string): Promise<void> => {
+    if (storageProvider !== 'local' || !directoryHandle || !filePath || filePath.startsWith('http') || filePath.startsWith('data:')) {
+        return;
+    }
+
+    try {
+        const hasPermission = await verifyPermission(directoryHandle, true);
+        if (!hasPermission) {
+            console.warn("Permission to delete file lost.");
+            return;
+        }
+
+        const pathParts = filePath.split('/').filter(p => p);
+        const fileName = pathParts.pop();
+        if (!fileName) return;
+
+        const dirHandle = await getDirectoryHandleRecursive(directoryHandle, pathParts);
+        await dirHandle.removeEntry(fileName);
+
+        fileHandleCache.current.delete(filePath);
+        const cachedUrl = blobUrlCache.current.get(filePath);
+        if (cachedUrl) {
+            URL.revokeObjectURL(cachedUrl);
+            blobUrlCache.current.delete(filePath);
+        }
+    } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'NotFoundError')) {
+            console.error(`Error deleting file from storage: ${filePath}`, error);
+        }
+    }
+  }, [storageProvider, directoryHandle]);
+
+  const deleteDirectoryFromStorage = useCallback(async (directoryPath: string[]): Promise<void> => {
+    if (storageProvider !== 'local' || !directoryHandle || directoryPath.length === 0) {
+        return;
+    }
+
+    try {
+        const hasPermission = await verifyPermission(directoryHandle, true);
+        if (!hasPermission) {
+            console.warn("Permission to delete directory lost.");
+            return;
+        }
+
+        const sanitizedPath = directoryPath.map(segment => slugify(segment));
+        const dirName = sanitizedPath.pop();
+        if (!dirName) return;
+        
+        const parentHandle = await getDirectoryHandleRecursive(directoryHandle, sanitizedPath);
+        await parentHandle.removeEntry(dirName, { recursive: true });
+        
+    } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'NotFoundError')) {
+            console.error(`Error deleting directory: ${directoryPath.join('/')}`, error);
+        }
+    }
+  }, [storageProvider, directoryHandle]);
+
   const updateSettings = useCallback((newSettings: Partial<Settings>) => {
+    const oldSettings = settings;
+    
     setSettings(prev => {
       const mergedState = deepMerge(prev, newSettings);
       // This is basically an inline, combined version of the old updateSettings + updateDataTimestamp
@@ -491,7 +609,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       return newState;
     });
-  }, [storageProvider, debouncedAutoSave, setSyncStatus, setSettings]);
+
+    if (newSettings.logoUrl && oldSettings.logoUrl !== newSettings.logoUrl) {
+        deleteFileFromStorage(oldSettings.logoUrl);
+    }
+    if (newSettings.backgroundMusicUrl !== undefined && oldSettings.backgroundMusicUrl !== newSettings.backgroundMusicUrl) {
+        if(oldSettings.backgroundMusicUrl) deleteFileFromStorage(oldSettings.backgroundMusicUrl);
+    }
+  }, [storageProvider, debouncedAutoSave, setSyncStatus, setSettings, settings, deleteFileFromStorage]);
 
   const restoreBackup = useCallback((data: Partial<BackupData>) => {
     // Note: The `|| initial...` is a fallback for corrupted/incomplete backup files.
@@ -503,6 +628,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAdminUsers(Array.isArray(data.adminUsers) ? data.adminUsers : initialAdminUsers);
     setTvContent(Array.isArray(data.tvContent) ? data.tvContent : initialTvContent);
     setCategories(Array.isArray(data.categories) ? data.categories : initialCategories);
+    setClients(Array.isArray(data.clients) ? data.clients : initialClients);
+    setOrders(Array.isArray(data.orders) ? data.orders : initialOrders);
+    setKioskUsers(Array.isArray(data.kioskUsers) ? data.kioskUsers : initialKioskUsers);
     setViewCounts(data.viewCounts || { brands: {}, products: {} });
     
     // Cloud DBs might return settings as an array with one item, file backups as an object.
@@ -513,8 +641,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
         setSettings(initialSettings);
     }
-  }, [setBrands, setProducts, setCatalogues, setPamphlets, setScreensaverAds, setAdminUsers, setSettings, setTvContent, setCategories, setViewCounts]);
+  }, [setBrands, setProducts, setCatalogues, setPamphlets, setScreensaverAds, setAdminUsers, setSettings, setTvContent, setCategories, setClients, setOrders, setKioskUsers, setViewCounts]);
 
+  const disconnectFromStorage = useCallback((silent = false) => {
+    setStorageProvider('none');
+    setDirectoryHandle(null);
+    blobUrlCache.current.forEach(url => URL.revokeObjectURL(url));
+    blobUrlCache.current.clear();
+    fileHandleCache.current.clear();
+    if (!silent) {
+        alert("Disconnected from storage provider.");
+    }
+  }, [setStorageProvider, setDirectoryHandle]);
+  
+  const resetToDefaultData = useCallback(() => {
+    setBrands(initialBrands);
+    setProducts(initialProducts);
+    setCatalogues(initialCatalogues);
+    setPamphlets(initialPamphlets);
+    setScreensaverAds(initialScreensaverAds);
+    setAdminUsers(initialAdminUsers);
+    setTvContent(initialTvContent);
+    setCategories(initialCategories);
+    setClients(initialClients);
+    setOrders(initialOrders);
+    setKioskUsers(initialKioskUsers);
+    setViewCounts({ brands: {}, products: {} });
+    setSettings({
+        ...initialSettings,
+        sync: {
+            ...initialSettings.sync,
+            autoSyncEnabled: false,
+        }
+    });
+    disconnectFromStorage(true);
+  }, [setBrands, setProducts, setCatalogues, setPamphlets, setScreensaverAds, setAdminUsers, setTvContent, setCategories, setClients, setOrders, setKioskUsers, setViewCounts, setSettings, disconnectFromStorage]);
+
+  const logout = useCallback(() => {
+      setLoggedInUser(null);
+      sessionStorage.removeItem('kiosk-user');
+  }, []);
+  
+  const logoutKioskUser = useCallback(() => {
+      setCurrentKioskUser(null);
+  }, []);
+
+  const reInitiateSetup = useCallback(() => {
+    if (currentKioskUser) logoutKioskUser();
+    if (loggedInUser) logout();
+    setIsSetupComplete(false);
+  }, [setIsSetupComplete, currentKioskUser, loggedInUser, logout, logoutKioskUser]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -572,12 +748,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    if (isOnAdminPage) {
+        return;
+    }
     if (isScreensaverEnabled && settings.screensaverDelay > 0 && !activeTvContent) {
       inactivityTimer.current = window.setTimeout(() => {
         if(document.visibilityState === 'visible') setIsScreensaverActive(true);
       }, settings.screensaverDelay * 1000);
     }
-  }, [settings.screensaverDelay, isScreensaverEnabled, activeTvContent]);
+  }, [settings.screensaverDelay, isScreensaverEnabled, activeTvContent, isOnAdminPage]);
 
   const handleUserActivity = useCallback(() => {
     if (isScreensaverActive) exitScreensaver();
@@ -609,6 +788,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error("Failed to parse user from session storage", e);
       sessionStorage.removeItem('kiosk-user');
     }
+    setIsAuthLoading(false);
   }, [adminUsers]);
 
   const login = useCallback((userId: string, pin: string): AdminUser | null => {
@@ -621,10 +801,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return null;
   }, [adminUsers]);
 
-  const logout = useCallback(() => {
-      setLoggedInUser(null);
-      sessionStorage.removeItem('kiosk-user');
-  }, []);
+  const loginKioskUser = useCallback((userId: string, pin: string): boolean => {
+    const user = kioskUsers.find(u => u.id === userId && u.pin === pin && !u.isDeleted);
+    if (user) {
+        setCurrentKioskUser(user);
+        return true;
+    }
+    return false;
+  }, [kioskUsers]);
   
   const addBrand = useCallback((b: Brand) => { setBrands(p => [...p, b]); updateDataTimestamp(); }, [setBrands, updateDataTimestamp]);
   const updateBrand = useCallback((b: Brand) => { setBrands(p => p.map(i => i.id === b.id ? b : i)); updateDataTimestamp(); }, [setBrands, updateDataTimestamp]);
@@ -640,23 +824,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     updateDataTimestamp();
   }, [setBrands, setProducts, updateDataTimestamp]);
 
-  const permanentlyDeleteBrand = useCallback((brandId: string) => {
-    setBrands(p => p.filter(i => i.id !== brandId));
-    setProducts(p => p.filter(prod => prod.brandId !== brandId));
-    setCatalogues(p => p.filter(c => c.brandId !== brandId));
-    setCategories(p => p.filter(c => c.brandId !== brandId));
+  const permanentlyDeleteBrand = useCallback((brand: Brand) => {
+    const productsToDelete = products.filter(p => p.brandId === brand.id);
+    productsToDelete.forEach(product => {
+        const brandSlug = slugify(brand.name);
+        const productSlug = slugify(product.name);
+        deleteDirectoryFromStorage(['products', brandSlug, `${productSlug}-${product.id}`]);
+    });
+    deleteDirectoryFromStorage(['brands', `${slugify(brand.name)}-${brand.id}`]);
+    
+    setBrands(p => p.filter(i => i.id !== brand.id));
+    setProducts(p => p.filter(prod => prod.brandId !== brand.id));
+    setCatalogues(p => p.filter(c => c.brandId !== brand.id));
+    setCategories(p => p.filter(c => c.brandId !== brand.id));
     updateDataTimestamp();
-  }, [setBrands, setProducts, setCatalogues, setCategories, updateDataTimestamp]);
+  }, [setBrands, setProducts, setCatalogues, setCategories, products, updateDataTimestamp, deleteDirectoryFromStorage]);
   
   const restoreProduct = useCallback((productId: string) => {
     setProducts(prev => prev.map(p => p.id === productId ? { ...p, isDeleted: false } : p));
     updateDataTimestamp();
   }, [setProducts, updateDataTimestamp]);
 
-  const permanentlyDeleteProduct = useCallback((productId: string) => {
-    setProducts(p => p.filter(i => i.id !== productId));
+  const permanentlyDeleteProduct = useCallback((product: Product) => {
+    const brand = brands.find(b => b.id === product.brandId);
+    if (brand) {
+      const brandSlug = slugify(brand.name);
+      const productSlug = slugify(product.name);
+      deleteDirectoryFromStorage(['products', brandSlug, `${productSlug}-${product.id}`]);
+    }
+    setProducts(p => p.filter(i => i.id !== product.id));
     updateDataTimestamp();
-  }, [setProducts, updateDataTimestamp]);
+  }, [setProducts, brands, updateDataTimestamp, deleteDirectoryFromStorage]);
 
   const addCatalogue = useCallback((c: Catalogue) => { setCatalogues(p => [...p, c]); updateDataTimestamp(); }, [setCatalogues, updateDataTimestamp]);
   const updateCatalogue = useCallback((c: Catalogue) => { setCatalogues(p => p.map(i => i.id === c.id ? c : i)); updateDataTimestamp(); }, [setCatalogues, updateDataTimestamp]);
@@ -668,7 +866,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const addAd = useCallback((a: ScreensaverAd) => { setScreensaverAds(p => [...p, a]); updateDataTimestamp(); }, [setScreensaverAds, updateDataTimestamp]);
   const updateAd = useCallback((a: ScreensaverAd) => { setScreensaverAds(p => p.map(i => i.id === a.id ? a : i)); updateDataTimestamp(); }, [setScreensaverAds, updateDataTimestamp]);
-  const deleteAd = useCallback((id: string) => { setScreensaverAds(p => p.filter(i => i.id !== id)); updateDataTimestamp(); }, [setScreensaverAds, updateDataTimestamp]);
+  const deleteAd = useCallback((adId: string) => { 
+    const adToDelete = screensaverAds.find(ad => ad.id === adId);
+    if(adToDelete) {
+        deleteDirectoryFromStorage(['screensaver', `${slugify(adToDelete.title)}-${adToDelete.id}`]);
+    }
+    setScreensaverAds(p => p.filter(i => i.id !== adId)); 
+    updateDataTimestamp(); 
+  }, [setScreensaverAds, screensaverAds, updateDataTimestamp, deleteDirectoryFromStorage]);
   
   const addAdminUser = useCallback((u: AdminUser) => {
       setAdminUsers(p => [...p, u]);
@@ -693,36 +898,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addCategory = useCallback((c: Category) => { setCategories(p => [...p, c]); updateDataTimestamp(); }, [setCategories, updateDataTimestamp]);
   const updateCategory = useCallback((c: Category) => { setCategories(p => p.map(i => i.id === c.id ? c : i)); updateDataTimestamp(); }, [setCategories, updateDataTimestamp]);
   const deleteCategory = useCallback((id: string) => { setCategories(p => p.map(i => i.id === id ? { ...i, isDeleted: true } : i)); updateDataTimestamp(); }, [setCategories, updateDataTimestamp]);
+  
+  const addKioskUser = useCallback((u: KioskUser) => { setKioskUsers(p => [...p, u]); updateDataTimestamp(); }, [setKioskUsers, updateDataTimestamp]);
+  const updateKioskUser = useCallback((u: KioskUser) => { setKioskUsers(p => p.map(i => i.id === u.id ? u : i)); updateDataTimestamp(); }, [setKioskUsers, updateDataTimestamp]);
+  const deleteKioskUser = useCallback((id: string) => { setKioskUsers(p => p.map(i => i.id === id ? { ...i, isDeleted: true } : i)); updateDataTimestamp(); }, [setKioskUsers, updateDataTimestamp]);
+
 
   const restoreCatalogue = useCallback((id: string) => {
     setCatalogues(prev => prev.map(c => c.id === id ? { ...c, isDeleted: false } : c));
     updateDataTimestamp();
   }, [setCatalogues, updateDataTimestamp]);
 
-  const permanentlyDeleteCatalogue = useCallback((id: string) => {
-    setCatalogues(p => p.filter(i => i.id !== id));
+  const permanentlyDeleteCatalogue = useCallback((catalogue: Catalogue) => {
+    const brand = brands.find(b => b.id === catalogue.brandId);
+    const brandSlug = brand ? slugify(brand.name) : 'unbranded';
+    const catalogueSlug = slugify(catalogue.title);
+    deleteDirectoryFromStorage(['catalogues', catalogue.year.toString(), brandSlug, `${catalogueSlug}-${catalogue.id}`]);
+    setCatalogues(p => p.filter(i => i.id !== catalogue.id));
     updateDataTimestamp();
-  }, [setCatalogues, updateDataTimestamp]);
+  }, [setCatalogues, brands, updateDataTimestamp, deleteDirectoryFromStorage]);
 
   const restorePamphlet = useCallback((id: string) => {
     setPamphlets(prev => prev.map(p => p.id === id ? { ...p, isDeleted: false } : p));
     updateDataTimestamp();
   }, [setPamphlets, updateDataTimestamp]);
 
-  const permanentlyDeletePamphlet = useCallback((id: string) => {
-    setPamphlets(p => p.filter(i => i.id !== id));
+  const permanentlyDeletePamphlet = useCallback((pamphlet: Pamphlet) => {
+    if (pamphlet.startDate) {
+        const startDate = new Date(pamphlet.startDate);
+        const year = startDate.getFullYear().toString();
+        const month = String(startDate.getMonth() + 1).padStart(2, '0');
+        const pamphletSlug = slugify(pamphlet.title);
+        deleteDirectoryFromStorage(['pamphlets', year, month, `${pamphletSlug}-${pamphlet.id}`]);
+    }
+    setPamphlets(p => p.filter(i => i.id !== pamphlet.id));
     updateDataTimestamp();
-  }, [setPamphlets, updateDataTimestamp]);
+  }, [setPamphlets, updateDataTimestamp, deleteDirectoryFromStorage]);
 
   const restoreTvContent = useCallback((id: string) => {
     setTvContent(prev => prev.map(tc => tc.id === id ? { ...tc, isDeleted: false } : tc));
     updateDataTimestamp();
   }, [setTvContent, updateDataTimestamp]);
 
-  const permanentlyDeleteTvContent = useCallback((id: string) => {
-    setTvContent(p => p.filter(i => i.id !== id));
+  const permanentlyDeleteTvContent = useCallback((content: TvContent) => {
+    const brand = brands.find(b => b.id === content.brandId);
+    if (brand) {
+        const brandSlug = slugify(brand.name);
+        const modelSlug = slugify(content.modelName);
+        deleteDirectoryFromStorage(['tv-content', brandSlug, `${modelSlug}-${content.id}`]);
+    }
+    setTvContent(p => p.filter(i => i.id !== content.id));
     updateDataTimestamp();
-  }, [setTvContent, updateDataTimestamp]);
+  }, [setTvContent, brands, updateDataTimestamp, deleteDirectoryFromStorage]);
+  
+  const restoreKioskUser = useCallback((id: string) => { setKioskUsers(p => p.map(i => i.id === id ? { ...i, isDeleted: false } : i)); updateDataTimestamp(); }, [setKioskUsers, updateDataTimestamp]);
+  const permanentlyDeleteKioskUser = useCallback((id: string) => { setKioskUsers(p => p.filter(i => i.id !== id)); updateDataTimestamp(); }, [setKioskUsers, updateDataTimestamp]);
+
+  const addOrUpdateClient = useCallback((clientData: Partial<Client>): Client => {
+      let clientToReturn: Client;
+      setClients(prev => {
+        const existingIndex = clientData.id ? prev.findIndex(c => c.id === clientData.id) : -1;
+        if (existingIndex > -1) {
+          const updatedClients = [...prev];
+          updatedClients[existingIndex] = { ...updatedClients[existingIndex], ...clientData } as Client;
+          clientToReturn = updatedClients[existingIndex];
+          return updatedClients;
+        } else {
+          const newClient: Client = {
+            id: `c_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            companyName: '',
+            ...clientData
+          } as Client;
+          clientToReturn = newClient;
+          return [...prev, newClient];
+        }
+      });
+      updateDataTimestamp();
+      // @ts-ignore
+      return clientToReturn;
+    }, [setClients, updateDataTimestamp]);
+
+  const updateClient = useCallback((client: Client) => {
+    setClients(prev => prev.map(c => c.id === client.id ? client : c));
+    updateDataTimestamp();
+  }, [setClients, updateDataTimestamp]);
+
+  const deleteClient = useCallback((clientId: string) => {
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, isDeleted: true } : c));
+    updateDataTimestamp();
+  }, [setClients, updateDataTimestamp]);
+  
+  const addOrder = useCallback((order: Order) => {
+    setOrders(prev => [...prev, order]);
+    updateDataTimestamp();
+  }, [setOrders, updateDataTimestamp]);
+
+  const openClientDetailsModal = useCallback((onComplete: (clientId: string) => void) => {
+    setIsScreensaverActive(false);
+    setClientDetailsModalState({ isOpen: true, onComplete });
+  }, []);
+
+  const closeClientDetailsModal = useCallback(() => {
+    setClientDetailsModalState({ isOpen: false, onComplete: () => {} });
+  }, []);
 
   const playTvContent = useCallback((content: TvContent) => {
     setIsScreensaverActive(false);
@@ -734,17 +1012,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     resetInactivityTimer();
   }, [resetInactivityTimer]);
   
-  const disconnectFromStorage = useCallback((silent = false) => {
-    setStorageProvider('none');
-    setDirectoryHandle(null);
-    blobUrlCache.current.forEach(url => URL.revokeObjectURL(url));
-    blobUrlCache.current.clear();
-    fileHandleCache.current.clear();
-    if (!silent) {
-        alert("Disconnected from storage provider.");
-    }
-  }, [setStorageProvider, setDirectoryHandle]);
-
   const getFileUrl = useCallback(async (src: string): Promise<string> => {
     if (!src) return '';
     if (src.startsWith('http') || src.startsWith('data:')) return src;
@@ -768,7 +1035,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     alert("Permission lost. Please reconnect storage.");
                     return '';
                 }
-                handle = await directoryHandle.getFileHandle(src);
+                
+                const pathParts = src.split('/').filter(p => p);
+                const fileName = pathParts.pop();
+                if (!fileName) throw new Error(`Invalid file path: ${src}`);
+
+                const dirHandle = await getDirectoryHandleRecursive(directoryHandle, pathParts);
+                handle = await dirHandle.getFileHandle(fileName);
                 fileHandleCache.current.set(src, handle);
             }
             const file = await handle.getFile();
@@ -895,19 +1168,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [directoryHandle, disconnectFromStorage]);
   
-  const saveFileToStorage = useCallback(async (file: File): Promise<string> => {
+  const saveFileToStorage = useCallback(async (file: File, directoryPath: string[] = []): Promise<string> => {
     if (storageProvider === 'local' && directoryHandle) {
         const hasPermission = await verifyPermission(directoryHandle, true);
         if (!hasPermission) {
             disconnectFromStorage();
             throw new Error("Permission to write to the folder was lost. Disconnected from storage.");
         }
+        
+        const targetDirectoryHandle = await getDirectoryHandleRecursive(directoryHandle, directoryPath);
+
         const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-        const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
+        const fileHandle = await targetDirectoryHandle.getFileHandle(fileName, { create: true });
         const writable = await fileHandle.createWritable();
         await writable.write(file);
         await writable.close();
-        return fileName;
+        
+        return [...directoryPath, fileName].join('/');
     }
 
     return fileToBase64(file);
@@ -984,9 +1261,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Live Sync Polling for Local/Network Drive
   useEffect(() => {
-    if (storageProvider !== 'local' || !directoryHandle) return;
+    if (storageProvider !== 'local' || !settings.sync?.autoSyncEnabled) return;
 
-    const LIVE_SYNC_INTERVAL_MS = 5000; // 5 seconds
+    const LIVE_SYNC_INTERVAL_MS = 3000; // 3 seconds
     
     console.log('Starting live sync polling for local/network drive.');
     const intervalId = setInterval(() => {
@@ -999,13 +1276,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log('Clearing live sync interval for local/network drive.');
         clearInterval(intervalId);
     };
-  }, [storageProvider, directoryHandle, loadDatabaseFromLocal]);
+  }, [storageProvider, directoryHandle, loadDatabaseFromLocal, settings.sync?.autoSyncEnabled]);
 
   // Live Sync Polling for Cloud Providers
   useEffect(() => {
-    if (storageProvider !== 'customApi' && storageProvider !== 'sharedUrl') return;
+    if ((storageProvider !== 'customApi' && storageProvider !== 'sharedUrl') || !settings.sync?.autoSyncEnabled) return;
     
-    const LIVE_SYNC_INTERVAL_MS = 5000; // 5 seconds
+    const LIVE_SYNC_INTERVAL_MS = 3000; // 3 seconds
 
     console.log('Starting live sync polling for cloud provider.');
     const intervalId = setInterval(() => {
@@ -1018,7 +1295,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.log('Clearing live sync interval for cloud provider.');
         clearInterval(intervalId);
     };
-  }, [storageProvider, pullFromCloud]);
+  }, [storageProvider, pullFromCloud, settings.sync?.autoSyncEnabled]);
+
+  // Immediate sync on tab visibility
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && storageProvider !== 'none' && settings.sync?.autoSyncEnabled) {
+        console.log('Tab became visible, triggering immediate sync.');
+        if (storageProvider === 'local') {
+          loadDatabaseFromLocal(true);
+        } else if (storageProvider === 'customApi' || storageProvider === 'sharedUrl') {
+          pullFromCloud(true);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [storageProvider, settings.sync?.autoSyncEnabled, loadDatabaseFromLocal, pullFromCloud]);
 
   // PWA Install prompt
   useEffect(() => {
@@ -1072,9 +1369,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-        isSetupComplete, completeSetup,
-        brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, loggedInUser, tvContent, categories, viewCounts,
-        login, logout,
+        isSetupComplete, completeSetup, reInitiateSetup, isAuthLoading,
+        brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, orders, kioskUsers, viewCounts,
+        login, logout, currentKioskUser, loginKioskUser, logoutKioskUser,
         addBrand, updateBrand, deleteBrand,
         addProduct, updateProduct, deleteProduct,
         addCatalogue, updateCatalogue, deleteCatalogue,
@@ -1083,20 +1380,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addAdminUser, updateAdminUser, deleteAdminUser,
         addTvContent, updateTvContent, deleteTvContent,
         addCategory, updateCategory, deleteCategory,
-        updateSettings, restoreBackup,
+        addKioskUser, updateKioskUser, deleteKioskUser,
+        updateSettings, restoreBackup, resetToDefaultData,
+        addOrUpdateClient, updateClient, deleteClient, addOrder,
         restoreBrand, permanentlyDeleteBrand, restoreProduct, permanentlyDeleteProduct,
         restoreCatalogue, permanentlyDeleteCatalogue, restorePamphlet, permanentlyDeletePamphlet,
         restoreTvContent, permanentlyDeleteTvContent,
+        restoreKioskUser, permanentlyDeleteKioskUser,
         isScreensaverActive, isScreensaverEnabled, toggleScreensaver, exitScreensaver,
         localVolume, setLocalVolume: setLocalVolume,
         activeTvContent, playTvContent, stopTvContent,
-        pdfModalState, bookletModalState, openDocument, closePdfModal, closeBookletModal,
+        setIsOnAdminPage,
+        pdfModalState, bookletModalState, clientDetailsModalState, openDocument, closePdfModal, closeBookletModal, openClientDetailsModal, closeClientDetailsModal,
         confirmation, showConfirmation, hideConfirmation,
         theme, toggleTheme,
         deferredPrompt, triggerInstallPrompt,
         storageProvider, connectToLocalProvider, connectToCloudProvider, connectToSharedUrl,
         disconnectFromStorage, isStorageConnected, directoryHandle,
-        saveFileToStorage, getFileUrl,
+        saveFileToStorage, deleteFileFromStorage, deleteDirectoryFromStorage, getFileUrl,
         saveDatabaseToLocal, loadDatabaseFromLocal,
         pushToCloud, pullFromCloud,
         syncStatus,

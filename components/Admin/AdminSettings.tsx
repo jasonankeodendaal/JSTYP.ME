@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import { SaveIcon, UploadIcon, EyeIcon, EyeOffIcon, CloudArrowUpIcon, Bars3Icon } from '../Icons.tsx';
@@ -292,7 +288,7 @@ const AdminSettings: React.FC = () => {
     const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], ['settings', 'logo']);
                 setLocalSettings(prev => ({ ...prev, logoUrl: fileName }));
                 markDirty();
             } catch (error) {
@@ -304,7 +300,7 @@ const AdminSettings: React.FC = () => {
     const handleMusicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], ['settings', 'music']);
                 setLocalSettings(prev => ({ ...prev, backgroundMusicUrl: fileName }));
                 markDirty();
             } catch (error) {
@@ -510,6 +506,24 @@ const AdminSettings: React.FC = () => {
                  <div className="space-y-6">
                     <CollapsibleSection title="Kiosk & Screensaver Settings" defaultOpen>
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                            <SettingRow label="Require Kiosk Login" description="If enabled, users must log in with a PIN before using the kiosk.">
+                                <label htmlFor="requireLogin" className="flex items-center cursor-pointer">
+                                    <span className={`mr-3 text-sm font-medium ${localSettings.kiosk.requireLogin ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        {localSettings.kiosk.requireLogin ? 'Enabled' : 'Disabled'}
+                                    </span>
+                                    <div className="relative">
+                                        <input
+                                            type="checkbox"
+                                            id="requireLogin"
+                                            className="sr-only peer"
+                                            checked={localSettings.kiosk.requireLogin}
+                                            onChange={(e) => handleNestedSettingChange('kiosk', 'requireLogin', e.target.checked)}
+                                        />
+                                        <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
+                                        <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
+                                    </div>
+                                </label>
+                            </SettingRow>
                             <SettingRow label="Screensaver Delay" description="Time of inactivity before screensaver starts.">
                                 <RangeSlider name="screensaverDelay" value={localSettings.screensaverDelay} onChange={handleGeneralChange} min={5} max={180} step={5} unit="s" />
                             </SettingRow>
@@ -556,28 +570,6 @@ const AdminSettings: React.FC = () => {
                             <SettingRow label="Music Volume" description="Relative volume for the background music, multiplied by the main volume.">
                                  <RangeSlider name="backgroundMusicVolume" value={localSettings.backgroundMusicVolume} onChange={handleGeneralChange} min={0} max={1} step={0.05} />
                             </SettingRow>
-                        </div>
-                    </CollapsibleSection>
-                    <CollapsibleSection title="Sync Settings">
-                        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                             <SettingRow label="Enable Auto-Sync" description="When enabled, all changes will be automatically saved to your connected storage provider. This keeps all devices in sync live.">
-                                <label htmlFor="autoSyncEnabled" className="flex items-center cursor-pointer">
-                                    <span className={`mr-3 text-sm font-medium ${localSettings.sync?.autoSyncEnabled ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                                        {localSettings.sync?.autoSyncEnabled ? 'Enabled' : 'Disabled'}
-                                    </span>
-                                    <div className="relative">
-                                        <input
-                                            type="checkbox"
-                                            id="autoSyncEnabled"
-                                            className="sr-only peer"
-                                            checked={localSettings.sync?.autoSyncEnabled ?? false}
-                                            onChange={(e) => handleNestedSettingChange('sync', 'autoSyncEnabled', e.target.checked)}
-                                        />
-                                        <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
-                                        <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
-                                    </div>
-                                </label>
-                             </SettingRow>
                         </div>
                     </CollapsibleSection>
                 </div>

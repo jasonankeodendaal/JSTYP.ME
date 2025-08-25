@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { AdminUser, AdminUserPermissions } from '../../types.ts';
@@ -25,6 +23,8 @@ const getInitialFormData = (): AdminUser => ({
         canManageSystem: false,
         canManageTvContent: false,
         canViewAnalytics: false,
+        canManageClientOrders: false,
+        canManageKioskUsers: false,
     },
 });
 
@@ -90,7 +90,9 @@ const AdminUserEdit: React.FC = () => {
     }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditableUser({ ...editableUser, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        const finalValue = name === 'pin' ? value.replace(/\D/g, '') : value;
+        setEditableUser({ ...editableUser, [name]: finalValue });
     };
     
     const handlePermissionChange = (permission: keyof AdminUserPermissions, value: boolean) => {
@@ -258,6 +260,14 @@ const AdminUserEdit: React.FC = () => {
                             description="Can view kiosk analytics and usage data."
                             checked={editableUser.permissions.canViewAnalytics}
                             onChange={e => handlePermissionChange('canViewAnalytics', e.target.checked)}
+                            disabled={!canEditPermissions}
+                        />
+                         <PermissionCheckbox
+                            id="perm-kiosk-users"
+                            label="Manage Kiosk Users"
+                            description="Can add, edit, and delete kiosk (display) users."
+                            checked={editableUser.permissions.canManageKioskUsers}
+                            onChange={e => handlePermissionChange('canManageKioskUsers', e.target.checked)}
                             disabled={!canEditPermissions}
                         />
                     </div>
