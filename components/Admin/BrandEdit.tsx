@@ -1,12 +1,10 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { Brand } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext';
 import LocalMedia from '../LocalMedia';
-import { slugify } from '../utils';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -55,13 +53,8 @@ const BrandEdit: React.FC = () => {
     
     const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            if (!formData.name) {
-                alert("Please enter a brand name before uploading a logo.");
-                return;
-            }
             try {
-                const path = ['brands', `${slugify(formData.name)}-${formData.id}`];
-                const fileName = await saveFileToStorage(e.target.files[0], path);
+                const fileName = await saveFileToStorage(e.target.files[0]);
                 setFormData(prev => ({ ...prev, logoUrl: fileName }));
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save file.");

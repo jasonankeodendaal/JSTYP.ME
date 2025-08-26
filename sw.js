@@ -98,35 +98,26 @@ self.addEventListener('fetch', event => {
         return;
     }
     
-    // For navigation requests (e.g., opening the app, refreshing, or navigating to a new page),
-    // use a network-first strategy with a robust fallback to the cached app shell.
-    // This is crucial for Single-Page Applications (SPAs) to handle deep links correctly.
+    // This is the key fix for the 404 error on installed apps (PWAs).
+    // If the request is a navigation request (i.e., opening the app or refreshing a page),
+    // we serve the cached index.html. This is the standard "SPA Fallback".
     if (request.mode === 'navigate') {
         event.respondWith(
-            (async () => {
-                try {
-                    // Try to fetch from the network first.
-                    const networkResponse = await fetch(request);
-                    if (networkResponse.ok) {
-                        // If successful, update the cache and return the response.
-                        const cache = await caches.open(CACHE_NAME);
-                        cache.put(request, networkResponse.clone());
+            caches.open(CACHE_NAME).then(cache => {
+                // Try the network first to get the latest version
+                return fetch(request)
+                    .then(networkResponse => {
+                        // If successful, update the cache
+                        if (networkResponse.ok) {
+                            cache.put(request, networkResponse.clone());
+                        }
                         return networkResponse;
-                    }
-                    // If the server returns an error (e.g., 404 for an SPA route),
-                    // we'll fall through to the cache fallback.
-                } catch (error) {
-                    // This catches network errors (e.g., when the user is offline).
-                    console.log('Fetch for navigation failed, will fall back to cache.', error);
-                }
-
-                // Fallback to serving index.html from the cache. This handles both
-                // offline access and server-side 404s for client-side routes.
-                const cache = await caches.open(CACHE_NAME);
-                // Return the cached index.html, which is the entry point for the SPA.
-                const cachedResponse = await cache.match('./index.html');
-                return cachedResponse;
-            })()
+                    })
+                    .catch(() => {
+                        // If the network fails (offline), serve the app shell from the cache
+                        return cache.match('./index.html');
+                    });
+            })
         );
         return;
     }

@@ -3,7 +3,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import HTMLFlipBook from 'react-pageflip';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
 
 interface PdfModalProps {
     title: string;

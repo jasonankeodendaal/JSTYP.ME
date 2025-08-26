@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import JSZip from 'jszip';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext.tsx';
 import { UploadIcon, DocumentArrowDownIcon } from '../Icons';
 import type { Product, Brand, ProductDocument } from '../../types';
 
@@ -49,67 +49,129 @@ const AdminZipBulkImport: React.FC = () => {
 
     const handleDownloadTemplate = async () => {
         const zip = new JSZip();
-        const readmeContent = `
-# Product Zip Upload Template Instructions
+        const readmeContent = `# Product Zip Upload Template Instructions
 
-This template demonstrates the required folder structure for bulk uploading products.
+This template demonstrates the required folder structure for bulk uploading products with all their associated media.
 
-## Structure:
+## 1. High-Level Structure
 
-- The root of the zip file should contain folders. Each folder name represents a **Brand Name**.
+The zip file is organized by **Brand**, then by **Product**.
+
+- The root of the zip file must contain one or more folders. Each folder name represents a **Brand Name**.
 - Inside each brand folder, create sub-folders. Each sub-folder name represents a **Product Name**.
-- Inside each product folder, you must have:
-    1. A 'product.json' file with product details.
-    2. An 'images' folder for product images.
-    3. (Optional) A 'videos' folder for a product video (only the first one found will be used).
-    4. (Optional) A 'documents' folder for PDF documents.
 
-## 'product.json' File:
+Example:
+/Brand Alpha/Cool Gadget Pro/
+/Brand Alpha/Simple Widget/
+/Brand Bravo/Another Device/
 
-This file contains the core product data. Here's an example:
+---
 
+## 2. Product Folder Contents
+
+Inside each product folder (e.g., \`/Brand Alpha/Cool Gadget Pro/\`), you must have the following structure:
+
+- **\`product.json\`**: (Required) A text file containing all the details for that specific product.
+- **\`images/\`**: (Required) A folder to store all product images (e.g., \`front-view.jpg\`, \`lifestyle.png\`).
+- **\`videos/\`**: (Optional) A folder for a product video. Only the first video file found will be used.
+- **\`documents/\`**: (Optional) A folder for related PDF documents. The filename (without \`.pdf\`) will be used as the document title.
+
+---
+
+## 3. The \`product.json\` File Explained
+
+This is the core of your product data. Below is a detailed example with explanations for each field.
+
+**Full Example \`product.json\`:**
+\`\`\`json
 {
   "sku": "PROD-SKU-123",
-  "description": "This is a detailed description of the product. It can include features and benefits.",
+  "description": "This is a detailed description of the product. It can include features and benefits, and you can use multiple lines for formatting. It's best to write compelling copy that highlights what makes the product special.",
   "websiteUrl": "https://example.com/product-page",
   "whatsInTheBox": [
     "Main Product Unit",
     "Power Cable",
-    "User Manual"
+    "User Manual",
+    "Warranty Card"
   ],
-  "termsAndConditions": "2-year warranty on parts and labor. Misuse is not covered.",
+  "termsAndConditions": "2-year limited warranty on all parts and labor. Accidental damage is not covered under the standard warranty.",
   "specifications": [
     { "key": "Color", "value": "Midnight Black" },
     { "key": "Weight", "value": "1.2 kg" },
-    { "key": "Material", "value": "Anodized Aluminum" }
+    { "key": "Dimensions", "value": "15cm x 10cm x 5cm" },
+    { "key": "Material", "value": "Anodized Aluminum" },
+    { "key": "Connectivity", "value": "Bluetooth 5.2, Wi-Fi 6" }
   ]
 }
+\`\`\`
 
-- **sku**: (Required) The unique product identifier.
-- All other fields are optional.
+**Field Breakdown:**
 
-## Media Files:
-
-- **images/**: Place all product images here (e.g., image1.jpg, front-view.png).
-- **videos/**: Place ONE product video here if applicable (e.g., promo.mp4).
-- **documents/**: Place product PDFs here (e.g., manual.pdf, spec-sheet.pdf). The filename (without .pdf) will be used as the document title.
+- \`sku\` (String, **Required**): The unique Stock Keeping Unit or product identifier. The import process will skip any product if its SKU already exists in the system.
+- \`description\` (String, Optional): The main description of the product.
+- \`websiteUrl\` (String, Optional): A full URL to the product's page on your main website.
+- \`whatsInTheBox\` (Array of Strings, Optional): A list of items included in the product packaging.
+- \`termsAndConditions\` (String, Optional): Any warranty information, disclaimers, or T&Cs.
+- \`specifications\` (Array of Objects, Optional): A list of key-value pairs for technical specs. Each object must have a \`key\` and a \`value\`.
 
 ---
-Zip created by Modern Living Kiosk System.
+
+## 4. How It Works
+
+1.  **Brand Creation**: If a brand folder in your zip (e.g., "Brand Alpha") does not already exist in the kiosk system, a new brand will be created automatically.
+2.  **Product Creation**: The system will read each \`product.json\` file. If the SKU is new, it will create the product and link it to the correct brand.
+3.  **Media Linking**: All files in the \`images\`, \`videos\`, and \`documents\` folders will be uploaded and automatically linked to the newly created product.
+
+**IMPORTANT**: The process can take a few minutes for large zip files with many high-resolution images. Please be patient and do not navigate away from the page while it is processing.
+
+---
+Zip template created by the Interactive Kiosk System.
 `;
         zip.file("README.txt", readmeContent);
 
-        // Add example structure
-        const productFolder = zip.folder("Example Brand")?.folder("Example Product");
-        const productJson = {
-            sku: "EX-SKU-001",
-            description: "An example product description.",
-            websiteUrl: "https://example.com"
+        // --- Example 1: Full-featured product ---
+        const brandAlpha = zip.folder("Brand Alpha");
+        const coolGadget = brandAlpha?.folder("Cool Gadget Pro");
+        const coolGadgetJson = {
+          sku: "PROD-SKU-123",
+          description: "This is a detailed description of the product. It can include features and benefits, and you can use multiple lines for formatting. It's best to write compelling copy that highlights what makes the product special.",
+          websiteUrl: "https://example.com/product-page",
+          whatsInTheBox: ["Main Product Unit", "Power Cable", "User Manual", "Warranty Card"],
+          termsAndConditions: "2-year limited warranty on all parts and labor. Accidental damage is not covered under the standard warranty.",
+          specifications: [
+            { "key": "Color", "value": "Midnight Black" },
+            { "key": "Weight", "value": "1.2 kg" },
+            { "key": "Dimensions", "value": "15cm x 10cm x 5cm" },
+            { "key": "Material", "value": "Anodized Aluminum" },
+            { "key": "Connectivity", "value": "Bluetooth 5.2, Wi-Fi 6" }
+          ]
         };
-        productFolder?.file("product.json", JSON.stringify(productJson, null, 2));
-        productFolder?.folder("images");
-        productFolder?.folder("videos");
-        productFolder?.folder("documents");
+        coolGadget?.file("product.json", JSON.stringify(coolGadgetJson, null, 2));
+        coolGadget?.folder("images")?.file("placeholder.txt", "Place your JPG/PNG files here, e.g., front-view.jpg");
+        coolGadget?.folder("videos")?.file("placeholder.txt", "Place ONE video file here, e.g., promo.mp4");
+        coolGadget?.folder("documents")?.file("placeholder.txt", "Place your PDF files here, e.g., user-manual.pdf");
+
+        // --- Example 2: Simpler product ---
+        const simpleWidget = brandAlpha?.folder("Simple Widget");
+        const simpleWidgetJson = {
+            sku: "WDGT-SMP-456",
+            description: "A simple, reliable widget for everyday use."
+        };
+        simpleWidget?.file("product.json", JSON.stringify(simpleWidgetJson, null, 2));
+        simpleWidget?.folder("images")?.file("placeholder.txt", "Place your images here.");
+        
+        // --- Example 3: Different Brand ---
+        const brandBravo = zip.folder("Brand Bravo");
+        const anotherDevice = brandBravo?.folder("Another Device");
+        const anotherDeviceJson = {
+            sku: "DEV-B-789",
+            description: "Another great device from Brand Bravo, featuring a sleek design.",
+            specifications: [
+                { "key": "Finish", "value": "Brushed Steel" }
+            ]
+        };
+        anotherDevice?.file("product.json", JSON.stringify(anotherDeviceJson, null, 2));
+        anotherDevice?.folder("images")?.file("placeholder.txt", "Place your images here.");
 
         const content = await zip.generateAsync({ type: "blob" });
         const url = URL.createObjectURL(content);
@@ -312,7 +374,8 @@ Zip created by Modern Living Kiosk System.
                             <li>Create a folder for each <strong>Brand</strong>.</li>
                             <li>Inside each brand folder, create a folder for each <strong>Product</strong>.</li>
                             <li>Each product folder must contain a <strong>product.json</strong> file and an <strong>images</strong> folder.</li>
-                            <li>Optionally, add <strong>videos</strong> and <strong>documents</strong> folders for media.</li>
+                            <li>(Optional) Add <strong>videos</strong> and <strong>documents</strong> folders for other media.</li>
+                            <li>Download the template for the exact structure and `product.json` format.</li>
                         </ul>
                     </div>
                      <button 

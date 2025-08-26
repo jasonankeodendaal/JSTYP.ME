@@ -1,6 +1,8 @@
+
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppContext } from './context/AppContext.tsx';
+import { useAppContext } from './context/AppContext';
 import type { TvContent } from '../types';
 import LocalMedia from './LocalMedia';
 import { XIcon } from './Icons';
@@ -74,7 +76,7 @@ const TvContentPlayer: React.FC<{ content: TvContent; onClose: () => void; }> = 
 
     return (
         <div 
-            className="fixed inset-0 bg-black z-[200] flex items-center justify-center overflow-hidden"
+            className="fixed inset-0 bg-black z-50 flex items-center justify-center overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="tv-player-title"

@@ -7,9 +7,8 @@ import type { Catalogue } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
-import { slugify } from '../utils.ts';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const selectStyle = inputStyle;
@@ -28,7 +27,7 @@ const getInitialFormData = (): Catalogue => ({
 const CatalogueEdit: React.FC = () => {
     const { catalogueId } = useParams<{ catalogueId: string }>();
     const navigate = useNavigate();
-    const { catalogues, brands, addCatalogue, updateCatalogue, saveFileToStorage, deleteFileFromStorage, loggedInUser } = useAppContext();
+    const { catalogues, brands, addCatalogue, updateCatalogue, saveFileToStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(catalogueId);
     const [formData, setFormData] = useState<Catalogue>(getInitialFormData());
@@ -65,23 +64,10 @@ const CatalogueEdit: React.FC = () => {
         setFormData(prev => ({ ...prev, [name]: name === 'year' ? parseInt(value) : value }));
     };
 
-    const getAssetPath = (subfolder: 'thumbnail' | 'pages') => {
-        if (!formData.title || !formData.year) return undefined;
-        const brand = brands.find(b => b.id === formData.brandId);
-        const brandSlug = brand ? slugify(brand.name) : 'unbranded';
-        const catalogueSlug = slugify(formData.title);
-        return ['catalogues', formData.year.toString(), brandSlug, `${catalogueSlug}-${formData.id}`, subfolder];
-    };
-
      const handleThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const path = getAssetPath('thumbnail');
-            if (!path) {
-                alert("Please set a title and year before uploading a thumbnail.");
-                return;
-            }
             try {
-                const fileName = await saveFileToStorage(e.target.files[0], path);
+                const fileName = await saveFileToStorage(e.target.files[0]);
                 setFormData(prev => ({ ...prev, thumbnailUrl: fileName }));
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save thumbnail.");
@@ -91,14 +77,9 @@ const CatalogueEdit: React.FC = () => {
 
     const handleDocumentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && formData.type === 'image') {
-            const path = getAssetPath('pages');
-            if (!path) {
-                alert("Please set a title and year before uploading pages.");
-                return;
-            }
              for (const file of Array.from(e.target.files)) {
                 try {
-                    const savedPath = await saveFileToStorage(file, path);
+                    const savedPath = await saveFileToStorage(file);
                     setFormData(prev => {
                         if (prev.type !== 'image') return prev;
                         return { ...prev, imageUrls: [...prev.imageUrls, savedPath] };
@@ -111,12 +92,6 @@ const CatalogueEdit: React.FC = () => {
     const handlePdfUploadAndConvert = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file || file.type !== 'application/pdf') return;
-
-        const path = getAssetPath('pages');
-        if (!path) {
-            alert("Please set a title and year before converting a PDF.");
-            return;
-        }
 
         setIsConverting(true);
         setConversionProgress('Starting conversion...');
@@ -144,7 +119,7 @@ const CatalogueEdit: React.FC = () => {
                 const blob = await (await fetch(dataUrl)).blob();
                 const imageFile = new File([blob], `page_${i}.png`, { type: 'image/png' });
 
-                const savedPath = await saveFileToStorage(imageFile, path);
+                const savedPath = await saveFileToStorage(imageFile);
                 newImageUrls.push(savedPath);
             }
 
@@ -173,8 +148,6 @@ const CatalogueEdit: React.FC = () => {
 
     const removeDocumentImage = (index: number) => {
         if (formData.type === 'image') {
-            const urlToDelete = formData.imageUrls[index];
-            if(urlToDelete) deleteFileFromStorage(urlToDelete);
             const newImageUrls = formData.imageUrls.filter((_, i) => i !== index);
             setFormData(prev => ({ ...prev, type: 'image', imageUrls: newImageUrls }));
         }

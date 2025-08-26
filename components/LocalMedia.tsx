@@ -79,9 +79,7 @@ const LocalMedia = forwardRef<HTMLImageElement | HTMLVideoElement, LocalMediaPro
     const { type: _type, src: _src, ...rest } = props;
     return <MotionImg 
         ref={ref as Ref<HTMLImageElement>} 
-        src={displayUrl}
-        loading="lazy"
-        decoding="async"
+        src={displayUrl} 
         {...rest} 
         onError={(e) => {
             const target = e.target as HTMLImageElement;

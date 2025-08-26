@@ -1,5 +1,3 @@
-
-
 export type ProductDocument =
   | { id: string; title: string; type: 'image'; imageUrls: string[]; }
   | { id:string; title: string; type: 'pdf'; url: string; };
@@ -138,7 +136,6 @@ export interface Settings {
   };
   kiosk: {
     idleRedirectTimeout: number; // in seconds, 0 to disable
-    requireLogin: boolean;
   };
   navigation: {
     links: NavLink[];
@@ -176,8 +173,6 @@ export interface AdminUserPermissions {
   canManageSystem: boolean; // Covers Storage, Backup/Restore, Trash
   canManageTvContent: boolean;
   canViewAnalytics: boolean;
-  canManageClientOrders: boolean;
-  canManageKioskUsers: boolean;
 }
 
 export interface AdminUser {
@@ -201,31 +196,24 @@ export interface TvContent {
 export interface Client {
   id: string;
   companyName: string;
-  email?: string;
+  contactPerson: string;
+  contactEmail?: string;
+  contactTel: string;
+  vatNumber?: string;
   address?: string;
-  tel?: string;
   isDeleted?: boolean;
 }
 
-export interface OrderItem {
-  productId: string;
-  quantity: number;
-}
-
-export interface Order {
+export interface Quote {
   id: string;
   clientId: string;
-  date: string; // ISO string date
-  items: OrderItem[];
-  isDeleted?: boolean;
-  createdByAdminId?: string;
-}
-
-export interface KioskUser {
-  id: string;
-  name: string;
-  pin: string;
-  isDeleted?: boolean;
+  adminId: string;
+  createdAt: number; // timestamp
+  status: 'pending' | 'quoted';
+  items: {
+    productId: string;
+    quantity: number;
+  }[];
 }
 
 export interface BackupData {
@@ -239,8 +227,7 @@ export interface BackupData {
   tvContent: TvContent[];
   categories?: Category[];
   clients?: Client[];
-  orders?: Order[];
-  kioskUsers?: KioskUser[];
+  quotes?: Quote[];
   viewCounts?: {
     brands: Record<string, number>;
     products: Record<string, number>;

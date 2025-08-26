@@ -6,7 +6,6 @@ import type { ScreensaverAd, AdLink } from '../../types.ts';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
-import { slugify } from '../utils.ts';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const selectStyle = inputStyle;
@@ -23,7 +22,7 @@ const getInitialFormData = (): ScreensaverAd => ({
 const AdEdit: React.FC = () => {
     const { adId } = useParams<{ adId: string }>();
     const navigate = useNavigate();
-    const { screensaverAds, addAd, updateAd, brands, products, catalogues, pamphlets, saveFileToStorage, deleteFileFromStorage, loggedInUser } = useAppContext();
+    const { screensaverAds, addAd, updateAd, brands, products, catalogues, pamphlets, saveFileToStorage, loggedInUser } = useAppContext();
     const isEditing = Boolean(adId);
 
     const [formData, setFormData] = useState<ScreensaverAd>(getInitialFormData());
@@ -78,16 +77,10 @@ const AdEdit: React.FC = () => {
     const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            const path = ['screensaver', `${slugify(formData.title)}-${formData.id}`];
-            if (!formData.title) {
-                alert("Please enter a title before uploading media.");
-                return;
-            }
-
             for (const file of files) {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'video';
                 try {
-                    const fileName = await saveFileToStorage(file, path);
+                    const fileName = await saveFileToStorage(file);
                     setFormData(prev => ({
                         ...prev,
                         media: [...prev.media, { url: fileName, type: fileType }]
@@ -101,10 +94,6 @@ const AdEdit: React.FC = () => {
     };
 
     const handleMediaDelete = (indexToDelete: number) => {
-        const mediaToDelete = formData.media[indexToDelete];
-        if (mediaToDelete) {
-            deleteFileFromStorage(mediaToDelete.url);
-        }
         setFormData(prev => ({
             ...prev,
             media: prev.media.filter((_, index) => index !== indexToDelete)

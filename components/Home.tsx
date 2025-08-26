@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
-import { EyeIcon, EyeOffIcon, ClipboardDocumentListIcon } from './Icons.tsx';
+import { EyeIcon, EyeOffIcon, PlusIcon, ClipboardDocumentListIcon } from './Icons.tsx';
 import PamphletDisplay from './PamphletCarousel.tsx';
 import LocalMedia from './LocalMedia.tsx';
 import InstallPrompt from './InstallPrompt.tsx';
@@ -12,19 +12,19 @@ const BrandGrid: React.FC = () => {
     return (
         <div>
             <h2 className="text-2xl tracking-tight text-gray-900 dark:text-gray-100 mb-6 section-heading">Shop by Brand</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 items-center">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
                 {brands.filter(brand => !brand.isDeleted).map((brand) => (
                     <Link
                         key={brand.id}
                         to={`/brand/${brand.id}`}
-                        className="brand-grid-item group"
+                        className="group flex items-center justify-center p-4 aspect-square bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/50 transition-all hover:shadow-2xl hover:-translate-y-1"
                         title={brand.name}
                     >
                         <LocalMedia
                             src={brand.logoUrl}
                             alt={`${brand.name} Logo`}
                             type="image"
-                            className="object-contain"
+                            className="max-h-full max-w-full object-contain"
                         />
                     </Link>
                 ))}
@@ -32,6 +32,39 @@ const BrandGrid: React.FC = () => {
         </div>
     );
 }
+
+const ClientStockPickCTA: React.FC = () => {
+    const { loggedInUser, openClientDetailsModal } = useAppContext();
+    const navigate = useNavigate();
+
+    const handleCreateStockPick = () => {
+        if (loggedInUser) {
+            openClientDetailsModal();
+        } else {
+            navigate('/login');
+        }
+    };
+
+    return (
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left text-white">
+             <div className="flex items-center gap-6">
+                <div className="hidden sm:block flex-shrink-0 flex items-center justify-center h-20 w-20 rounded-2xl bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/20">
+                    <ClipboardDocumentListIcon className="h-10 w-10" />
+                </div>
+                <div>
+                    <h3 className="text-2xl font-bold section-heading">Create Client Quote</h3>
+                    <p className="text-indigo-200 mt-1 max-w-lg">
+                        Start a new quote by selecting products for a client. The order can be printed or saved.
+                    </p>
+                </div>
+            </div>
+            <button onClick={handleCreateStockPick} className="btn bg-white text-indigo-600 hover:bg-gray-100 mt-4 sm:mt-0 flex-shrink-0 transform hover:scale-105">
+                <PlusIcon className="h-5 w-5" />
+                <span>Create Quote</span>
+            </button>
+        </div>
+    );
+};
 
 const ScreensaverToggle: React.FC = () => {
     const { isScreensaverEnabled, toggleScreensaver } = useAppContext();
@@ -73,44 +106,12 @@ const ScreensaverToggle: React.FC = () => {
     );
 };
 
-const StockPickCta: React.FC = () => {
-    const { loggedInUser, openClientDetailsModal } = useAppContext();
-    const navigate = useNavigate();
-
-    const handleClick = () => {
-        openClientDetailsModal(clientId => {
-            navigate('/stock-pick', { state: { clientId } });
-        });
-    };
-
-    if (!loggedInUser) {
-        return null;
-    }
-
-    return (
-        <button
-            onClick={handleClick}
-            className="group block text-left bg-indigo-600 dark:bg-indigo-500 p-6 rounded-2xl shadow-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all hover:shadow-2xl hover:-translate-y-1 w-full"
-        >
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-2xl font-bold text-white section-heading">Create a Client Stock Pick</h3>
-                    <p className="text-indigo-200 dark:text-indigo-100 mt-1">Select products to generate a quote for a client.</p>
-                </div>
-                <div className="bg-white/20 p-4 rounded-full transition-transform group-hover:scale-110">
-                    <ClipboardDocumentListIcon className="h-8 w-8 text-white" />
-                </div>
-            </div>
-        </button>
-    );
-};
-
 
 const Home: React.FC = () => {
   return (
     <div className="space-y-12">
+      <ClientStockPickCTA />
       <PamphletDisplay />
-      <StockPickCta />
       <BrandGrid />
       <InstallPrompt />
       <ScreensaverToggle />

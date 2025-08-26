@@ -7,7 +7,7 @@ import LocalMedia from '../LocalMedia.tsx';
 
 // Reusable component for a trash item row
 const TrashItemRow: React.FC<{
-    item: { id: string, name: string, logoUrl?: string, type: string, subtext?: string, icon?: React.ReactNode };
+    item: { id: string, name: string, logoUrl?: string, type: string, subtext?: string };
     onRestore: () => void;
     onDelete: () => void;
 }> = ({ item, onRestore, onDelete }) => (
@@ -18,9 +18,9 @@ const TrashItemRow: React.FC<{
                     <LocalMedia src={item.logoUrl} alt={item.name} type="image" className="max-h-full max-w-full object-contain" />
                 </div>
             )}
-             {item.icon && (
+             {item.type === 'TvContent' && (
                 <div className="h-12 w-12 flex-shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    {item.icon}
+                    <TvIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                 </div>
             )}
             <div className="min-w-0">
@@ -90,7 +90,7 @@ const AdminTrash: React.FC = () => {
     const handleDeleteBrand = (brand: Brand) => {
         showConfirmation(
             `Are you sure you want to PERMANENTLY DELETE the brand "${brand.name}"? This action cannot be undone and will also delete all associated products.`,
-            () => permanentlyDeleteBrand(brand)
+            () => permanentlyDeleteBrand(brand.id)
         );
     };
     
@@ -99,7 +99,7 @@ const AdminTrash: React.FC = () => {
     };
 
     const handleDeleteProduct = (product: Product) => {
-        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the product "${product.name}"? This cannot be undone.`, () => permanentlyDeleteProduct(product));
+        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the product "${product.name}"? This cannot be undone.`, () => permanentlyDeleteProduct(product.id));
     };
 
     const handleRestoreCatalogue = (catalogue: Catalogue) => {
@@ -107,7 +107,7 @@ const AdminTrash: React.FC = () => {
     };
 
     const handleDeleteCatalogue = (catalogue: Catalogue) => {
-        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the catalogue "${catalogue.title}"? This cannot be undone.`, () => permanentlyDeleteCatalogue(catalogue));
+        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the catalogue "${catalogue.title}"? This cannot be undone.`, () => permanentlyDeleteCatalogue(catalogue.id));
     };
     
     const handleRestorePamphlet = (pamphlet: Pamphlet) => {
@@ -115,7 +115,7 @@ const AdminTrash: React.FC = () => {
     };
 
     const handleDeletePamphlet = (pamphlet: Pamphlet) => {
-        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the pamphlet "${pamphlet.title}"? This cannot be undone.`, () => permanentlyDeletePamphlet(pamphlet));
+        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the pamphlet "${pamphlet.title}"? This cannot be undone.`, () => permanentlyDeletePamphlet(pamphlet.id));
     };
 
     const handleRestoreTvContent = (content: TvContent) => {
@@ -123,7 +123,7 @@ const AdminTrash: React.FC = () => {
     };
 
     const handleDeleteTvContent = (content: TvContent) => {
-        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the TV content for "${content.modelName}"? This cannot be undone.`, () => permanentlyDeleteTvContent(content));
+        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the TV content for "${content.modelName}"? This cannot be undone.`, () => permanentlyDeleteTvContent(content.id));
     };
     
     const allDeletedItems = [
@@ -131,7 +131,7 @@ const AdminTrash: React.FC = () => {
         ...individuallyDeletedProducts,
         ...deletedCatalogues,
         ...deletedPamphlets,
-        ...deletedTvContent,
+        ...deletedTvContent
     ];
 
     const TrashSection: React.FC<{ title: string; children: React.ReactNode; }> = ({ title, children }) => (
@@ -209,7 +209,7 @@ const AdminTrash: React.FC = () => {
                             {deletedTvContent.map(content => (
                                 <TrashItemRow
                                     key={content.id}
-                                    item={{ id: content.id, name: content.modelName, type: 'TvContent', subtext: `Brand: ${brands.find(b => b.id === content.brandId)?.name || 'N/A'}`, icon: <TvIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" /> }}
+                                    item={{ id: content.id, name: content.modelName, type: 'TvContent', subtext: `Brand: ${brands.find(b => b.id === content.brandId)?.name || 'N/A'}` }}
                                     onRestore={() => handleRestoreTvContent(content)}
                                     onDelete={() => handleDeleteTvContent(content)}
                                 />

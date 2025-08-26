@@ -15,6 +15,7 @@ declare module 'react' {
         zoom?: string;
         effect?: string;
         'grab-cursor'?: string;
+        'initial-slide'?: string;
       }, HTMLElement>;
       'swiper-slide': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     }

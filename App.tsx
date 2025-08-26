@@ -1,6 +1,6 @@
 /// <reference path="./swiper.d.ts" />
 
-import React, { useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,42 +13,38 @@ import PdfModal from './components/PdfModal.tsx'; // Import new PDF modal
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 import TvContentPlayer from './components/TvContentPlayer.tsx';
 import SetupWizard from './components/SetupWizard.tsx';
-import SaveOrderModal from './components/SaveOrderModal.tsx';
-import LoadingSpinner from './components/LoadingSpinner.tsx';
+import ClientDetailsModal from './components/Admin/ClientDetailsModal.tsx';
 
 // Component imports
 import Header from './components/Header.tsx';
 import Footer from './components/Footer.tsx';
-
-// Lazy-loaded components for performance
-const Home = lazy(() => import('./components/Home.tsx'));
-const BrandView = lazy(() => import('./components/BrandView.tsx'));
-const ProductDetail = lazy(() => import('./components/ProductDetail.tsx'));
-const SearchResults = lazy(() => import('./components/SearchResults.tsx'));
-const CatalogueLibrary = lazy(() => import('./components/CatalogueLibrary.tsx'));
-const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard.tsx'));
-const ProtectedRoute = lazy(() => import('./components/Admin/ProtectedRoute.tsx'));
-const ProductEdit = lazy(() => import('./components/Admin/ProductEdit.tsx'));
-const AdminBrandProducts = lazy(() => import('./components/Admin/BrandProducts.tsx'));
-const CatalogueEdit = lazy(() => import('./components/Admin/CatalogueEdit.tsx'));
-const PamphletEdit = lazy(() => import('./components/Admin/PamphletEdit.tsx'));
-const AdEdit = lazy(() => import('./components/Admin/AdEdit.tsx'));
-const BrandEdit = lazy(() => import('./components/Admin/BrandEdit.tsx'));
-const AdminUserEdit = lazy(() => import('./components/Admin/AdminUserEdit.tsx'));
-const TvBrandsView = lazy(() => import('./components/TvBrandsView.tsx'));
-const TvBrandModelsView = lazy(() => import('./components/TvBrandModelsView.tsx'));
-const TvContentEdit = lazy(() => import('./components/Admin/TvContentEdit.tsx'));
-const StockPick = lazy(() => import('./components/StockPick.tsx'));
-const PrintOrderView = lazy(() => import('./components/PrintOrderView.tsx'));
-const AdminKioskUserEdit = lazy(() => import('./components/Admin/AdminKioskUserEdit.tsx'));
-const KioskLogin = lazy(() => import('./components/KioskLogin.tsx'));
+import Home from './components/Home.tsx';
+import BrandView from './components/BrandView.tsx';
+import ProductDetail from './components/ProductDetail.tsx';
+import SearchResults from './components/SearchResults.tsx';
+import CatalogueLibrary from './components/CatalogueLibrary.tsx';
+import AdminLogin from './components/Admin/Login.tsx';
+import AdminDashboard from './components/Admin/AdminDashboard.tsx';
+import ProtectedRoute from './components/Admin/ProtectedRoute.tsx';
+import ProductEdit from './components/Admin/ProductEdit.tsx';
+import AdminBrandProducts from './components/Admin/BrandProducts.tsx';
+import CatalogueEdit from './components/Admin/CatalogueEdit.tsx';
+import PamphletEdit from './components/Admin/PamphletEdit.tsx';
+import AdEdit from './components/Admin/AdEdit.tsx';
+import BrandEdit from './components/Admin/BrandEdit.tsx';
+import AdminUserEdit from './components/Admin/AdminUserEdit.tsx';
+import TvBrandsView from './components/TvBrandsView.tsx';
+import TvBrandModelsView from './components/TvBrandModelsView.tsx';
+import TvContentEdit from './components/Admin/TvContentEdit.tsx';
+import StockPick from './components/Admin/StockPick.tsx';
+import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 
 
 // Register Swiper custom elements
 register();
 
 const useIdleRedirect = () => {
-    const { settings, activeTvContent, bookletModalState, pdfModalState, confirmation, clientDetailsModalState, logoutKioskUser, currentKioskUser } = useAppContext();
+    const { settings, activeTvContent, bookletModalState, pdfModalState, confirmation, clientDetailsModal } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
     const idleTimer = useRef<number | null>(null);
@@ -59,12 +55,11 @@ const useIdleRedirect = () => {
             if (idleTimer.current) {
                 clearTimeout(idleTimer.current);
             }
-            // Don't start timer on home page, admin pages, if disabled, or if TV player or any modal is active
-            if (timeout <= 0 || location.pathname === '/' || location.pathname.startsWith('/admin') || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || clientDetailsModalState.isOpen) {
+            // Don't start timer on home page, product pages, admin pages, if disabled, or if TV player or any modal is active
+            if (timeout <= 0 || location.pathname === '/' || location.pathname.startsWith('/product/') || location.pathname.startsWith('/admin') || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || clientDetailsModal.isOpen) {
                 return;
             }
             idleTimer.current = window.setTimeout(() => {
-                if (currentKioskUser) logoutKioskUser();
                 navigate('/');
             }, timeout * 1000);
         };
@@ -79,7 +74,7 @@ const useIdleRedirect = () => {
             if (idleTimer.current) clearTimeout(idleTimer.current);
             events.forEach(event => window.removeEventListener(event, activityHandler));
         };
-    }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, clientDetailsModalState.isOpen, currentKioskUser, logoutKioskUser]);
+    }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, clientDetailsModal.isOpen]);
 };
 
 const useAdminIdleLogout = () => {
@@ -123,24 +118,12 @@ const useAdminIdleLogout = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, currentKioskUser, loggedInUser, setIsOnAdminPage } = useAppContext();
+  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, clientDetailsModal } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
-  
   useIdleRedirect();
   useAdminIdleLogout();
   
-  const isPrintView = location.pathname.startsWith('/order/print');
-  const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname === '/login';
-
-    useEffect(() => {
-        document.body.classList.toggle('admin-active', isAdminRoute);
-        setIsOnAdminPage(isAdminRoute); // Inform context if we are on an admin page
-        return () => {
-            document.body.classList.remove('admin-active');
-        };
-    }, [isAdminRoute, setIsOnAdminPage]);
-
   const pageTransitionVariants = {
     none: {
         initial: { opacity: 1 },
@@ -173,20 +156,8 @@ const AppContent: React.FC = () => {
       return <SetupWizard />;
   }
 
-  // If login is required, show KioskLogin unless an admin or kiosk user is already logged in, or we are on an admin page.
-  if (settings.kiosk.requireLogin && !currentKioskUser && !loggedInUser && !isAdminRoute) {
-      return <Suspense fallback={<LoadingSpinner />}><KioskLogin /></Suspense>;
-  }
-
-  if (isPrintView) {
-    return (
-        <Suspense fallback={<LoadingSpinner />}>
-            <Routes>
-                <Route path="/order/print/:orderId" element={<PrintOrderView />} />
-            </Routes>
-        </Suspense>
-    )
-  }
+  const isPrinting = location.pathname.includes('/print');
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <>
@@ -206,187 +177,58 @@ const AppContent: React.FC = () => {
               onClose={closePdfModal}
           />
       )}
+      {clientDetailsModal.isOpen && <ClientDetailsModal />}
       <ConfirmationModal />
-      <SaveOrderModal />
-      <div className={isAdminRoute ? "h-full" : "text-gray-900 dark:text-gray-200 font-sans flex flex-col antialiased overflow-hidden main-content-container"}>
-        {!isAdminRoute && <Header />}
-        <AnimatePresence mode="wait">
-             <MotionMain
-                key={location.pathname}
-                {...motionProps}
-                className={!isAdminRoute ? "flex-grow w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24" : "h-full"}
-             >
-                <Suspense fallback={<LoadingSpinner />}>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/brand/:brandId" element={<BrandView />} />
-                        <Route path="/product/:productId" element={<ProductDetail />} />
-                        <Route path="/catalogues" element={<CatalogueLibrary />} />
-                        <Route path="/tvs" element={<TvBrandsView />} />
-                        <Route path="/tvs/:brandId" element={<TvBrandModelsView />} />
-                        <Route path="/search" element={<SearchResults />} />
-                        
-                        <Route path="/login" element={<KioskLogin />} />
-
-                        {/* PROTECTED ADMIN ROUTES */}
-                        <Route
-                        path="/admin"
-                        element={
-                            <ProtectedRoute>
-                            <AdminDashboard />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/stock-pick"
-                        element={
-                            <ProtectedRoute>
-                            <StockPick />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/brand/new"
-                        element={
-                            <ProtectedRoute>
-                            <BrandEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/brand/edit/:brandId"
-                        element={
-                            <ProtectedRoute>
-                            <BrandEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/brand/:brandId"
-                        element={
-                            <ProtectedRoute>
-                            <AdminBrandProducts />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/product/new/:brandId"
-                        element={
-                            <ProtectedRoute>
-                            <ProductEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/product/:productId"
-                        element={
-                            <ProtectedRoute>
-                            <ProductEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/catalogue/new"
-                        element={
-                            <ProtectedRoute>
-                            <CatalogueEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/catalogue/edit/:catalogueId"
-                        element={
-                            <ProtectedRoute>
-                            <CatalogueEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/pamphlet/new"
-                        element={
-                            <ProtectedRoute>
-                            <PamphletEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/pamphlet/edit/:pamphletId"
-                        element={
-                            <ProtectedRoute>
-                            <PamphletEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/ad/:adId"
-                        element={
-                            <ProtectedRoute>
-                            <AdEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/ad/new"
-                        element={
-                            <ProtectedRoute>
-                            <AdEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/tv-content/new"
-                        element={
-                            <ProtectedRoute>
-                            <TvContentEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/tv-content/edit/:contentId"
-                        element={
-                            <ProtectedRoute>
-                            <TvContentEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/user/new"
-                        element={
-                            <ProtectedRoute>
-                            <AdminUserEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/user/edit/:userId"
-                        element={
-                            <ProtectedRoute>
-                            <AdminUserEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/kiosk-user/new"
-                        element={
-                            <ProtectedRoute>
-                            <AdminKioskUserEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                        <Route
-                        path="/admin/kiosk-user/edit/:userId"
-                        element={
-                            <ProtectedRoute>
-                            <AdminKioskUserEdit />
-                            </ProtectedRoute>
-                        }
-                        />
-                    </Routes>
-                </Suspense>
-            </MotionMain>
-        </AnimatePresence>
-        {!isAdminRoute && <Footer />}
-      </div>
+      
+      {isPrinting ? (
+           <Routes>
+                <Route path="/admin/quote/:quoteId/print" element={<ProtectedRoute><PrintOrderView /></ProtectedRoute>} />
+           </Routes>
+      ) : isAdminRoute ? (
+           <Routes>
+               <Route path="/login" element={<AdminLogin />} />
+               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+               <Route path="/admin/stock-pick" element={<ProtectedRoute><StockPick /></ProtectedRoute>} />
+               <Route path="/admin/brand/new" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
+               <Route path="/admin/brand/edit/:brandId" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
+               <Route path="/admin/brand/:brandId" element={<ProtectedRoute><AdminBrandProducts /></ProtectedRoute>} />
+               <Route path="/admin/product/new/:brandId" element={<ProtectedRoute><ProductEdit /></ProtectedRoute>} />
+               <Route path="/admin/product/:productId" element={<ProtectedRoute><ProductEdit /></ProtectedRoute>} />
+               <Route path="/admin/catalogue/new" element={<ProtectedRoute><CatalogueEdit /></ProtectedRoute>} />
+               <Route path="/admin/catalogue/edit/:catalogueId" element={<ProtectedRoute><CatalogueEdit /></ProtectedRoute>} />
+               <Route path="/admin/pamphlet/new" element={<ProtectedRoute><PamphletEdit /></ProtectedRoute>} />
+               <Route path="/admin/pamphlet/edit/:pamphletId" element={<ProtectedRoute><PamphletEdit /></ProtectedRoute>} />
+               <Route path="/admin/ad/:adId" element={<ProtectedRoute><AdEdit /></ProtectedRoute>} />
+               <Route path="/admin/ad/new" element={<ProtectedRoute><AdEdit /></ProtectedRoute>} />
+               <Route path="/admin/tv-content/new" element={<ProtectedRoute><TvContentEdit /></ProtectedRoute>} />
+               <Route path="/admin/tv-content/edit/:contentId" element={<ProtectedRoute><TvContentEdit /></ProtectedRoute>} />
+               <Route path="/admin/user/new" element={<ProtectedRoute><AdminUserEdit /></ProtectedRoute>} />
+               <Route path="/admin/user/edit/:userId" element={<ProtectedRoute><AdminUserEdit /></ProtectedRoute>} />
+           </Routes>
+      ) : (
+        <div className="text-gray-900 dark:text-gray-200 font-sans flex flex-col antialiased overflow-hidden main-content-container">
+            <Header />
+            <AnimatePresence mode="wait">
+                <MotionMain
+                    key={location.pathname}
+                    {...motionProps}
+                    className="flex-grow w-full px-4 sm:px-6 lg:px-8 pt-8 pb-24"
+                >
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/brand/:brandId" element={<BrandView />} />
+                    <Route path="/product/:productId" element={<ProductDetail />} />
+                    <Route path="/catalogues" element={<CatalogueLibrary />} />
+                    <Route path="/tvs" element={<TvBrandsView />} />
+                    <Route path="/tvs/:brandId" element={<TvBrandModelsView />} />
+                    <Route path="/search" element={<SearchResults />} />
+                    <Route path="/login" element={<AdminLogin />} />
+                </Routes>
+                </MotionMain>
+            </AnimatePresence>
+            <Footer />
+        </div>
+      )}
     </>
   )
 }

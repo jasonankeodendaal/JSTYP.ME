@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext } from '../context/AppContext.tsx';
+import LocalMedia from '../LocalMedia.tsx';
 
 const AdminLogin: React.FC = () => {
-    const { adminUsers, login, loggedInUser, showConfirmation, resetToDefaultData } = useAppContext();
+    const { adminUsers, login, loggedInUser, settings } = useAppContext();
+    const [selectedUserId, setSelectedUserId] = useState<string>('');
     const [pin, setPin] = useState('');
     const [error, setError] = useState('');
-    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,120 +18,103 @@ const AdminLogin: React.FC = () => {
     }, [loggedInUser, navigate]);
 
     useEffect(() => {
-        // Select the main admin by default if it exists, otherwise select the first user.
-        const mainAdmin = adminUsers.find(u => u.isMainAdmin);
-        if (mainAdmin) {
-            setSelectedUserId(mainAdmin.id);
-        } else if (adminUsers.length > 0) {
+        // Pre-select the first user if available
+        if (adminUsers.length > 0 && !selectedUserId) {
             setSelectedUserId(adminUsers[0].id);
         }
-    }, [adminUsers]);
+    }, [adminUsers, selectedUserId]);
     
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        if (!selectedUserId) {
-            setError('Please select a user.');
-            return;
-        }
-
-        if (!pin) {
-            setError('Please enter your PIN.');
+        if (!selectedUserId || !pin) {
+            setError('Please select a user and enter your PIN.');
             return;
         }
 
         const user = login(selectedUserId, pin);
 
         if (!user) {
-            setError('Invalid PIN for the selected user. Please try again.');
+            setError('Invalid user or PIN. Please try again.');
             setPin(''); // Clear PIN field on error
         }
     };
 
-    const handleReset = () => {
-        showConfirmation(
-            'Are you sure you want to reset all data to the initial demo content? This will erase all brands, products, and settings you have created. This action cannot be undone.',
-            () => {
-                resetToDefaultData();
-                alert('Application has been reset to demo data. Please log in with the default PIN.');
-                window.location.reload();
-            }
-        );
-    };
-
     return (
-        <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-xl w-full space-y-8 bg-gray-100 dark:bg-gray-800 p-10 rounded-2xl shadow-2xl">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
-                        Admin Portal
-                    </h2>
-                </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div>
-                        <label className="block text-sm font-medium text-center text-gray-700 dark:text-gray-300 mb-3">Select User</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {adminUsers.map(user => (
-                                <button
-                                    type="button"
-                                    key={user.id}
-                                    onClick={() => setSelectedUserId(user.id)}
-                                    className={`p-3 text-center rounded-lg font-semibold transition-all duration-200 border-2 ${
-                                        selectedUserId === user.id
-                                            ? 'bg-gray-800 text-white border-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:border-gray-100 shadow-lg'
-                                            : 'bg-white text-gray-700 border-gray-300 hover:border-gray-800 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:border-gray-400'
-                                    }`}
-                                >
-                                    {user.firstName} {user.isMainAdmin && <span className="text-xs opacity-70 block">(Main)</span>}
-                                </button>
-                            ))}
-                        </div>
+        <div className="min-h-screen bg-sky-100 dark:bg-gray-900 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+                 {/* FIX: Added the missing 'type="image"' prop to the LocalMedia component. */}
+                 <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto mx-auto mb-8" />
+                 <div className="bg-gradient-to-br from-sky-400 to-blue-600 py-12 px-4 shadow-2xl rounded-2xl sm:px-10 text-white">
+                    <div className="mb-8 text-center">
+                        <h2 className="text-3xl font-extrabold tracking-tight">
+                            LOG IN
+                        </h2>
                     </div>
                     
-                    <div className="rounded-md space-y-4 pt-4">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="pin-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 text-center">PIN</label>
-                            <input
-                                id="pin-input"
-                                name="pin"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                value={pin}
-                                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 dark:border-gray-600 placeholder-gray-500 text-gray-900 dark:text-gray-100 rounded-xl focus:outline-none focus:ring-gray-800 focus:border-gray-800 focus:z-10 sm:text-sm shadow-sm bg-white dark:bg-gray-700"
-                                placeholder="Enter 4-Digit PIN"
-                                maxLength={4}
-                                pattern="\d{4}"
-                            />
+                            <label htmlFor="user-select" className="block text-sm font-medium text-left">
+                                User
+                            </label>
+                            <div className="mt-1">
+                                <select
+                                    id="user-select"
+                                    name="user"
+                                    value={selectedUserId}
+                                    onChange={(e) => setSelectedUserId(e.target.value)}
+                                    className="appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white sm:text-sm bg-white text-gray-900"
+                                    required
+                                >
+                                    {adminUsers.map(user => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.firstName} {user.lastName} {user.isMainAdmin ? '(Main)' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    {error && (
-                        <p className="text-sm text-red-600 dark:text-red-500 text-center pt-2">{error}</p>
-                    )}
+                        <div>
+                            <label htmlFor="pin-input" className="block text-sm font-medium text-left">
+                                Password
+                            </label>
+                            <div className="mt-1">
+                                <input
+                                    id="pin-input"
+                                    name="pin"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    required
+                                    value={pin}
+                                    onChange={(e) => setPin(e.target.value)}
+                                    placeholder="Enter your PIN"
+                                    maxLength={4}
+                                    pattern="\d{4}"
+                                    className="appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white sm:text-sm bg-white text-gray-900"
+                                />
+                            </div>
+                        </div>
+                        
+                        {error && (
+                            <p className="text-sm text-center text-yellow-200">{error}</p>
+                        )}
 
-                    <div className="pt-2">
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-full"
-                        >
-                            Log In
-                        </button>
-                    </div>
-
-                    <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button
-                            type="button"
-                            onClick={handleReset}
-                            className="text-sm text-gray-500 dark:text-gray-400 hover:underline"
-                        >
-                            Trouble logging in or missing data? Reset to factory settings.
-                        </button>
-                    </div>
-                </form>
+                        <div>
+                            <button
+                                type="submit"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-blue-600 bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-black transition-colors"
+                            >
+                                Login
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
+             <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                &copy; {new Date().getFullYear()} All rights reserved.
+            </p>
         </div>
     );
 };

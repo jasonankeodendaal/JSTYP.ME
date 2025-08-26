@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { SaveIcon, UploadIcon, EyeIcon, EyeOffIcon, CloudArrowUpIcon, Bars3Icon } from '../Icons.tsx';
+import { SaveIcon, UploadIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
 import LocalMedia from '../LocalMedia.tsx';
 import { Link } from 'react-router-dom';
@@ -23,6 +23,16 @@ const ComputerDesktopIcon = ({ className = 'w-6 h-6' }) => (
 );
 const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+);
+const Bars3Icon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+    </svg>
+);
+const LinkIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+  </svg>
 );
 
 
@@ -169,7 +179,6 @@ const AdminSettings: React.FC = () => {
     const [localSettings, setLocalSettings] = useState<Settings>(initialSettings);
     const [activeSection, setActiveSection] = useState('general');
     const [isDirty, setIsDirty] = useState(false);
-    const [showApiKey, setShowApiKey] = useState(false);
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSettings;
 
@@ -288,7 +297,7 @@ const AdminSettings: React.FC = () => {
     const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0], ['settings', 'logo']);
+                const fileName = await saveFileToStorage(e.target.files[0]);
                 setLocalSettings(prev => ({ ...prev, logoUrl: fileName }));
                 markDirty();
             } catch (error) {
@@ -300,7 +309,7 @@ const AdminSettings: React.FC = () => {
     const handleMusicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0], ['settings', 'music']);
+                const fileName = await saveFileToStorage(e.target.files[0]);
                 setLocalSettings(prev => ({ ...prev, backgroundMusicUrl: fileName }));
                 markDirty();
             } catch (error) {
@@ -325,7 +334,7 @@ const AdminSettings: React.FC = () => {
         { id: 'navigation', title: 'Navigation', icon: <Bars3Icon /> },
         { id: 'components', title: 'Components', icon: <ViewColumnsIcon /> },
         { id: 'kiosk', title: 'Kiosk Mode', icon: <ComputerDesktopIcon /> },
-        { id: 'api', title: 'API Integrations', icon: <CloudArrowUpIcon /> },
+        { id: 'api', title: 'API Integrations', icon: <LinkIcon className="w-6 h-6" /> },
     ];
     
     const renderPanel = () => {
@@ -506,22 +515,22 @@ const AdminSettings: React.FC = () => {
                  <div className="space-y-6">
                     <CollapsibleSection title="Kiosk & Screensaver Settings" defaultOpen>
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                            <SettingRow label="Require Kiosk Login" description="If enabled, users must log in with a PIN before using the kiosk.">
-                                <label htmlFor="requireLogin" className="flex items-center cursor-pointer">
-                                    <span className={`mr-3 text-sm font-medium ${localSettings.kiosk.requireLogin ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                                        {localSettings.kiosk.requireLogin ? 'Enabled' : 'Disabled'}
-                                    </span>
+                            <SettingRow label="Enable Auto-Sync" description="When connected to a storage provider, automatically push changes and check for updates.">
+                                <label htmlFor="autoSyncEnabled-toggle" className="flex items-center cursor-pointer">
                                     <div className="relative">
                                         <input
                                             type="checkbox"
-                                            id="requireLogin"
+                                            id="autoSyncEnabled-toggle"
                                             className="sr-only peer"
-                                            checked={localSettings.kiosk.requireLogin}
-                                            onChange={(e) => handleNestedSettingChange('kiosk', 'requireLogin', e.target.checked)}
+                                            checked={localSettings.sync.autoSyncEnabled}
+                                            onChange={(e) => handleNestedSettingChange('sync', 'autoSyncEnabled' as any, e.target.checked)}
                                         />
                                         <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
                                         <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
                                     </div>
+                                    <span className={`ml-3 text-sm font-medium ${localSettings.sync.autoSyncEnabled ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                                        {localSettings.sync.autoSyncEnabled ? 'Enabled' : 'Disabled'}
+                                    </span>
                                 </label>
                             </SettingRow>
                             <SettingRow label="Screensaver Delay" description="Time of inactivity before screensaver starts.">
@@ -574,35 +583,31 @@ const AdminSettings: React.FC = () => {
                     </CollapsibleSection>
                 </div>
             );
-            case 'api': return(
-                 <CollapsibleSection title="API Integrations" defaultOpen>
+            case 'api': return (
+                <CollapsibleSection title="API Integrations" defaultOpen>
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                        <SettingRow label="Shared URL" description="Read-only public URL to a database.json file for satellite kiosks.">
-                            <input type="url" name="sharedUrl" value={localSettings.sharedUrl || ''} onChange={handleGeneralChange} className={textInputStyle} placeholder="https://.../database.json" />
+                        <SettingRow label="Custom API URL" description="The endpoint for your self-hosted API server. Used for the 'Custom API Sync' provider.">
+                            <input
+                                type="url"
+                                name="customApiUrl"
+                                value={localSettings.customApiUrl}
+                                onChange={handleGeneralChange}
+                                className={textInputStyle}
+                                placeholder="https://api.yourdomain.com/data"
+                            />
                         </SettingRow>
-                        <SettingRow label="Custom API URL" description="Base URL for your custom API (e.g., https://api.yourdomain.com/data).">
-                            <input type="url" name="customApiUrl" value={localSettings.customApiUrl} onChange={handleGeneralChange} className={textInputStyle} placeholder="https://api.yourdomain.com/data"/>
-                        </SettingRow>
-                        <SettingRow label="Custom API Auth Key" description="Optional security key for your Custom API. Sent as 'x-api-key' header.">
-                            <div className="relative">
-                                <input 
-                                    type={showApiKey ? 'text' : 'password'} 
-                                    name="customApiKey" 
-                                    value={localSettings.customApiKey} 
-                                    onChange={handleGeneralChange} 
-                                    className={textInputStyle} 
-                                    placeholder="Enter your secret API key"
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={() => setShowApiKey(!showApiKey)} 
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                                    {showApiKey ? <EyeOffIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                                </button>
-                            </div>
+                        <SettingRow label="Custom API Auth Key" description="The secret key to authenticate with your custom API server.">
+                            <input
+                                type="password"
+                                name="customApiKey"
+                                value={localSettings.customApiKey}
+                                onChange={handleGeneralChange}
+                                className={textInputStyle}
+                                placeholder="Enter your secret API key"
+                            />
                         </SettingRow>
                     </div>
-                 </CollapsibleSection>
+                </CollapsibleSection>
             );
             default: return null;
         }

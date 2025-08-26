@@ -2,7 +2,13 @@ import React, { useEffect } from 'react';
 import { XIcon } from './Icons';
 import LocalMedia from './LocalMedia';
 
-const ImageEnlargeModal: React.FC<{ imageUrl: string; onClose: () => void; }> = ({ imageUrl, onClose }) => {
+interface ImageEnlargeModalProps {
+    imageUrls: string[];
+    initialIndex: number;
+    onClose: () => void;
+}
+
+const ImageEnlargeModal: React.FC<ImageEnlargeModalProps> = ({ imageUrls, initialIndex, onClose }) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -43,18 +49,21 @@ const ImageEnlargeModal: React.FC<{ imageUrl: string; onClose: () => void; }> = 
             <swiper-container
                 className="w-full h-full"
                 zoom="true"
-                navigation="false"
+                navigation="true"
                 pagination="false"
+                initial-slide={initialIndex.toString()}
             >
-                <swiper-slide>
-                    <div className="swiper-zoom-container flex items-center justify-center h-full">
-                        <LocalMedia
-                            src={imageUrl}
-                            alt="Enlarged product view"
-                            type="image"
-                        />
-                    </div>
-                </swiper-slide>
+                {imageUrls.map((imageUrl, index) => (
+                     <swiper-slide key={index}>
+                        <div className="swiper-zoom-container flex items-center justify-center h-full">
+                            <LocalMedia
+                                src={imageUrl}
+                                alt={`Enlarged product view ${index + 1}`}
+                                type="image"
+                            />
+                        </div>
+                    </swiper-slide>
+                ))}
             </swiper-container>
           </div>
 

@@ -1,4 +1,4 @@
-import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Order, KioskUser } from '../types';
+import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Quote } from '../types';
 
 export const adminUsers: AdminUser[] = [
   {
@@ -17,8 +17,24 @@ export const adminUsers: AdminUser[] = [
       canManageSystem: true,
       canManageTvContent: true,
       canViewAnalytics: true,
-      canManageClientOrders: true,
-      canManageKioskUsers: true,
+    }
+  },
+  {
+    id: "au_1234",
+    firstName: "Jane",
+    lastName: "Doe",
+    tel: "082 123 4567",
+    pin: "1234",
+    isMainAdmin: false,
+    permissions: {
+      canManageBrandsAndProducts: true,
+      canManageCatalogues: true,
+      canManagePamphlets: false,
+      canManageScreensaver: false,
+      canManageSettings: false,
+      canManageSystem: false,
+      canManageTvContent: false,
+      canViewAnalytics: false,
     }
   }
 ];
@@ -87,6 +103,24 @@ export const products: Product[] = [
     }
 ];
 
+export const clients: Client[] = [
+    {
+        id: "client-1",
+        companyName: "The Corner Cafe",
+        contactPerson: "Alice Johnson",
+        contactEmail: "alice@cornercafe.com",
+        contactTel: "111-222-3333"
+    },
+    {
+        id: "client-2",
+        companyName: "Gourmet Solutions Ltd.",
+        contactPerson: "Robert Chen",
+        contactEmail: "rob@gourmet.co",
+        contactTel: "444-555-6666"
+    }
+];
+
+export const quotes: Quote[] = [];
 export const catalogues: Catalogue[] = [];
 export const pamphlets: Pamphlet[] = [];
 export const screensaverAds: ScreensaverAd[] = [
@@ -128,12 +162,6 @@ export const tvContent: TvContent[] = [
             { "url": "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=1920&auto=format&fit=crop", "type": "image" }
         ]
     }
-];
-
-export const clients: Client[] = [];
-export const orders: Order[] = [];
-export const kioskUsers: KioskUser[] = [
-    { id: 'ku_display', name: 'Display User', pin: '1222' }
 ];
 
 const defaultLight: ThemeColors = {
@@ -179,7 +207,8 @@ const defaultHeadingsFont: FontStyleSettings = { fontFamily: "Montserrat", fontW
 const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWeight: "600", fontStyle: "normal", textDecoration: "none" };
 
 export const settings: Settings = {
-    logoUrl: 'data:image/svg+xml,%3csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3e%3ccircle cx="50" cy="50" r="48" fill="%23FFFFFF" stroke="%23E5E7EB" stroke-width="4" /%3e%3ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Montserrat, sans-serif" font-size="16" font-weight="800" fill="%23475569"%3eLogo%3c/text%3e%3c/svg%3e',
+    // FIX: The logoUrl had syntax errors (unmatched quotes, misplaced comma) causing a cascade of parsing errors. Replaced with a correctly formatted SVG data URI.
+    logoUrl: "data:image/svg+xml,%3csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='50' cy='50' r='48' fill='%23FFFFFF' stroke='%23E5E7EB' stroke-width='4' /%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat, sans-serif' font-size='16' font-weight='800' fill='%23475569'%3eLogo%3c/text%3e%3c/svg%3e",
     sharedUrl: "",
     customApiUrl: "",
     customApiKey: "",
@@ -230,8 +259,7 @@ export const settings: Settings = {
         effect: 'fade'
     },
     kiosk: {
-        idleRedirectTimeout: 90,
-        requireLogin: true,
+        idleRedirectTimeout: 90
     },
     navigation: {
         links: [

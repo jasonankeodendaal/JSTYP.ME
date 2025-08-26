@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeftIcon, ExternalLinkIcon, CheckIcon, ShieldCheckIcon, ChevronDownIcon, PhotoIcon } from './Icons.tsx';
@@ -10,7 +8,7 @@ import ImageEnlargeModal from './ImageEnlargeModal.tsx';
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const { products, brands, localVolume, openDocument, trackProductView } = useAppContext();
-  const [enlargedImageUrl, setEnlargedImageUrl] = useState<string | null>(null);
+  const [enlargedImageState, setEnlargedImageState] = useState<{ imageUrls: string[], initialIndex: number } | null>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -43,7 +41,7 @@ const ProductDetail: React.FC = () => {
 
   return (
     <>
-      {enlargedImageUrl && <ImageEnlargeModal imageUrl={enlargedImageUrl} onClose={() => setEnlargedImageUrl(null)} />}
+      {enlargedImageState && <ImageEnlargeModal imageUrls={enlargedImageState.imageUrls} initialIndex={enlargedImageState.initialIndex} onClose={() => setEnlargedImageState(null)} />}
       <div className="space-y-8">
         <Link to={brand ? `/brand/${brand.id}` : '/'} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
             <ChevronLeftIcon className="h-5 w-5 mr-1" />
@@ -60,7 +58,7 @@ const ProductDetail: React.FC = () => {
             >
               {product.images.map((img, index) => (
                 <swiper-slide key={img + index}>
-                    <button onClick={() => setEnlargedImageUrl(img)} className="w-full h-full block cursor-zoom-in">
+                    <button onClick={() => setEnlargedImageState({ imageUrls: product.images, initialIndex: index })} className="w-full h-full block cursor-zoom-in">
                         <LocalMedia
                             src={img}
                             alt={`${product.name} - view ${index + 1}`}

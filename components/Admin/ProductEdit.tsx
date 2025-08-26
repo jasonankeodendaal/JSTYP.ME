@@ -5,9 +5,8 @@ import type { Product, ProductDocument } from '../../types';
 import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
-import { slugify } from '../utils.ts';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.5.136/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
 
 const inputStyle = "block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -29,7 +28,7 @@ const getInitialFormData = (brandId: string): Product => ({
 const ProductEdit: React.FC = () => {
     const { productId, brandId } = useParams<{ productId: string, brandId: string }>();
     const navigate = useNavigate();
-    const { products, brands, categories, addProduct, updateProduct, saveFileToStorage, deleteFileFromStorage, loggedInUser } = useAppContext();
+    const { products, brands, categories, addProduct, updateProduct, saveFileToStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(productId);
     const [formData, setFormData] = useState<Product | null>(null);
@@ -39,7 +38,7 @@ const ProductEdit: React.FC = () => {
     const [conversionState, setConversionState] = useState<{ [docId: string]: { progress: string; isConverting: boolean } }>({});
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
-    const brand = useMemo(() => brands.find(b => b.id === formData?.brandId), [brands, formData?.brandId]);
+    const brand = brands.find(b => b.id === formData?.brandId);
 
     const markDirty = () => !isDirty && setIsDirty(true);
 
@@ -74,13 +73,6 @@ const ProductEdit: React.FC = () => {
             </div>
         );
     }
-
-    const getAssetPath = (subfolder: 'images' | 'videos' | 'documents') => {
-        if (!formData || !brand || !formData.name) return undefined;
-        const brandSlug = slugify(brand.name);
-        const productSlug = slugify(formData.name);
-        return ['products', brandSlug, `${productSlug}-${formData.id}`, subfolder];
-    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (!formData) return;
@@ -133,8 +125,6 @@ const ProductEdit: React.FC = () => {
 
     const handleImageDelete = (index: number) => {
         if (!formData) return;
-        const urlToDelete = formData.images[index];
-        if (urlToDelete) deleteFileFromStorage(urlToDelete);
         const newImages = formData.images.filter((_, i) => i !== index);
         setFormData({ ...formData, images: newImages });
         markDirty();
@@ -142,15 +132,10 @@ const ProductEdit: React.FC = () => {
     
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const path = getAssetPath('images');
-            if (!path) {
-                alert("Cannot upload image: Product name or brand is missing. Please fill them out first.");
-                return;
-            }
             const files = Array.from(e.target.files);
             for (const file of files) {
                 try {
-                    const fileName = await saveFileToStorage(file, path);
+                    const fileName = await saveFileToStorage(file);
                     setFormData(prev => prev ? ({ ...prev, images: [...prev.images, fileName] }) : null);
                     markDirty();
                 } catch (error) {
@@ -162,21 +147,15 @@ const ProductEdit: React.FC = () => {
     
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            const path = getAssetPath('videos');
-            if (!path) {
-                alert("Cannot upload video: Product name or brand is missing. Please fill them out first.");
-                return;
-            }
             const file = e.target.files[0];
             try {
-                const fileName = await saveFileToStorage(file, path);
+                const fileName = await saveFileToStorage(file);
                 setFormData(prev => prev ? ({ ...prev, video: fileName }) : null);
                 markDirty();
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save file.");
             }
         } else { // Handle removing the video
-            if (formData?.video) deleteFileFromStorage(formData.video);
             setFormData(prev => prev ? ({ ...prev, video: undefined }) : null);
             markDirty();
         }
@@ -206,15 +185,10 @@ const ProductEdit: React.FC = () => {
 
     const handleDocumentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, docId: string) => {
         if (e.target.files) {
-            const path = getAssetPath('documents');
-            if (!path) {
-                alert("Cannot upload document image: Product name or brand is missing.");
-                return;
-            }
             const files = Array.from(e.target.files);
             for (const file of files) {
                 try {
-                    const savedPath = await saveFileToStorage(file, path);
+                    const savedPath = await saveFileToStorage(file);
                     setFormData(prev => {
                         if (!prev) return null;
                         const newDocs = (prev.documents || []).map(doc => {
@@ -236,12 +210,6 @@ const ProductEdit: React.FC = () => {
     const handleDocumentPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>, docId: string) => {
         const file = e.target.files?.[0];
         if (!file || file.type !== 'application/pdf') return;
-        
-        const path = getAssetPath('documents');
-        if (!path) {
-            alert("Cannot convert PDF: Product name or brand is missing.");
-            return;
-        }
 
         setConversionState(prev => ({ ...prev, [docId]: { isConverting: true, progress: 'Starting...' } }));
 
@@ -267,7 +235,7 @@ const ProductEdit: React.FC = () => {
                 if(!blob) continue;
 
                 const imageFile = new File([blob], `page_${i}.png`, { type: 'image/png' });
-                const savedPath = await saveFileToStorage(imageFile, path);
+                const savedPath = await saveFileToStorage(imageFile);
                 newImageUrls.push(savedPath);
             }
 
@@ -298,8 +266,6 @@ const ProductEdit: React.FC = () => {
          if (!formData) return;
          const newDocs = (formData.documents || []).map(doc => {
             if (doc.id === docId && doc.type === 'image') {
-                const urlToDelete = doc.imageUrls[imageIndex];
-                if (urlToDelete) deleteFileFromStorage(urlToDelete);
                 const newImageUrls = doc.imageUrls.filter((_, i) => i !== imageIndex);
                 return { ...doc, imageUrls: newImageUrls };
             }
@@ -311,10 +277,6 @@ const ProductEdit: React.FC = () => {
 
     const removeDocument = (idToRemove: string) => {
         if (!formData) return;
-        const docToRemove = (formData.documents || []).find(doc => doc.id === idToRemove);
-        if (docToRemove && docToRemove.type === 'image') {
-            docToRemove.imageUrls.forEach(url => deleteFileFromStorage(url));
-        }
         setFormData(prev => prev ? ({
             ...prev,
             documents: (prev.documents || []).filter(doc => doc.id !== idToRemove)
