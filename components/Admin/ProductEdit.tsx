@@ -47,33 +47,7 @@ const ProductEdit: React.FC = () => {
         return categories.filter(c => c.brandId === formData.brandId && !c.isDeleted);
     }, [categories, formData?.brandId]);
 
-    useEffect(() => {
-        if (!isEditing && brandId) {
-            setFormData(getInitialFormData(brandId));
-        }
-    }, [isEditing, brandId]);
-
-    useEffect(() => {
-        if (isEditing && productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                setFormData(product);
-            } else {
-                navigate('/admin', { replace: true });
-            }
-        }
-    }, [productId, isEditing, products, navigate]);
-    
-    if (!canManage) {
-        return (
-            <div className="text-center py-10">
-                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage brands and products.</p>
-                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
-            </div>
-        );
-    }
-
+    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (!formData) return;
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -311,16 +285,35 @@ const ProductEdit: React.FC = () => {
         }
     };
 
-    if (!formData) {
-        return (
+    useEffect(() => {
+        if (!isEditing && brandId) {
+            setFormData(getInitialFormData(brandId));
+        }
+    }, [isEditing, brandId]);
+
+    useEffect(() => {
+        if (isEditing && productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                setFormData(product);
+            } else {
+                navigate('/admin', { replace: true });
+            }
+        }
+    }, [productId, isEditing, products, navigate]);
+    
+    const pageContent = (
+        !canManage ? (
+            <div className="text-center py-10">
+                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage brands and products.</p>
+                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
+            </div>
+        ) : !formData ? (
             <div className="text-center py-10">
                 <h2 className="text-2xl font-bold">Loading...</h2>
             </div>
-        );
-    }
-    
-    return (
-        <>
+        ) : (
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
@@ -541,7 +534,17 @@ const ProductEdit: React.FC = () => {
                         </div>
                     </div>
             </form>
-        </>
+        )
+    );
+
+    return (
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                    {pageContent}
+                </div>
+            </div>
+        </div>
     );
 };
 

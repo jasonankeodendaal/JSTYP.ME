@@ -38,6 +38,14 @@ You must complete these steps on your main computer before starting any setup gu
 
 This guide is in three parts. You will have two terminal windows running on your main computer by the end.
 
+### How Cloud Sync Works
+With this setup, your main PC runs a small, private server. All your data (products, brands, settings) is saved to a `data.json` file on this server, not just in the browser.
+
+-   **Push to Cloud:** When you make changes on your admin device with "Auto-Sync" enabled, the app automatically sends the updated data to your server.
+-   **Pull from Cloud:** All other connected kiosks automatically check the server every few seconds for updates and download them.
+
+This provides live, seamless updates across all your devices without needing to manually back up or transfer files. The "Download Backup File" feature is **only for the single offline kiosk mode.**
+
 ### Part 1: Start Your Central Server (On Your Main PC)
 
 This turns your main PC into the central "brain" for all your kiosks.
@@ -152,7 +160,7 @@ Your setup is now complete! Any change you make on your admin PC will automatica
 **Step 2: Use the Kiosk**
 1.  Open a web browser (Chrome or Edge recommended) and paste the URL.
 2.  Log in to the **Admin Dashboard** (footer link, PIN: `1723`) to add your content.
-3.  **Important:** All data is saved in this specific browser. To prevent data loss, go to `Admin > Backup & Restore` and click **"Download Backup File"** regularly.
+3.  **Important Data Note for Offline Mode:** All data is saved *only* in this specific browser. This mode does not sync with other devices. To prevent data loss, you **must** go to `Admin > Backup & Restore` and click **"Download Backup File"** regularly. This downloaded file is your only backup.
 
 ---
 

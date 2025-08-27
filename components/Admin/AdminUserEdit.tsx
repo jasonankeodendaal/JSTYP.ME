@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { AdminUser, AdminUserPermissions } from '../../types.ts';
@@ -79,16 +77,7 @@ const AdminUserEdit: React.FC = () => {
         }
     }, [userId, adminUsers, isEditing]);
 
-    if (!loggedInUser?.isMainAdmin) {
-        return (
-            <div className="text-center py-10">
-                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage users.</p>
-                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
-            </div>
-        );
-    }
-
+    // FIX: Hoisted event handlers and `canEditPermissions` to be declared before they are used in the JSX.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableUser({ ...editableUser, [e.target.name]: e.target.value });
     };
@@ -139,131 +128,149 @@ const AdminUserEdit: React.FC = () => {
     
     const canEditPermissions = loggedInUser.isMainAdmin && !editableUser.isMainAdmin;
 
-    return (
-        <form onSubmit={handleSave} className="space-y-8">
-            <div>
-                <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
-                    <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back to Dashboard
-                </Link>
-                <div className="md:flex md:items-center md:justify-between">
-                    <div className="flex-1 min-w-0">
-                        <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate section-heading">
-                            {isEditing ? 'Edit Admin User' : 'Create New Admin User'}
-                        </h2>
-                    </div>
-                    <div className="mt-4 flex md:mt-0 md:ml-4">
-                         <button
-                            type="submit"
-                            disabled={saving || saved}
-                            className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`}
-                        >
-                            <SaveIcon className="h-4 w-4" />
-                            {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save User')}
-                        </button>
-                    </div>
-                </div>
+    const pageContent = (
+        !loggedInUser?.isMainAdmin ? (
+             <div className="text-center py-10">
+                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage users.</p>
+                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
             </div>
-
-            <div className="grid grid-cols-3 gap-8 items-start">
-                <div className="col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                        <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">User Details</h3>
-                        <div className="mt-6 grid grid-cols-2 gap-6">
-                            <div className="col-span-1">
-                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
-                                <input type="text" name="firstName" id="firstName" value={editableUser.firstName} onChange={handleInputChange} className={inputStyle} required />
-                            </div>
-                            <div className="col-span-1">
-                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Surname</label>
-                                <input type="text" name="lastName" id="lastName" value={editableUser.lastName} onChange={handleInputChange} className={inputStyle} required />
-                            </div>
-                            <div className="col-span-1">
-                                <label htmlFor="tel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Tel</label>
-                                <input type="tel" name="tel" id="tel" value={editableUser.tel} onChange={handleInputChange} className={inputStyle} />
-                            </div>
-                            <div className="col-span-1">
-                                <label htmlFor="pin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">4-Digit PIN</label>
-                                <input type="password" name="pin" id="pin" value={editableUser.pin} onChange={handleInputChange} className={inputStyle} required maxLength={4} pattern="[0-9]{4}" title="PIN must be 4 digits" />
-                            </div>
+        ) : (
+            <form onSubmit={handleSave} className="space-y-8">
+                <div>
+                    <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <ChevronLeftIcon className="h-5 w-5 mr-1" />
+                        Back to Dashboard
+                    </Link>
+                    <div className="md:flex md:items-center md:justify-between">
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate section-heading">
+                                {isEditing ? 'Edit Admin User' : 'Create New Admin User'}
+                            </h2>
+                        </div>
+                        <div className="mt-4 flex md:mt-0 md:ml-4">
+                            <button
+                                type="submit"
+                                disabled={saving || saved}
+                                className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`}
+                            >
+                                <SaveIcon className="h-4 w-4" />
+                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save User')}
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">User Permissions</h3>
-                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {canEditPermissions ? 'Select the sections this user can access.' : 'Permissions can only be changed by the Main Admin.'}
-                    </p>
-                    <div className="mt-6 space-y-5">
-                        <PermissionCheckbox
-                            id="perm-brands"
-                            label="Manage Brands & Products"
-                            description="Can add, edit, and delete brands and products."
-                            checked={editableUser.permissions.canManageBrandsAndProducts}
-                            onChange={e => handlePermissionChange('canManageBrandsAndProducts', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                         <PermissionCheckbox
-                            id="perm-catalogues"
-                            label="Manage Catalogues"
-                            description="Can add, edit, and delete catalogues."
-                            checked={editableUser.permissions.canManageCatalogues}
-                            onChange={e => handlePermissionChange('canManageCatalogues', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                         <PermissionCheckbox
-                            id="perm-pamphlets"
-                            label="Manage Pamphlets"
-                            description="Can add, edit, and delete pamphlets."
-                            checked={editableUser.permissions.canManagePamphlets}
-                            onChange={e => handlePermissionChange('canManagePamphlets', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                         <PermissionCheckbox
-                            id="perm-screensaver"
-                            label="Manage Screensaver"
-                            description="Can add, edit, and delete screensaver ads."
-                            checked={editableUser.permissions.canManageScreensaver}
-                            onChange={e => handlePermissionChange('canManageScreensaver', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                         <PermissionCheckbox
-                            id="perm-tv"
-                            label="Manage TV Content"
-                            description="Can add, edit, and delete TV display content."
-                            checked={editableUser.permissions.canManageTvContent}
-                            onChange={e => handlePermissionChange('canManageTvContent', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                        <PermissionCheckbox
-                            id="perm-settings"
-                            label="Manage Settings"
-                            description="Can change kiosk settings like themes and layout."
-                            checked={editableUser.permissions.canManageSettings}
-                            onChange={e => handlePermissionChange('canManageSettings', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                         <PermissionCheckbox
-                            id="perm-system"
-                            label="Manage System"
-                            description="Can access Storage, Backup/Restore, and Trash."
-                            checked={editableUser.permissions.canManageSystem}
-                            onChange={e => handlePermissionChange('canManageSystem', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
-                        <PermissionCheckbox
-                            id="perm-analytics"
-                            label="View Analytics"
-                            description="Can view kiosk analytics and usage data."
-                            checked={editableUser.permissions.canViewAnalytics}
-                            onChange={e => handlePermissionChange('canViewAnalytics', e.target.checked)}
-                            disabled={!canEditPermissions}
-                        />
+
+                <div className="grid grid-cols-3 gap-8 items-start">
+                    <div className="col-span-2 space-y-6">
+                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">User Details</h3>
+                            <div className="mt-6 grid grid-cols-2 gap-6">
+                                <div className="col-span-1">
+                                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
+                                    <input type="text" name="firstName" id="firstName" value={editableUser.firstName} onChange={handleInputChange} className={inputStyle} required />
+                                </div>
+                                <div className="col-span-1">
+                                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Surname</label>
+                                    <input type="text" name="lastName" id="lastName" value={editableUser.lastName} onChange={handleInputChange} className={inputStyle} required />
+                                </div>
+                                <div className="col-span-1">
+                                    <label htmlFor="tel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Tel</label>
+                                    <input type="tel" name="tel" id="tel" value={editableUser.tel} onChange={handleInputChange} className={inputStyle} />
+                                </div>
+                                <div className="col-span-1">
+                                    <label htmlFor="pin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">4-Digit PIN</label>
+                                    <input type="password" name="pin" id="pin" value={editableUser.pin} onChange={handleInputChange} className={inputStyle} required maxLength={4} pattern="[0-9]{4}" title="PIN must be 4 digits" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                        <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">User Permissions</h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {canEditPermissions ? 'Select the sections this user can access.' : 'Permissions can only be changed by the Main Admin.'}
+                        </p>
+                        <div className="mt-6 space-y-5">
+                            <PermissionCheckbox
+                                id="perm-brands"
+                                label="Manage Brands & Products"
+                                description="Can add, edit, and delete brands and products."
+                                checked={editableUser.permissions.canManageBrandsAndProducts}
+                                onChange={e => handlePermissionChange('canManageBrandsAndProducts', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-catalogues"
+                                label="Manage Catalogues"
+                                description="Can add, edit, and delete catalogues."
+                                checked={editableUser.permissions.canManageCatalogues}
+                                onChange={e => handlePermissionChange('canManageCatalogues', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-pamphlets"
+                                label="Manage Pamphlets"
+                                description="Can add, edit, and delete pamphlets."
+                                checked={editableUser.permissions.canManagePamphlets}
+                                onChange={e => handlePermissionChange('canManagePamphlets', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-screensaver"
+                                label="Manage Screensaver"
+                                description="Can add, edit, and delete screensaver ads."
+                                checked={editableUser.permissions.canManageScreensaver}
+                                onChange={e => handlePermissionChange('canManageScreensaver', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-tv"
+                                label="Manage TV Content"
+                                description="Can add, edit, and delete TV display content."
+                                checked={editableUser.permissions.canManageTvContent}
+                                onChange={e => handlePermissionChange('canManageTvContent', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-settings"
+                                label="Manage Settings"
+                                description="Can change kiosk settings like themes and layout."
+                                checked={editableUser.permissions.canManageSettings}
+                                onChange={e => handlePermissionChange('canManageSettings', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-system"
+                                label="Manage System"
+                                description="Can access Storage, Backup/Restore, and Trash."
+                                checked={editableUser.permissions.canManageSystem}
+                                onChange={e => handlePermissionChange('canManageSystem', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                            <PermissionCheckbox
+                                id="perm-analytics"
+                                label="View Analytics"
+                                description="Can view kiosk analytics and usage data."
+                                checked={editableUser.permissions.canViewAnalytics}
+                                onChange={e => handlePermissionChange('canViewAnalytics', e.target.checked)}
+                                disabled={!canEditPermissions}
+                            />
+                        </div>
                     </div>
                 </div>
+            </form>
+        )
+    );
+    
+    return (
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                    {pageContent}
+                </div>
             </div>
-        </form>
+        </div>
     );
 };
 

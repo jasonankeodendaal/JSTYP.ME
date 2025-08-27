@@ -12,12 +12,12 @@ const BrandGrid: React.FC = () => {
     return (
         <div>
             <h2 className="text-2xl tracking-tight text-gray-900 dark:text-gray-100 mb-6 section-heading">Shop by Brand</h2>
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6">
                 {brands.filter(brand => !brand.isDeleted).map((brand) => (
                     <Link
                         key={brand.id}
                         to={`/brand/${brand.id}`}
-                        className="group flex items-center justify-center p-4 aspect-square bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/50 transition-all hover:shadow-2xl hover:-translate-y-1"
+                        className="group flex items-center justify-center aspect-square transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] rounded-lg"
                         title={brand.name}
                     >
                         <LocalMedia
@@ -48,8 +48,8 @@ const ClientStockPickCTA: React.FC = () => {
     return (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left text-white">
              <div className="flex items-center gap-6">
-                <div className="hidden sm:block flex-shrink-0 flex items-center justify-center h-20 w-20 rounded-2xl bg-white/20 text-white shadow-lg backdrop-blur-sm border border-white/20">
-                    <ClipboardDocumentListIcon className="h-10 w-10" />
+                <div className="hidden sm:block flex-shrink-0 flex items-center justify-center h-20 w-20 p-4 rounded-2xl bg-white/20 text-white shadow-xl backdrop-blur-sm border border-white/20 transition-all duration-300 ease-in-out hover:scale-110 hover:-rotate-6 hover:shadow-2xl">
+                    <ClipboardDocumentListIcon />
                 </div>
                 <div>
                     <h3 className="text-2xl font-bold section-heading">Create Client Quote</h3>

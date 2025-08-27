@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -47,16 +45,7 @@ const PamphletEdit: React.FC = () => {
         }
     }, [pamphletId, pamphlets, isEditing]);
 
-    if (!canManage) {
-        return (
-            <div className="text-center py-10">
-                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage pamphlets.</p>
-                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
-            </div>
-        );
-    }
-
+    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -174,110 +163,128 @@ const PamphletEdit: React.FC = () => {
         }
     };
 
+     const pageContent = (
+        !canManage ? (
+            <div className="text-center py-10">
+                <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage pamphlets.</p>
+                <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
+            </div>
+        ) : (
+            <form onSubmit={handleSave} className="space-y-8">
+                {/* Header */}
+                <div>
+                    <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <ChevronLeftIcon className="h-5 w-5 mr-1" />
+                        Back to Dashboard
+                    </Link>
+                    <div className="md:flex md:items-center md:justify-between">
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate">
+                                {isEditing ? 'Edit Pamphlet' : 'Create New Pamphlet'}
+                            </h2>
+                            {isEditing && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Editing "{formData.title}"</p>}
+                        </div>
+                        <div className="mt-4 flex md:mt-0 md:ml-4">
+                            <button
+                                type="submit"
+                                disabled={saving || saved}
+                                className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`}
+                            >
+                                <SaveIcon className="h-4 w-4" />
+                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save Changes')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Form Content */}
+                <div className="grid grid-cols-3 gap-8">
+                    {/* Left Column - Main Details */}
+                    <div className="col-span-2 space-y-6">
+                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Information</h3>
+                            <div className="mt-6 grid grid-cols-6 gap-y-6 gap-x-4">
+                                <div className="col-span-6">
+                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
+                                    <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
+                                </div>
+                                
+                                <div className="col-span-3">
+                                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                                    <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required />
+                                </div>
+
+                                <div className="col-span-3">
+                                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                                    <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Assets */}
+                    <div className="space-y-6">
+                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Assets</h3>
+                            <div className="mt-4 space-y-6">
+                                <div>
+                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cover Image</span>
+                                    <div className="h-48 w-auto aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
+                                        <LocalMedia src={formData.imageUrl} alt="Pamphlet preview" type="image" className="rounded-xl object-cover h-full w-full"/>
+                                    </div>
+                                    <label htmlFor="image-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <UploadIcon className="h-4 w-4"/>
+                                        <span>{formData.imageUrl ? 'Change Image' : 'Upload Image'}</span>
+                                    </label>
+                                    <input id="image-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
+                                </div>
+                                <div>
+                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pamphlet Pages</span>
+                                    <div className="mt-2 space-y-3">
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {formData.type === 'image' && formData.imageUrls.map((img, index) => (
+                                                <div key={index} className="relative group aspect-square">
+                                                    <LocalMedia src={img} type="image" alt={`Page ${index+1}`} className="rounded-md object-cover w-full h-full" />
+                                                    <button type="button" onClick={() => removeDocumentImage(index)} className="absolute top-1 right-1 p-1 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete image">
+                                                        <TrashIcon className="w-3 h-3"/>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border dark:border-gray-600 space-y-2">
+                                            <label htmlFor="pdf-upload-convert" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
+                                                <DocumentArrowRightIcon className="h-4 w-4" />
+                                                <span>Upload PDF & Convert</span>
+                                            </label>
+                                            <input id="pdf-upload-convert" type="file" className="sr-only" onChange={handlePdfUploadAndConvert} accept="application/pdf" disabled={isConverting} />
+                                            
+                                            <label htmlFor="doc-image-upload" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
+                                                <UploadIcon className="h-4 w-4"/>
+                                                <span>Add Image(s) Manually</span>
+                                            </label>
+                                            <input id="doc-image-upload" type="file" multiple onChange={handleDocumentImageUpload} className="sr-only" accept="image/*" />
+
+                                            {conversionProgress && <p className="text-xs text-center pt-1 text-gray-500 dark:text-gray-400">{conversionProgress}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        )
+    );
+
     return (
-        <form onSubmit={handleSave} className="space-y-8">
-            {/* Header */}
-            <div>
-                <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
-                    <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back to Dashboard
-                </Link>
-                <div className="md:flex md:items-center md:justify-between">
-                    <div className="flex-1 min-w-0">
-                        <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate">
-                            {isEditing ? 'Edit Pamphlet' : 'Create New Pamphlet'}
-                        </h2>
-                        {isEditing && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Editing "{formData.title}"</p>}
-                    </div>
-                    <div className="mt-4 flex md:mt-0 md:ml-4">
-                         <button
-                            type="submit"
-                            disabled={saving || saved}
-                            className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`}
-                        >
-                            <SaveIcon className="h-4 w-4" />
-                            {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save Changes')}
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                    {pageContent}
                 </div>
             </div>
-
-            {/* Form Content */}
-             <div className="grid grid-cols-3 gap-8">
-                {/* Left Column - Main Details */}
-                <div className="col-span-2 space-y-6">
-                    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                        <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Information</h3>
-                         <div className="mt-6 grid grid-cols-6 gap-y-6 gap-x-4">
-                            <div className="col-span-6">
-                                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                                <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
-                            </div>
-                            
-                            <div className="col-span-3">
-                                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
-                                <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required />
-                            </div>
-
-                             <div className="col-span-3">
-                                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
-                                <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column - Assets */}
-                <div className="space-y-6">
-                    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                        <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Assets</h3>
-                        <div className="mt-4 space-y-6">
-                             <div>
-                                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cover Image</span>
-                                <div className="h-48 w-auto aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
-                                    <LocalMedia src={formData.imageUrl} alt="Pamphlet preview" type="image" className="rounded-xl object-cover h-full w-full"/>
-                                </div>
-                                <label htmlFor="image-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <UploadIcon className="h-4 w-4"/>
-                                    <span>{formData.imageUrl ? 'Change Image' : 'Upload Image'}</span>
-                                </label>
-                                <input id="image-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
-                            </div>
-                            <div>
-                                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pamphlet Pages</span>
-                                <div className="mt-2 space-y-3">
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {formData.type === 'image' && formData.imageUrls.map((img, index) => (
-                                            <div key={index} className="relative group aspect-square">
-                                                <LocalMedia src={img} type="image" alt={`Page ${index+1}`} className="rounded-md object-cover w-full h-full" />
-                                                <button type="button" onClick={() => removeDocumentImage(index)} className="absolute top-1 right-1 p-1 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete image">
-                                                    <TrashIcon className="w-3 h-3"/>
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border dark:border-gray-600 space-y-2">
-                                         <label htmlFor="pdf-upload-convert" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
-                                            <DocumentArrowRightIcon className="h-4 w-4" />
-                                            <span>Upload PDF & Convert</span>
-                                        </label>
-                                        <input id="pdf-upload-convert" type="file" className="sr-only" onChange={handlePdfUploadAndConvert} accept="application/pdf" disabled={isConverting} />
-                                        
-                                        <label htmlFor="doc-image-upload" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
-                                            <UploadIcon className="h-4 w-4"/>
-                                            <span>Add Image(s) Manually</span>
-                                        </label>
-                                        <input id="doc-image-upload" type="file" multiple onChange={handleDocumentImageUpload} className="sr-only" accept="image/*" />
-
-                                        {conversionProgress && <p className="text-xs text-center pt-1 text-gray-500 dark:text-gray-400">{conversionProgress}</p>}
-                                    </div>
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form>
+        </div>
     );
 };
 
