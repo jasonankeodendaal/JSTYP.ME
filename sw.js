@@ -98,23 +98,28 @@ self.addEventListener('fetch', event => {
         return;
     }
     
-    // This is the key fix for the 404 error on installed apps (PWAs).
-    // If the request is a navigation request (i.e., opening the app or refreshing a page),
-    // we serve the cached index.html. This is the standard "SPA Fallback".
+    // For navigation requests (opening the app, refreshing a page), use a network-first strategy
+    // that gracefully falls back to the cached app shell (index.html).
     if (request.mode === 'navigate') {
         event.respondWith(
             caches.open(CACHE_NAME).then(cache => {
-                // Try the network first to get the latest version
                 return fetch(request)
                     .then(networkResponse => {
-                        // If successful, update the cache
+                        // If the network response is good, use it and cache it.
                         if (networkResponse.ok) {
+                            // Although we receive index.html content, we cache it against the original request
+                            // to handle offline reloads of deep links. This relies on server rewrites for online use.
                             cache.put(request, networkResponse.clone());
+                            return networkResponse;
                         }
-                        return networkResponse;
+                        // If the network returns a 404 or other error, it's a client-side route.
+                        // Serve the cached app shell instead of the error page.
+                        console.log('Service Worker: Navigation request returned non-OK response, serving index.html from cache.');
+                        return cache.match('./index.html');
                     })
                     .catch(() => {
-                        // If the network fails (offline), serve the app shell from the cache
+                        // If the network fails entirely (offline), serve the app shell from the cache.
+                        console.log('Service Worker: Navigation fetch failed, serving index.html from cache.');
                         return cache.match('./index.html');
                     });
             })
@@ -122,7 +127,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // For all other assets (app shell, local components), use a network-first strategy
+    // For all other assets (app shell files, local components), use a network-first strategy
     event.respondWith(
         caches.open(CACHE_NAME).then(cache => {
             return fetch(request)

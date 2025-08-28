@@ -880,7 +880,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             disconnectFromStorage(true); // Clear all old caches before connecting
             setDirectoryHandle(handle);
             setStorageProvider('local');
-            alert(`Connected to local folder "${handle.name}" in ${mode} mode. You can now sync data from the Backup/Restore tab.`);
+            
+            // Enable auto-sync and trigger initial save
+            setSettings(prev => deepMerge(prev, { sync: { autoSyncEnabled: true } }));
+
+            setTimeout(() => {
+                saveDatabaseToLocal(true).then(success => {
+                    if (success) {
+                        alert(`Connected to local folder "${handle.name}" in ${mode} mode. Auto-save is enabled. Initial data saved.`);
+                        setSyncStatus('synced');
+                    } else {
+                        alert(`Connected to local folder "${handle.name}", but the initial data save failed. Please check permissions and try a manual save.`);
+                        setSyncStatus('error');
+                    }
+                });
+            }, 100);
+
         } else {
             alert("Permission to the folder was denied.");
         }
@@ -889,7 +904,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error("Error connecting to local folder:", error);
         alert(`Failed to connect to local folder. ${error instanceof Error ? error.message : ''}`);
     }
-  }, [setStorageProvider, setDirectoryHandle, disconnectFromStorage, loggedInUser]);
+  }, [setStorageProvider, setDirectoryHandle, disconnectFromStorage, loggedInUser, setSettings, saveDatabaseToLocal]);
   
   const connectToCloudProvider = useCallback((provider: 'customApi') => {
     const url = settings.customApiUrl;
@@ -899,8 +914,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     disconnectFromStorage(true);
     setStorageProvider(provider);
-    alert(`Connected to Custom API. You can now sync data from the Cloud Sync tab.`);
-  }, [settings.customApiUrl, setStorageProvider, disconnectFromStorage]);
+    
+    setSettings(prev => deepMerge(prev, { sync: { autoSyncEnabled: true } }));
+    
+    // Use a timeout to allow state to update before pushing
+    setTimeout(() => {
+        pushToCloud(true).then(success => {
+            if (success) {
+                alert(`Connected to Custom API. Auto-sync is enabled. Initial data saved to cloud.`);
+                setSyncStatus('synced');
+            } else {
+                 alert(`Connected to Custom API, but the initial data save failed. Please check your connection and try a manual push.`);
+                 setSyncStatus('error');
+            }
+        });
+    }, 100);
+  }, [settings.customApiUrl, setStorageProvider, disconnectFromStorage, setSettings, pushToCloud]);
   
   const connectToSharedUrl = useCallback((url: string) => {
     if (!url) {
@@ -909,10 +938,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     disconnectFromStorage(true);
-    updateSettings({ sharedUrl: url });
+    
+    // Update settings with the URL and enable auto-sync
+    setSettings(prev => deepMerge(prev, { sharedUrl: url, sync: { autoSyncEnabled: true } }));
     setStorageProvider('sharedUrl');
-    alert(`Connected to Shared URL. You can now sync data from the Cloud Sync tab.`);
-  }, [setStorageProvider, disconnectFromStorage, updateSettings]);
+    
+    // Use a timeout to allow state to update before pushing
+    setTimeout(() => {
+        pushToCloud(true).then(success => {
+            if (success) {
+                alert(`Connected to Shared URL. Auto-sync is enabled. Initial data saved to cloud.`);
+                setSyncStatus('synced');
+            } else {
+                 alert(`Connected to Shared URL, but the initial data save failed. Please check your connection and try a manual push.`);
+                 setSyncStatus('error');
+            }
+        });
+    }, 100);
+  }, [setStorageProvider, disconnectFromStorage, setSettings, pushToCloud]);
 
 
   useEffect(() => {
