@@ -1,177 +1,133 @@
+
 # Interactive Kiosk System - Full Setup Guide
 
-Welcome to your Interactive Kiosk System. This guide provides complete, step-by-step instructions for every setup scenario. Please read the prerequisites and then follow the guide that best matches your needs.
+Welcome to your Interactive Kiosk System. This guide provides the definitive, step-by-step instructions for deploying your kiosk application to Vercel for global access, while using your main PC as a secure, persistent storage server.
 
-## Table of Contents
+## Conceptual Overview: How It Works
 
-1.  [**Prerequisites (Required for All Setups)**](#prerequisites-required-for-all-setups)
-2.  [**The Definitive Guide: Cloud Sync Setup**](#the-definitive-guide-cloud-sync-setup) (Recommended for multiple devices)
-3.  [**Alternative Setup: Single Offline Kiosk**](#alternative-setup-single-offline-kiosk)
-4.  [**After Setup: Populating Your Content**](#after-setup-populating-your-content)
+This setup has three parts that work together:
 
----
+1.  **The Frontend (Your App on Vercel):** Your interactive kiosk application will be hosted on Vercel's global network. This makes it fast, reliable, and accessible from any device (like PCs or tablets) with an internet connection.
 
-## Prerequisites (Required for All Setups)
+2.  **The Backend (Your PC Server):** A small, private server program runs continuously on your main PC. Its only job is to read and write all your data (products, settings, etc.) to a file named `data.json` located in the `server` folder. It is the single source of truth for all your kiosks.
 
-You must complete these steps on your main computer before starting any setup guide.
-
-### 1. Install Node.js
-
-> **What is this?** Node.js is a standard web technology that lets your computer run a secure, local web server. This is required to run the kiosk application properly. You only need to do this once per computer.
-
-1.  **Download:** Go to the official website [**nodejs.org**](https://nodejs.org/) and download the version labeled **"LTS"** (Long-Term Support).
-2.  **Install:** Run the installer you downloaded. Accept all the default options by clicking "Next" through the setup.
-3.  **Verify:** After installation, you need to check that it worked.
-    *   On **Windows**, search for **"PowerShell"** in your Start Menu and open it.
-    *   On **Mac**, open the **"Terminal"** app.
-    *   In the window that appears, type the following command and press **Enter**:
-        ```bash
-        node -v
-        ```
-    *   If it's installed correctly, you will see a version number like `v20.11.0`.
+3.  **The Connection (Cloudflare Tunnel):** This is the secure bridge that connects the two. Your Vercel app is public, but your PC server is private. Cloudflare Tunnel creates a free, encrypted connection between them, so they can sync data without you needing to configure complex network settings.
 
 ---
 
-## The Definitive Guide: Cloud Sync Setup
+## Part 1: Configure Your Central Server (On Your Main PC)
 
-> **Use this for:** The most powerful setup. Manage a main admin PC and multiple display kiosks (PCs, Android tablets) across different locations, all synced together over the internet.
+This is the most critical part. You will turn your main computer into the central hub for all your data. We will use **PM2**, a professional tool, to ensure your server and the connection tunnel run reliably 24/7 and restart automatically.
 
-This guide is in three parts. You will have two terminal windows running on your main computer by the end.
+**Step 1.1: Install Prerequisites (One-time setup)**
 
-### How Cloud Sync Works
-With this setup, your main PC runs a small, private server. All your data (products, brands, settings) is saved to a `data.json` file on this server, not just in the browser.
+1.  **Install Node.js:** Go to [**nodejs.org**](https://nodejs.org/), download the **"LTS"** installer, and run it, accepting all default options.
+2.  **Install PM2:** PM2 is a process manager that will run your services in the background and auto-restart them. Open a new **PowerShell** or **Terminal** and run:
+    ```bash
+    npm install -g pm2
+    ```
+3.  **Install Cloudflare Tunnel:** Follow the official guide to install the `cloudflared` tool for your operating system:
+    *   **[Cloudflare Tunnel Installation Guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/)**
+    *   **Tip for Windows:** After downloading `cloudflared.exe`, it's easiest to place it directly inside your project's `server` folder.
 
--   **Push to Cloud:** When you make changes on your admin device with "Auto-Sync" enabled, the app automatically sends the updated data to your server.
--   **Pull from Cloud:** All other connected kiosks automatically check the server every few seconds for updates and download them.
+**Step 1.2: Configure the Server**
 
-This provides live, seamless updates across all your devices without needing to manually back up or transfer files. The "Download Backup File" feature is **only for the single offline kiosk mode.**
-
-### Part 1: Start Your Central Server (On Your Main PC)
-
-This turns your main PC into the central "brain" for all your kiosks.
-
-**Step 1.1: Open a Terminal in the Server Folder**
-1.  Navigate into the `server` folder located in your main project directory.
-2.  You need to open a terminal *inside this specific folder*.
-    *   **Windows:** Hold the `Shift` key and Right-click inside the `server` folder. From the menu, choose **"Open PowerShell window here"** or **"Open in Terminal"**.
-    *   **Mac:** Open the Terminal app. Type `cd ` (the letters `c`, `d`, and a space), then drag the `server` folder directly from your file manager into the terminal window. The path will appear automatically. Press **Enter**.
-
-**Step 1.2: Install Server Dependencies**
-1.  This command installs the tools your server needs to run. You only need to do this once.
-2.  Copy and paste the following command into your terminal and press **Enter**:
+1.  **Open a Terminal in the Server Folder:**
+    *   Navigate into the `server` folder of your project.
+    *   **On Windows:** Hold `Shift` + Right-click inside the `server` folder and choose **"Open PowerShell window here"**.
+2.  **Install Server Dependencies:** In your terminal, run this command once:
     ```bash
     npm install
     ```
+3.  **CRITICAL - Configure Your `.env` File:**
+    *   The server will not start without this file. In the `server` folder, find the file named **`.env.example`**.
+    *   Rename this file to exactly **`.env`**.
+    *   Open the new `.env` file with a text editor (like Notepad).
+    *   Replace `your-super-secret-key-here` with a private password of your own. The line should look like this: `API_KEY=MySecurePassword123`
+    *   Save and close the file.
 
-**Step 1.3: Create Your Secret API Key**
-1.  In the `server` folder, find the file named **`.env.example`**.
-2.  Rename this file to exactly **`.env`**.
-3.  Open this new `.env` file with a simple text editor (like Notepad or TextEdit).
-4.  Replace `your-super-secret-key-here` with a private password of your own. Make it secure.
-5.  Save and close the `.env` file.
+**Step 1.3: Start Everything with PM2 (The Reliable Way)**
 
-**Step 1.4: Start the Server**
-1.  Go back to your terminal window.
-2.  Copy and paste the following command and press **Enter**:
+1.  In your terminal (still inside the `server` folder), first clear out any old failed attempts:
     ```bash
-    node server.js
+    pm2 delete all
     ```
-3.  You should see a message like `Server is running at http://localhost:3001`.
-4.  **LEAVE THIS TERMINAL WINDOW OPEN.** It must stay running for the sync to work.
-
-### Part 2: Make Your Server Publicly Accessible
-
-> **What is this?** This step uses a free, secure tool called Cloudflare Tunnel to create a "bridge" from the public internet to the server running on your PC. This is the magic that lets your mobile devices find your main computer.
-
-**Step 2.1: Install Cloudflare Tunnel**
-1.  You only need to do this once per computer. Go to the official guide and follow the installation steps for your operating system:
-    *   **[Cloudflare Tunnel Installation Guide](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/)**
-
-**Step 2.2: Open a NEW Terminal Window**
-1.  **This is important:** Do not close the first terminal. Open a second, completely new `PowerShell` or `Terminal` window.
-
-**Step 2.3: Run the Tunnel**
-1.  Copy and paste the following command into your **new** terminal window and press **Enter**:
+2.  Now, start both the server and the tunnel with one simple command. PM2 will automatically find and use the `ecosystem.config.js` file in this folder.
     ```bash
-    cloudflared tunnel --url http://localhost:3001
+    pm2 start
+    ```
+3.  Check the status. Both `kiosk-api` and `kiosk-tunnel` should now show as `online`.
+    ```bash
+    pm2 list
     ```
 
-**Step 2.4: Get Your Public URL**
-1.  After a few moments, the terminal will show you a public URL that looks something like this: **`https://random-words-and-letters.trycloudflare.com`**.
-2.  **This is your public server address.** This is the most important piece of information. Copy it and save it somewhere safe, like a text file.
-3.  **LEAVE THIS SECOND TERMINAL WINDOW OPEN.** Both the server and the tunnel must stay running on your main PC.
+**Step 1.4: Check for Errors and Get Your URL**
 
-### Part 3: Configure All Your Kiosk Devices
+1.  **If `kiosk-api` is not `online` (if it says 'stopped' or 'errored'):** Check its logs immediately. This will tell you if there's a problem with your `.env` file.
+    ```bash
+    pm2 logs kiosk-api
+    ```
+    *   You will likely see an error like "FATAL ERROR: .env file not found" or "API_KEY is not defined". If so, go back to **Step 1.2** and fix your `.env` file. Then run `pm2 restart kiosk-api`.
+2.  **To get your public URL:** Once the API is running, check the logs for the tunnel.
+    ```bash
+    pm2 logs kiosk-tunnel
+    ```
+    *   After a few moments, you will see a public URL like: **`https://random-words-and-letters.trycloudflare.com`**.
+    *   **This is your public server address.** Copy it and save it somewhere safe for Part 3.
+    *   (Press `Ctrl + C` to exit the log view).
 
-> **Note:** You must repeat these steps on **every single device** you want to sync (your main PC, other PCs, and all your Android tablets).
+**Step 1.5: Make PM2 Auto-Start on Boot**
+This crucial step makes your setup resilient to computer restarts.
 
-**Step 3.1: Run the Kiosk App**
-1.  On the device you are configuring, go to the main project folder (the one with `index.html`).
-2.  Follow the steps from [Alternative Setup: Single Offline Kiosk](#alternative-setup-single-offline-kiosk) to start the app server and open it in a browser.
-
-**Step 3.2: Log In as Admin**
-1.  On the kiosk app screen, go to the footer and click **Admin Login**.
-2.  The default PIN for the Main Admin is: **`1723`**
-
-**Step 3.3: Enter Your Public URL and API Key**
-1.  In the Admin Dashboard, navigate to: `Settings` > `API Integrations`.
-2.  In the **"Custom API URL"** field, paste the public URL you got from Cloudflare in Part 2.
-3.  **VERY IMPORTANT:** You must add **`/data`** to the end of the URL.
-    *   Example: `https://random-words-and-letters.trycloudflare.com/data`
-4.  In the **"Custom API Auth Key"** field, enter the exact same secret API Key you created in your `.env` file in Part 1.
-5.  Click **Save Changes**.
-
-**Step 3.4: Connect to the Storage Provider**
-1.  Navigate to the `Storage` tab in the admin panel.
-2.  Click the **"Connect"** button on the "Custom API Sync" card.
-
-**Step 3.5: Do the First Sync (Critical Step!)**
-1.  **On your main admin PC (the one with all your content):**
-    *   Go to the `Cloud Sync` tab.
-    *   Click the **"Push to Cloud"** button. This uploads all your local data to the server for the first time.
-2.  **On all your other devices (mobile and other PCs):**
-    *   Go to the `Cloud Sync` tab.
-    *   Click the **"Pull from Cloud"** button. This will download all the master data from the server.
-
-**Step 3.6: Enable Auto-Sync**
-1.  On **every device**, go to `Settings` > `Kiosk Mode`.
-2.  Find the **"Enable Auto-Sync"** toggle and turn it **ON**.
-
-Your setup is now complete! Any change you make on your admin PC will automatically appear on all other connected devices within a few seconds.
+1.  Generate the startup script.
+    ```bash
+    pm2 startup
+    ```
+2.  **Execute the output command.** PM2 will display a command. You must **copy that entire command, paste it back into the same terminal window,** and press Enter.
+3.  Save your process list so PM2 remembers what to start.
+    ```bash
+    pm2 save
+    ```
+Your server is now running 24/7. You can close the terminal window.
 
 ---
 
-## Alternative Setup: Single Offline Kiosk
+## Part 2: Deploy the Kiosk App to Vercel
 
-> **Use this for:** A single computer or tablet where all data is stored on that one device. No internet is required after setup.
-
-**Step 1: Start the Application Server**
-1.  Open a terminal inside the main project folder (the one with `index.html`).
-2.  Install the `serve` tool (you only do this once). Copy and paste this command and press Enter:
-    ```bash
-    npm install -g serve
-    ```
-3.  Start the server. Copy and paste this command and press Enter:
-    ```bash
-    serve .
-    ```
-4.  Your terminal will show a **"Local"** URL, usually `http://localhost:3000`. Copy this URL.
-
-**Step 2: Use the Kiosk**
-1.  Open a web browser (Chrome or Edge recommended) and paste the URL.
-2.  Log in to the **Admin Dashboard** (footer link, PIN: `1723`) to add your content.
-3.  **Important Data Note for Offline Mode:** All data is saved *only* in this specific browser. This mode does not sync with other devices. To prevent data loss, you **must** go to `Admin > Backup & Restore` and click **"Download Backup File"** regularly. This downloaded file is your only backup.
+1.  **Push your Project to GitHub:**
+    *   Create a free account at [GitHub.com](https://github.com/).
+    *   Create a new, empty repository.
+    *   Follow the instructions on GitHub to upload your entire project folder to this new repository.
+2.  **Import to Vercel:**
+    *   Create a free account at [Vercel.com](https://vercel.com/).
+    *   On your Vercel dashboard, click "Add New..." and select "Project".
+    *   Choose your GitHub account and import the repository you just created.
+3.  **Configure Your Vercel Project (Critical Step):**
+    *   Vercel will automatically detect that you have a Vite project. The default settings are correct.
+    *   Expand the **"Environment Variables"** section. You must add your Google Gemini API Key here for AI features to work on the live site.
+        *   Name: `API_KEY`
+        *   Value: Paste your actual **Google Gemini API Key** here.
+    *   Click "Add".
+4.  **Deploy:**
+    *   Click the "Deploy" button.
+    *   After a minute, Vercel will provide you with a public URL (e.g., `your-kiosk-app.vercel.app`). This is the URL you will use on all your kiosk devices.
 
 ---
 
-## After Setup: Populating Your Content
+## Part 3: Connect Vercel to Your PC Server
 
-Once your storage is configured, it's time to add your own content.
+You must repeat these steps on **every single device** you want to sync.
 
-1.  **Log in** to the Admin Panel on your main computer (default PIN: `1723`).
-2.  Go to the various sections (**Brands**, **Catalogues**, etc.) and delete the sample data.
-3.  **Add Your Brands First:** Go to the "Brands" tab and add all your brands.
-4.  **Add Products:** Go back to the "Brands" tab, click on a brand to manage its products.
-5.  **Use Bulk Import:** For large amounts of products, use the "Bulk Import Products" section on the "Brands" tab. You can upload a structured `.zip` file or a simple `.csv` file. Download the templates to see the required format.
-6.  **Customize Appearance:** Go to `Settings` to change colors, fonts, logos, and layout to match your brand identity.
-7.  If using Cloud Sync, your changes will automatically be sent to all other devices.
+1.  **Open Your Live App:** Go to the Vercel URL you just got.
+2.  **Log In as Admin:** Click the "Admin Login" link in the footer (default PIN: `1723`).
+3.  **Navigate to API Settings:** In the admin dashboard, click the **"More"** button (the up-arrow) in the floating footer, then select **"System"**, and then select **"Settings"**. Find the **"API Integrations"** section.
+4.  In **"Custom API URL"**, paste your public Cloudflare URL and **add `/data`** to the end (e.g., `https://...com/data`).
+5.  In **"Custom API Auth Key"**, enter the secret `API_KEY` from your server's `.env` file.
+6.  Click **Save Changes**.
+7.  **Connect Provider:** In the **"System"** section, select **"Storage"**. Click the **"Connect"** button on the "Custom API Sync" card.
+8.  **Perform Initial Sync:** A new **"Cloud Sync"** tab will appear in the "Storage" section.
+    *   **On your main admin PC:** Click **"Push to Cloud"**. This uploads your local data to the server for the first time.
+    *   **On all other devices:** Click **"Pull from Cloud"**. This downloads the master data from your server.
+9.  **Enable Auto-Sync:** On **every device**, go to `Settings > Kiosk Mode` and turn on **"Enable Auto-Sync"**.
+
+Your multi-device kiosk system is now fully configured and running reliably.
