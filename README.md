@@ -1,5 +1,5 @@
 
-# Interactive Kiosk System - Full Setup Guide
+# Interactive Kiosk System - Full Setup Guide (Updated & More Reliable)
 
 Welcome to your Interactive Kiosk System. This guide provides the definitive, step-by-step instructions for deploying your kiosk application to Vercel for global access, while using your main PC as a secure, persistent storage server.
 
@@ -11,7 +11,7 @@ This setup has three parts that work together:
 
 2.  **The Backend (Your PC Server):** A small, private server program runs continuously on your main PC. Its only job is to read and write all your data (products, settings, etc.) to a file named `data.json` located in the `server` folder. It is the single source of truth for all your kiosks.
 
-3.  **The Connection (Cloudflare Tunnel):** This is the secure bridge that connects the two. Your Vercel app is public, but your PC server is private. Cloudflare Tunnel creates a free, encrypted connection between them, so they can sync data without you needing to configure complex network settings.
+3.  **The Connection (Cloudflare Tunnel):** This is the secure bridge that connects the two. Your Vercel app is public, but your PC server is private. Cloudflare Tunnel creates a free, encrypted, and **persistent** connection between them, so they can sync data without you needing to configure complex network settings.
 
 ---
 
@@ -52,7 +52,7 @@ This is the most critical part. You will turn your main computer into the centra
     ```bash
     pm2 delete all
     ```
-2.  Now, start both the server and the tunnel with one simple command. PM2 will automatically find and use the `ecosystem.config.js` file in this folder.
+2.  Now, start both the server and the tunnel with one simple command. I've updated your `ecosystem.config.js` file to use the new, reliable method.
     ```bash
     pm2 start
     ```
@@ -61,20 +61,15 @@ This is the most critical part. You will turn your main computer into the centra
     pm2 list
     ```
 
-**Step 1.4: Check for Errors and Get Your URL**
+**Step 1.4: Get Your Persistent Public URL**
 
-1.  **If `kiosk-api` is not `online` (if it says 'stopped' or 'errored'):** Check its logs immediately. This will tell you if there's a problem with your `.env` file.
-    ```bash
-    pm2 logs kiosk-api
-    ```
-    *   You will likely see an error like "FATAL ERROR: .env file not found" or "API_KEY is not defined". If so, go back to **Step 1.2** and fix your `.env` file. Then run `pm2 restart kiosk-api`.
-2.  **To get your public URL:** Once the API is running, check the logs for the tunnel.
+1.  Check the logs for your newly running tunnel.
     ```bash
     pm2 logs kiosk-tunnel
     ```
-    *   After a few moments, you will see a public URL like: **`https://random-words-and-letters.trycloudflare.com`**.
-    *   **This is your public server address.** Copy it and save it somewhere safe for Part 3.
-    *   (Press `Ctrl + C` to exit the log view).
+2.  After a few moments, you will now see the box you were looking for, containing your public URL like: **`https://random-words-and-letters.trycloudflare.com`**.
+3.  **This is your public server address.** It will be stable as long as PM2 is running. Copy it and save it somewhere safe for Part 3.
+4.  (Press `Ctrl + C` to exit the log view).
 
 **Step 1.5: Make PM2 Auto-Start on Boot**
 This crucial step makes your setup resilient to computer restarts.
@@ -93,6 +88,8 @@ Your server is now running 24/7. You can close the terminal window.
 ---
 
 ## Part 2: Deploy the Kiosk App to Vercel
+
+*(This section is unchanged)*
 
 1.  **Push your Project to GitHub:**
     *   Create a free account at [GitHub.com](https://github.com/).
@@ -115,6 +112,8 @@ Your server is now running 24/7. You can close the terminal window.
 ---
 
 ## Part 3: Connect Vercel to Your PC Server
+
+*(This section is unchanged)*
 
 You must repeat these steps on **every single device** you want to sync.
 
