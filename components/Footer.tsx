@@ -1,11 +1,22 @@
 
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext';
 
 const Footer: React.FC = () => {
-  const { settings } = useAppContext();
+  const { settings, updateSettings } = useAppContext();
   const footerSettings = settings.footer;
+  const autoSyncEnabled = settings.sync?.autoSyncEnabled ?? false;
+
+  const handleToggleAutoSync = () => {
+    updateSettings({
+        sync: {
+            ...settings.sync,
+            autoSyncEnabled: !autoSyncEnabled,
+        },
+    });
+  };
 
   const footerStyle: React.CSSProperties = {
     backgroundColor: footerSettings?.backgroundColor,
@@ -39,10 +50,26 @@ const Footer: React.FC = () => {
             <p className="text-center sm:text-left text-sm">
                 &copy; {new Date().getFullYear()}. All rights reserved.
             </p>
-            <div className="mt-2 text-center sm:mt-0 sm:text-right">
+            <div className="mt-2 text-center sm:mt-0 sm:text-right flex flex-col items-center sm:items-end">
                 <Link to="/login" className="text-sm opacity-80 hover:opacity-100 hover:underline transition-opacity">
                     Admin Login
                 </Link>
+                <button 
+                    onClick={handleToggleAutoSync} 
+                    className="flex items-center gap-2 text-xs opacity-60 hover:opacity-100 transition-opacity mt-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] rounded"
+                    aria-live="polite"
+                    aria-label={`Toggle auto-sync. Current status: ${autoSyncEnabled ? 'On' : 'Off'}`}
+                >
+                    <span 
+                        className={`relative flex h-2.5 w-2.5 rounded-full ${autoSyncEnabled ? 'bg-green-500' : 'bg-red-500'}`}
+                        title={`Auto-Sync is ${autoSyncEnabled ? 'On' : 'Off'}`}
+                    >
+                        {autoSyncEnabled && (
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        )}
+                    </span>
+                    <span>Auto-Sync: {autoSyncEnabled ? 'On' : 'Off'}</span>
+                </button>
             </div>
         </div>
       </div>

@@ -7,9 +7,6 @@ const APP_SHELL_URLS = [
   './index.html',
   './manifest.json',
   './index.css',
-  // Local scripts and components - no need to list every file, the build process handles this
-  './index.tsx',
-  './App.tsx',
 ];
 
 const IMMUTABLE_URLS = [
@@ -107,20 +104,18 @@ self.addEventListener('fetch', event => {
                     .then(networkResponse => {
                         // If the network response is good, use it and cache it.
                         if (networkResponse.ok) {
-                            // Although we receive index.html content, we cache it against the original request
-                            // to handle offline reloads of deep links. This relies on server rewrites for online use.
                             cache.put(request, networkResponse.clone());
                             return networkResponse;
                         }
                         // If the network returns a 404 or other error, it's a client-side route.
                         // Serve the cached app shell instead of the error page.
                         console.log('Service Worker: Navigation request returned non-OK response, serving index.html from cache.');
-                        return cache.match('./index.html');
+                        return cache.match('./');
                     })
                     .catch(() => {
                         // If the network fails entirely (offline), serve the app shell from the cache.
                         console.log('Service Worker: Navigation fetch failed, serving index.html from cache.');
-                        return cache.match('./index.html');
+                        return cache.match('./');
                     });
             })
         );

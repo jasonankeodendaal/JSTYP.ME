@@ -766,7 +766,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [resetInactivityTimer]);
   
   const disconnectFromStorage = useCallback((silent = false) => {
-    idbSet('directoryHandle', undefined); // Clear from IndexedDB
+    idbSet('directoryHandle', undefined);
     setStorageProvider('none');
     setDirectoryHandle(null);
     blobUrlCache.current.forEach(url => URL.revokeObjectURL(url));
@@ -780,26 +780,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Effect to load persisted directory handle on mount
   useEffect(() => {
     const loadHandle = async () => {
-        // Only try to load the handle if the provider is 'local' and we don't have one in state yet
         if (storageProvider === 'local' && !directoryHandle) {
             const handle = await idbGet<FileSystemDirectoryHandle>('directoryHandle');
             if (handle) {
-                // Check if we still have permission. This might prompt the user if permission was lost.
-                const hasPermission = await verifyPermission(handle, false); // Check for read permission
+                const hasPermission = await verifyPermission(handle, false);
                 if (hasPermission) {
-                    console.log("Restored directory handle from IndexedDB and verified permission.");
+                    console.log("Restored directory handle from IndexedDB.");
                     setDirectoryHandle(handle);
                 } else {
-                    console.warn("Restored directory handle from IndexedDB, but permission was lost. Disconnecting.");
-                    disconnectFromStorage(true); // Silently disconnect
-                    alert("Connection to the local folder was lost as permission was revoked. Please reconnect via the Storage tab.");
+                    console.warn("Permission for stored directory handle was lost. User will be re-prompted on next file access.");
+                    setDirectoryHandle(handle); // Still set the handle, let operations re-verify
                 }
             }
         }
     };
     loadHandle();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storageProvider]);
+  }, [storageProvider, directoryHandle]);
 
   const getFileUrl = useCallback(async (src: string): Promise<string> => {
     if (!src) return '';
@@ -820,7 +816,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             let handle = fileHandleCache.current.get(src);
             if (!handle) {
                 if (!(await verifyPermission(directoryHandle, false))) {
-                    alert("Permission to access local files was denied. Some media may not load. Please reconnect storage if this persists.");
+                    alert("Permission to access local files was denied. Some media may not load. Please try the action again to grant access.");
                     return '';
                 }
                 handle = await directoryHandle.getFileHandle(src);
@@ -901,12 +897,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
         const handle = await window.showDirectoryPicker({ mode });
         if (await verifyPermission(handle, writePermissionRequired)) {
-            disconnectFromStorage(true); // Clear all old caches before connecting
-            await idbSet('directoryHandle', handle); // Save handle to IDB
+            disconnectFromStorage(true);
+            await idbSet('directoryHandle', handle);
             setDirectoryHandle(handle);
             setStorageProvider('local');
             
-            // Enable auto-sync and trigger initial save
             setSettings(prev => deepMerge(prev, { sync: { autoSyncEnabled: true } }));
 
             setTimeout(() => {
@@ -942,7 +937,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setSettings(prev => deepMerge(prev, { sync: { autoSyncEnabled: true } }));
     
-    // Use a timeout to allow state to update before pushing
     setTimeout(() => {
         pushToCloud(true).then(success => {
             if (success) {
@@ -964,11 +958,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     disconnectFromStorage(true);
     
-    // Update settings with the URL and enable auto-sync
     setSettings(prev => deepMerge(prev, { sharedUrl: url, sync: { autoSyncEnabled: true } }));
     setStorageProvider('sharedUrl');
     
-    // Use a timeout to allow state to update before pushing
     setTimeout(() => {
         pushToCloud(true).then(success => {
             if (success) {
@@ -983,22 +975,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [setStorageProvider, disconnectFromStorage, setSettings, pushToCloud]);
   
   const saveFileToStorage = useCallback(async (file: File): Promise<string> => {
-    if (storageProvider === 'local' && directoryHandle) {
-        const hasPermission = await verifyPermission(directoryHandle, true);
-        if (!hasPermission) {
-            alert("Permission to write to the folder was denied. Please go to Admin > Storage and reconnect.");
-            throw new Error("Permission to write to the folder was denied.");
-        }
-        const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-        const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(file);
-        await writable.close();
-        return fileName;
-    }
-
+    // Always convert to a base64 data URI. This makes the database fully
+    // self-contained and portable, ensuring that all media assets are included
+    // during any sync operation (local file save or cloud push). This resolves
+    // issues where file references would break when switching between storage providers.
     return fileToBase64(file);
-  }, [storageProvider, directoryHandle]);
+  }, []);
   
   const isStorageConnected = storageProvider !== 'none';
   
