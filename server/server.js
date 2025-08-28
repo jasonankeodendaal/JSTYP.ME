@@ -89,6 +89,79 @@ app.post('/data', (req, res) => {
     res.status(200).json({ message: 'Data saved successfully' });
 });
 
+// Add a root route to show a status page
+app.get('/', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Kiosk API Server Status</title>
+            <style>
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+                    background-color: #f0f2f5;
+                    color: #333;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    margin: 0;
+                }
+                .container {
+                    background-color: white;
+                    padding: 40px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    text-align: center;
+                    max-width: 600px;
+                }
+                h1 {
+                    color: #2ecc71;
+                    font-size: 2em;
+                    margin-bottom: 10px;
+                }
+                p {
+                    font-size: 1.1em;
+                    line-height: 1.6;
+                }
+                code {
+                    background-color: #e8e8e8;
+                    padding: 3px 6px;
+                    border-radius: 4px;
+                    font-family: "Courier New", Courier, monospace;
+                }
+                a {
+                    color: #3498db;
+                    text-decoration: none;
+                    font-weight: bold;
+                }
+                a:hover {
+                    text-decoration: underline;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>✓ API Server is Running</h1>
+                <p>
+                    This is the backend API server for the Interactive Kiosk. It's working correctly!
+                </p>
+                <p>
+                    To use the application, you should open the frontend, which is typically served on port <code>3000</code>.
+                </p>
+                <p>
+                    <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer">Click here to open the Kiosk App</a>
+                </p>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
   console.log('Protecting endpoints with API_KEY.');
