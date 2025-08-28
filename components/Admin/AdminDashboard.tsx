@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Brand, Catalogue, Pamphlet, TvContent, Quote, Client } from '../../types';
+import type { Brand, Catalogue, Pamphlet, Client } from '../../types';
 import AdminSettings from './AdminSettings';
 import AdminScreensaverAds from './AdminScreensaverAds';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons';
 import AdminUserManagement from './AdminUserManagement';
 import AdminBulkImport from './AdminBulkImport';
 import AdminZipBulkImport from './AdminZipBulkImport';

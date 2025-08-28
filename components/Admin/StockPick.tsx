@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAppContext } from '../context/AppContext.tsx';
 import type { Product, Brand, Category, Quote } from '../../types';
-import { SearchIcon, ChevronDownIcon, PlusIcon, ChevronLeftIcon } from '../Icons.tsx';
+import { SearchIcon, ChevronDownIcon, ChevronLeftIcon } from '../Icons.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 
 const MotionDiv = motion.div as any;

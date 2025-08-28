@@ -126,7 +126,7 @@ const AdminUserEdit: React.FC = () => {
         }
     };
     
-    const canEditPermissions = loggedInUser.isMainAdmin && !editableUser.isMainAdmin;
+    const canEditPermissions = loggedInUser?.isMainAdmin && !editableUser.isMainAdmin;
 
     const pageContent = (
         !loggedInUser?.isMainAdmin ? (
