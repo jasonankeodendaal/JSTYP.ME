@@ -766,6 +766,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [resetInactivityTimer]);
   
   const disconnectFromStorage = useCallback((silent = false) => {
+    idbSet('directoryHandle', undefined); // Clear from IndexedDB
     setStorageProvider('none');
     setDirectoryHandle(null);
     blobUrlCache.current.forEach(url => URL.revokeObjectURL(url));
@@ -774,7 +775,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!silent) {
         alert("Disconnected from storage provider.");
     }
-  }, [setStorageProvider, setDirectoryHandle]);
+  }, [setStorageProvider]);
+
+  // Effect to load persisted directory handle on mount
+  useEffect(() => {
+    const loadHandle = async () => {
+        // Only try to load the handle if the provider is 'local' and we don't have one in state yet
+        if (storageProvider === 'local' && !directoryHandle) {
+            const handle = await idbGet<FileSystemDirectoryHandle>('directoryHandle');
+            if (handle) {
+                // Check if we still have permission. This might prompt the user if permission was lost.
+                const hasPermission = await verifyPermission(handle, false); // Check for read permission
+                if (hasPermission) {
+                    console.log("Restored directory handle from IndexedDB and verified permission.");
+                    setDirectoryHandle(handle);
+                } else {
+                    console.warn("Restored directory handle from IndexedDB, but permission was lost. Disconnecting.");
+                    disconnectFromStorage(true); // Silently disconnect
+                    alert("Connection to the local folder was lost as permission was revoked. Please reconnect via the Storage tab.");
+                }
+            }
+        }
+    };
+    loadHandle();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageProvider]);
 
   const getFileUrl = useCallback(async (src: string): Promise<string> => {
     if (!src) return '';
@@ -795,8 +820,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             let handle = fileHandleCache.current.get(src);
             if (!handle) {
                 if (!(await verifyPermission(directoryHandle, false))) {
-                    disconnectFromStorage();
-                    alert("Permission lost. Please reconnect storage.");
+                    alert("Permission to access local files was denied. Some media may not load. Please reconnect storage if this persists.");
                     return '';
                 }
                 handle = await directoryHandle.getFileHandle(src);
@@ -813,7 +837,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     
     return '';
-  }, [storageProvider, directoryHandle, disconnectFromStorage]);
+  }, [storageProvider, directoryHandle]);
 
   const openDocument = useCallback(async (document: DocumentType, title: string) => {
     setIsScreensaverActive(false);
@@ -878,6 +902,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const handle = await window.showDirectoryPicker({ mode });
         if (await verifyPermission(handle, writePermissionRequired)) {
             disconnectFromStorage(true); // Clear all old caches before connecting
+            await idbSet('directoryHandle', handle); // Save handle to IDB
             setDirectoryHandle(handle);
             setStorageProvider('local');
             
@@ -904,7 +929,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error("Error connecting to local folder:", error);
         alert(`Failed to connect to local folder. ${error instanceof Error ? error.message : ''}`);
     }
-  }, [setStorageProvider, setDirectoryHandle, disconnectFromStorage, loggedInUser, setSettings, saveDatabaseToLocal]);
+  }, [setStorageProvider, disconnectFromStorage, loggedInUser, setSettings, saveDatabaseToLocal]);
   
   const connectToCloudProvider = useCallback((provider: 'customApi') => {
     const url = settings.customApiUrl;
@@ -956,29 +981,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
     }, 100);
   }, [setStorageProvider, disconnectFromStorage, setSettings, pushToCloud]);
-
-
-  useEffect(() => {
-    if (directoryHandle) {
-        const checkPerms = async () => {
-            const hasWritePermission = await verifyPermission(directoryHandle, true);
-            const hasReadPermission = await verifyPermission(directoryHandle, false);
-            if (!hasReadPermission && !hasWritePermission) {
-                console.warn("Permission for persisted directory handle was lost. Automatically disconnecting.");
-                disconnectFromStorage();
-                alert("Connection to the local folder was lost as permission was not granted. Please reconnect via the Storage tab.");
-            }
-        };
-        checkPerms();
-    }
-  }, [directoryHandle, disconnectFromStorage]);
   
   const saveFileToStorage = useCallback(async (file: File): Promise<string> => {
     if (storageProvider === 'local' && directoryHandle) {
         const hasPermission = await verifyPermission(directoryHandle, true);
         if (!hasPermission) {
-            disconnectFromStorage();
-            throw new Error("Permission to write to the folder was lost. Disconnected from storage.");
+            alert("Permission to write to the folder was denied. Please go to Admin > Storage and reconnect.");
+            throw new Error("Permission to write to the folder was denied.");
         }
         const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
         const fileHandle = await directoryHandle.getFileHandle(fileName, { create: true });
@@ -989,7 +998,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     return fileToBase64(file);
-  }, [storageProvider, directoryHandle, disconnectFromStorage]);
+  }, [storageProvider, directoryHandle]);
   
   const isStorageConnected = storageProvider !== 'none';
   
