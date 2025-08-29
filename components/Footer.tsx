@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 
@@ -36,8 +36,30 @@ const SyncStatusIndicator: React.FC = () => {
 };
 
 const Footer: React.FC = () => {
-  const { settings } = useAppContext();
+  const { settings, storageProvider, testAndConnectProvider } = useAppContext();
   const footerSettings = settings.footer;
+
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('');
+
+  const handleTestConnection = async () => {
+        setIsConnecting(true);
+        setConnectionStatus('Testing...');
+        const result = await testAndConnectProvider();
+        
+        if (result.success) {
+            setConnectionStatus('Connected!');
+            // Button disappears automatically, no need to reset state here
+        } else {
+            // Show a concise error message for a few seconds
+            const conciseMessage = result.message.length > 60 ? 'Connection failed. Check settings in admin panel.' : result.message;
+            setConnectionStatus(conciseMessage);
+            setTimeout(() => {
+                setConnectionStatus('');
+                setIsConnecting(false);
+            }, 6000);
+        }
+    };
 
   const footerStyle: React.CSSProperties = {
     backgroundColor: footerSettings?.backgroundColor,
@@ -75,8 +97,19 @@ const Footer: React.FC = () => {
                 <Link to="/login" className="text-sm opacity-80 hover:opacity-100 hover:underline transition-opacity">
                     Admin Login
                 </Link>
-                <div className="flex items-center gap-4 mt-1">
+                <div className="flex items-center gap-3 mt-1">
                     <SyncStatusIndicator />
+                     {storageProvider === 'none' && !isConnecting && (
+                        <button 
+                            onClick={handleTestConnection}
+                            className="text-xs font-semibold text-blue-500 dark:text-blue-400 hover:underline transition-all"
+                        >
+                           Test Connection & Sync
+                        </button>
+                    )}
+                    {isConnecting && (
+                        <span className="text-xs text-yellow-500 dark:text-yellow-400">{connectionStatus}</span>
+                    )}
                 </div>
             </div>
         </div>

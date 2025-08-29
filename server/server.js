@@ -122,6 +122,11 @@ app.post('/upload', upload.single('file'), (req, res) => {
     res.status(200).json({ filename: req.file.filename });
 });
 
+// Add a public status route to check if the server is live
+app.get('/status', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: Date.now() });
+});
+
 // Add a root route to show a status page
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html');

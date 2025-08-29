@@ -186,6 +186,7 @@ interface AppContextType {
   loadDatabaseFromLocal: () => Promise<boolean>;
   pushToCloud: () => Promise<boolean>;
   pullFromCloud: () => Promise<boolean>;
+  testAndConnectProvider: () => Promise<{ success: boolean; message: string; }>;
   trackBrandView: (brandId: string) => void;
   trackProductView: (productId: string) => void;
   theme: 'light' | 'dark';
@@ -262,12 +263,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [localVolume, setLocalVolume] = useState(settings.videoVolume);
     const [kioskId, setKioskId] = useState('');
 
-    // FIX: Hoist updateSettings to be a useCallback function within the component's scope.
-    // This makes it accessible to other functions being defined in the context value object.
+    // FIX: Hoisted `updateSettings` before its usage in other callbacks like `connectToSharedUrl`
+    // to resolve the "used before its declaration" error.
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => deepMerge(prev, newSettings));
     }, []);
 
+    const connectToCloudProvider = useCallback((provider: 'customApi' | 'googleDrive') => {
+        if (provider === 'customApi') {
+            if (!settings.customApiUrl) {
+                alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
+                const settingsSection = document.getElementById('api-settings-section');
+                if (settingsSection) {
+                    settingsSection.setAttribute('open', '');
+                    settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+        }
+        setStorageProvider(provider);
+        idbSet('storageProvider', provider);
+    }, [settings.customApiUrl]);
+
+    const connectToSharedUrl = useCallback((url: string) => {
+        if (!url) {
+            alert("Please enter a URL to connect.");
+            return;
+        }
+        updateSettings({ sharedUrl: url });
+        setStorageProvider('sharedUrl');
+        idbSet('storageProvider', 'sharedUrl');
+    }, [updateSettings]);
+    
     // --- GENERIC CRUD ---
     const createCrudOperations = <T extends { id: string }>(
         state: T[],
@@ -401,6 +428,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         idbSet('kioskTheme', theme);
     }, [theme]);
 
+    const testAndConnectProvider = async (): Promise<{ success: boolean; message: string; }> => {
+        if (settings.customApiUrl) {
+            try {
+                const baseUrl = new URL(settings.customApiUrl);
+                const statusUrl = new URL('/status', baseUrl.origin);
+    
+                const response = await fetch(statusUrl.toString());
+                if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
+                
+                const data = await response.json();
+                if (data.status !== 'ok') throw new Error('Invalid server status response.');
+                
+                connectToCloudProvider('customApi');
+                return { success: true, message: 'Successfully connected to Custom API.' };
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                return { success: false, message: `Failed to connect to Custom API: ${errorMessage}. Please check settings.` };
+            }
+        }
+        
+        if (settings.sharedUrl) {
+            try {
+                let testUrl = settings.sharedUrl;
+                if (isApiEndpoint(settings.sharedUrl)) {
+                    const baseUrl = new URL(settings.sharedUrl);
+                    testUrl = new URL('/status', baseUrl.origin).toString();
+                }
+                
+                const response = await fetch(testUrl);
+                if (!response.ok) throw new Error(`URL responded with status ${response.status}`);
+                 
+                connectToSharedUrl(settings.sharedUrl);
+                return { success: true, message: 'Successfully connected to Shared URL.' };
+    
+            } catch (error) {
+                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                return { success: false, message: `Failed to connect to Shared URL: ${errorMessage}. Please check settings.` };
+            }
+        }
+    
+        return { success: false, message: 'No sync provider is configured in Settings.' };
+    };
 
     const contextValue: AppContextType = {
         isSetupComplete,
@@ -524,30 +593,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isStorageConnected: storageProvider !== 'none',
         directoryHandle,
         connectToLocalProvider: async () => {},
-        connectToCloudProvider: (provider: 'customApi' | 'googleDrive') => {
-            if (provider === 'customApi') {
-                if (!settings.customApiUrl) {
-                    alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
-                    const settingsSection = document.getElementById('api-settings-section');
-                    if (settingsSection) {
-                        settingsSection.setAttribute('open', '');
-                        settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    return;
-                }
-            }
-            setStorageProvider(provider);
-            idbSet('storageProvider', provider);
-        },
-        connectToSharedUrl: (url: string) => {
-            if (!url) {
-                alert("Please enter a URL to connect.");
-                return;
-            }
-            updateSettings({ sharedUrl: url });
-            setStorageProvider('sharedUrl');
-            idbSet('storageProvider', 'sharedUrl');
-        },
+        connectToCloudProvider,
+        connectToSharedUrl,
         disconnectFromStorage: () => {
             showConfirmation(
                 "Are you sure you want to disconnect? Auto-sync will be disabled.",
@@ -621,6 +668,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loadDatabaseFromLocal: async () => false,
         pushToCloud: async () => false,
         pullFromCloud: async () => false,
+        
+        testAndConnectProvider,
 
         trackBrandView: () => {},
         trackProductView: () => {},

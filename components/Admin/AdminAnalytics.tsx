@@ -1,12 +1,10 @@
 import React, { useMemo, useState } from 'react';
-// FIX: Correct import path for AppContext
 import { useAppContext } from '../context/AppContext.tsx';
 import { ChartBarIcon, CubeIcon } from '../Icons';
-// FIX: Import ViewCounts type to correctly type analytics data.
 import type { ViewCounts } from '../../types.ts';
 
 const AdminAnalytics: React.FC = () => {
-    const { brands, products, viewCounts, settings } = useAppContext();
+    const { brands, products, viewCounts, settings, updateSettings } = useAppContext();
     const [selectedKioskId, setSelectedKioskId] = useState('all');
 
     const kioskProfiles = useMemo(() => {
@@ -27,7 +25,6 @@ const AdminAnalytics: React.FC = () => {
             const aggregatedBrands: Record<string, number> = {};
             const aggregatedProducts: Record<string, number> = {};
 
-            // FIX: Explicitly type kioskData to prevent properties from being 'unknown'.
             Object.values(viewCounts).forEach((kioskData: ViewCounts[string]) => {
                 Object.entries(kioskData.brands).forEach(([brandId, count]) => {
                     aggregatedBrands[brandId] = (aggregatedBrands[brandId] || 0) + count;
@@ -78,6 +75,27 @@ const AdminAnalytics: React.FC = () => {
     const maxBrandViews = brandData.length > 0 ? Math.max(...brandData.map(b => b.count)) : 0;
     const maxProductViews = productData.length > 0 ? Math.max(...productData.map(p => p.count)) : 0;
     
+    const handleKioskProfileNameChange = (kioskId: string, name: string) => {
+        const profiles = settings.kiosk?.profiles || [];
+        const existingProfileIndex = profiles.findIndex(p => p.id === kioskId);
+        let newProfiles;
+
+        if (existingProfileIndex > -1) {
+            newProfiles = profiles.map((p, index) =>
+                index === existingProfileIndex ? { ...p, name } : p
+            );
+        } else {
+            newProfiles = [...profiles, { id: kioskId, name }];
+        }
+        
+        const newKioskSettings = {
+            ...settings.kiosk,
+            profiles: newProfiles,
+        };
+
+        updateSettings({ kiosk: newKioskSettings });
+    };
+
     const EmptyState: React.FC<{ title: string, message: string, icon: React.ReactNode }> = ({ title, message, icon }) => (
         <div className="text-center py-12 bg-white dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700/50">
              <div className="mx-auto h-12 w-12 text-gray-400">{icon}</div>
@@ -88,20 +106,20 @@ const AdminAnalytics: React.FC = () => {
     
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                  <div>
                     <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Kiosk Analytics</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                         View interactions per kiosk or see an aggregated total.
                     </p>
                 </div>
-                 <div className="w-64">
+                 <div className="w-full sm:w-64">
                      <label htmlFor="kiosk-select" className="sr-only">Select Kiosk</label>
                      <select
                         id="kiosk-select"
                         value={selectedKioskId}
                         onChange={e => setSelectedKioskId(e.target.value)}
-                        className="block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2 px-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 dark:focus:ring-offset-gray-900 dark:focus:ring-gray-200 sm:text-sm"
+                        className="block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
                     >
                         <option value="all">All Kiosks (Aggregated)</option>
                         {kioskProfiles.map(profile => (
@@ -112,9 +130,13 @@ const AdminAnalytics: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Most Viewed Brands */}
                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                    <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading mb-4">Most Viewed Brands</h4>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                           <ChartBarIcon className="h-6 w-6" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Most Viewed Brands</h4>
+                    </div>
                     {brandData.length > 0 ? (
                         <ul className="space-y-4">
                             {brandData.slice(0, 10).map((brand, index) => (
@@ -134,9 +156,13 @@ const AdminAnalytics: React.FC = () => {
                     )}
                 </div>
 
-                {/* Most Viewed Products */}
                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                    <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading mb-4">Most Viewed Products</h4>
+                     <div className="flex items-center gap-3 mb-4">
+                        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400">
+                           <CubeIcon className="h-6 w-6" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Most Viewed Products</h4>
+                    </div>
                     {productData.length > 0 ? (
                         <ul className="space-y-4">
                             {productData.slice(0, 10).map((product, index) => (
@@ -156,6 +182,37 @@ const AdminAnalytics: React.FC = () => {
                         </ul>
                     ) : (
                        <EmptyState title="No Product Data" message="No products have been viewed yet." icon={<CubeIcon className="w-full h-full" />} />
+                    )}
+                </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Kiosk Profiles</h4>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Assign friendly names to your kiosks for easier analytics. New kiosks will appear here after they've been used at least once. Changes are saved automatically.
+                </p>
+                <div className="mt-4 space-y-3 max-w-lg">
+                    {Object.keys(viewCounts).length > 0 ? Object.keys(viewCounts).map(kioskId => {
+                        const profile = settings.kiosk?.profiles?.find(p => p.id === kioskId);
+                        const currentName = profile?.name || '';
+                        return (
+                            <div key={kioskId} className="grid grid-cols-3 gap-4 items-center">
+                                <div className="col-span-1">
+                                    <label className="text-sm text-gray-500 dark:text-gray-400 truncate" title={kioskId}>{kioskId.substring(0, 15)}...</label>
+                                </div>
+                                <div className="col-span-2">
+                                    <input
+                                        type="text"
+                                        value={currentName}
+                                        onChange={(e) => handleKioskProfileNameChange(kioskId, e.target.value)}
+                                        placeholder="Enter kiosk name (e.g., 'Front Desk')"
+                                        className="w-full bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg shadow-sm py-2 px-3 text-sm"
+                                    />
+                                </div>
+                            </div>
+                        );
+                    }) : (
+                         <p className="text-sm text-gray-500 text-center py-4">No kiosk activity has been recorded yet.</p>
                     )}
                 </div>
             </div>

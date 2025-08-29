@@ -170,7 +170,7 @@ const ThemeEditor: React.FC<{
 // --- MAIN SETTINGS COMPONENT ---
 
 const AdminSettings: React.FC = () => {
-    const { settings: initialSettings, updateSettings, saveFileToStorage, loggedInUser, viewCounts } = useAppContext();
+    const { settings: initialSettings, updateSettings, saveFileToStorage, loggedInUser } = useAppContext();
     const [localSettings, setLocalSettings] = useState<Settings>(initialSettings);
     const [activeSection, setActiveSection] = useState('general');
     const [isDirty, setIsDirty] = useState(false);
@@ -215,21 +215,6 @@ const AdminSettings: React.FC = () => {
             },
         }));
         markDirty();
-    };
-
-    const handleKioskProfileNameChange = (kioskId: string, name: string) => {
-        const profiles = localSettings.kiosk?.profiles || [];
-        const existingProfileIndex = profiles.findIndex(p => p.id === kioskId);
-        let newProfiles;
-
-        if (existingProfileIndex > -1) {
-            newProfiles = profiles.map((p, index) =>
-                index === existingProfileIndex ? { ...p, name } : p
-            );
-        } else {
-            newProfiles = [...profiles, { id: kioskId, name }];
-        }
-        handleNestedSettingChange('kiosk', 'profiles' as any, newProfiles);
     };
     
     const handleNavigationChange = (index: number, field: keyof NavLink, value: string | boolean) => {
@@ -570,31 +555,6 @@ const AdminSettings: React.FC = () => {
                             <SettingRow label="Music Volume" description="Relative volume for the background music, multiplied by the main volume.">
                                  <RangeSlider name="backgroundMusicVolume" value={localSettings.backgroundMusicVolume} onChange={handleGeneralChange} min={0} max={1} step={0.05} />
                             </SettingRow>
-                             <SettingRow label="Kiosk Profiles" description="Assign friendly names to your kiosks for easier analytics. New kiosks will appear here after they've been used at least once.">
-                                <div className="space-y-3">
-                                    {Object.keys(viewCounts).map(kioskId => {
-                                        const profile = localSettings.kiosk?.profiles?.find(p => p.id === kioskId);
-                                        const currentName = profile?.name || '';
-                                        return (
-                                            <div key={kioskId} className="grid grid-cols-3 gap-2 items-center">
-                                                <div className="col-span-1">
-                                                    <label className="text-xs text-gray-500 dark:text-gray-400 truncate" title={kioskId}>{kioskId.substring(0, 15)}...</label>
-                                                </div>
-                                                <div className="col-span-2">
-                                                    <input
-                                                        type="text"
-                                                        value={currentName}
-                                                        onChange={(e) => handleKioskProfileNameChange(kioskId, e.target.value)}
-                                                        placeholder="Enter kiosk name (e.g., 'Front Desk')"
-                                                        className={textInputStyle}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                    {Object.keys(viewCounts).length === 0 && <p className="text-xs text-gray-500">No kiosk activity recorded yet.</p>}
-                                </div>
-                            </SettingRow>
                         </div>
                     </CollapsibleSection>
                 </div>
@@ -613,7 +573,7 @@ const AdminSettings: React.FC = () => {
                     </nav>
                 </aside>
 
-                <main className="flex-1 min-w-0 w-full space-y-6" role="tabpanel">
+                <main className="flex-1 min-w-0 w-full max-w-4xl space-y-6" role="tabpanel">
                    {renderPanel()}
                 </main>
             </div>
