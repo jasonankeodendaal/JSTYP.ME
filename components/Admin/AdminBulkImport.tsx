@@ -1,6 +1,8 @@
 
+
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from '../context/AppContext.tsx';
 import { UploadIcon, DocumentArrowDownIcon } from '../Icons';
 import type { Product, Brand } from '../../types';
 

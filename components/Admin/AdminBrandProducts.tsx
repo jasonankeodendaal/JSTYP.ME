@@ -2,7 +2,8 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { Brand, Product } from '../../types';
 import { ChevronLeftIcon, PlusIcon, TrashIcon, PencilIcon, CubeIcon, EyeIcon, EyeOffIcon, ChevronDownIcon } from '../Icons';
-import { useAppContext } from '../context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
 const CategoryManager: React.FC<{ brandId: string; }> = ({ brandId }) => {
@@ -144,12 +145,24 @@ const AdminBrandProducts: React.FC = () => {
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
     
-    if (!canManage) {
-        return (
+    const pageContent = (
+        <>
             <div className="text-center py-10">
                 <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
                 <p className="text-gray-500 dark:text-gray-400 mt-2">You do not have permission to manage brands and products.</p>
                 <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
+            </div>
+        </>
+    );
+
+    if (!canManage) {
+        return (
+            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+                <div className="w-full max-w-6xl mx-auto">
+                    <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                       {pageContent}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -181,9 +194,15 @@ const AdminBrandProducts: React.FC = () => {
 
     if (!brand) {
         return (
-            <div className="text-center py-10">
-                <h2 className="text-2xl font-bold">Brand not found</h2>
-                <button onClick={() => navigate('/admin')} className="text-blue-600 hover:underline mt-4 inline-block">Go back to dashboard</button>
+            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+                <div className="w-full max-w-6xl mx-auto">
+                     <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                        <div className="text-center py-10">
+                            <h2 className="text-2xl font-bold">Brand not found</h2>
+                            <button onClick={() => navigate('/admin')} className="text-blue-600 hover:underline mt-4 inline-block">Go back to dashboard</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -203,65 +222,69 @@ const AdminBrandProducts: React.FC = () => {
     );
 
     return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div>
-                <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
-                    <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back to Dashboard
-                </Link>
-                <div className="md:flex md:items-center md:justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 flex items-center justify-center">
-                           <LocalMedia src={brand.logoUrl} alt={brand.name} type="image" className="max-h-full max-w-full object-contain" />
-                        </div>
-                        <div>
-                            <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate section-heading">
-                                {brand.name}
-                            </h2>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{activeProducts.length} Active, {discontinuedProducts.length} Discontinued</p>
-                        </div>
-                    </div>
-                    <div className="mt-4 flex md:mt-0 md:ml-4">
-                         <Link
-                            to={`/admin/product/new/${brandId}`}
-                            className="btn btn-primary"
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            Add New Product
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="space-y-8">
+                    {/* Header */}
+                    <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                        <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                            <ChevronLeftIcon className="h-5 w-5 mr-1" />
+                            Back to Dashboard
                         </Link>
-                    </div>
-                </div>
-            </div>
-
-            {canManage && <CategoryManager brandId={brand.id} />}
-
-            {/* Product Grids */}
-            <div className="space-y-12">
-                <div>
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 section-heading">Active Products</h3>
-                     {activeProducts.length > 0 ? (
-                        <ProductGrid prods={activeProducts} />
-                    ) : (
-                         <div className="text-center py-12 bg-white dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700">
-                            <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No Active Products</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding the first product to this brand.</p>
-                            <div className="mt-6">
-                                <Link to={`/admin/product/new/${brandId}`} className="btn btn-primary">
+                        <div className="md:flex md:items-center md:justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="h-16 w-16 flex items-center justify-center">
+                                <LocalMedia src={brand.logoUrl} alt={brand.name} type="image" className="max-h-full max-w-full object-contain" />
+                                </div>
+                                <div>
+                                    <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate section-heading">
+                                        {brand.name}
+                                    </h2>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{activeProducts.length} Active, {discontinuedProducts.length} Discontinued</p>
+                                </div>
+                            </div>
+                            <div className="mt-4 flex md:mt-0 md:ml-4">
+                                <Link
+                                    to={`/admin/product/new/${brandId}`}
+                                    className="btn btn-primary"
+                                >
                                     <PlusIcon className="h-4 w-4" />
-                                    <span>Add Product</span>
+                                    Add New Product
                                 </Link>
                             </div>
                         </div>
-                    )}
-                </div>
-                 {discontinuedProducts.length > 0 && (
-                    <div>
-                        <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 section-heading">Discontinued Products</h3>
-                        <ProductGrid prods={discontinuedProducts} />
                     </div>
-                )}
+
+                    {canManage && <CategoryManager brandId={brand.id} />}
+
+                    {/* Product Grids */}
+                    <div className="space-y-12">
+                        <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 section-heading">Active Products</h3>
+                            {activeProducts.length > 0 ? (
+                                <ProductGrid prods={activeProducts} />
+                            ) : (
+                                <div className="text-center py-12 bg-gray-100 dark:bg-gray-700/50 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-600">
+                                    <CubeIcon className="mx-auto h-12 w-12 text-gray-400" />
+                                    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No Active Products</h3>
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding the first product to this brand.</p>
+                                    <div className="mt-6">
+                                        <Link to={`/admin/product/new/${brandId}`} className="btn btn-primary">
+                                            <PlusIcon className="h-4 w-4" />
+                                            <span>Add Product</span>
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        {discontinuedProducts.length > 0 && (
+                            <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 section-heading">Discontinued Products</h3>
+                                <ProductGrid prods={discontinuedProducts} />
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from '../context/AppContext.tsx';
 
 const PrintOrderView: React.FC = () => {
     const { quoteId } = useParams<{ quoteId: string }>();

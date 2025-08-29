@@ -3,9 +3,10 @@ import { useAppContext } from '../context/AppContext.tsx';
 import { ServerStackIcon, ChevronDownIcon, ArchiveBoxArrowDownIcon, LinkIcon } from '../Icons.tsx';
 import { Link } from 'react-router-dom';
 import JSZip from 'jszip';
+import InstallPrompt from '../InstallPrompt.tsx';
 
 const CodeBracketIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
     </svg>
 );
@@ -78,12 +79,13 @@ const AdminStorage: React.FC = () => {
         directoryHandle,
         loggedInUser,
         settings,
+        updateSettings
     } = useAppContext();
 
     const [isLoading, setIsLoading] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isPotentiallyRestricted, setIsPotentiallyRestricted] = useState(false);
-    const [sharedUrl, setSharedUrl] = useState('');
+    const [sharedUrl, setSharedUrl] = useState(settings.sharedUrl || '');
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSystem;
 
@@ -92,6 +94,10 @@ const AdminStorage: React.FC = () => {
             setIsPotentiallyRestricted(true);
         }
     }, []);
+    
+    useEffect(() => {
+        setSharedUrl(settings.sharedUrl || '');
+    }, [settings.sharedUrl]);
 
     if (!canManage) {
         return (
@@ -331,27 +337,87 @@ const AdminStorage: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50 flex flex-col sm:flex-row items-center gap-6">
-                <div className="flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-2xl bg-gray-800 dark:bg-gray-700 text-white">
-                    <ArchiveBoxArrowDownIcon className="h-8 w-8" />
-                </div>
-                <div className="flex-grow text-center sm:text-left">
-                    <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Complete Setup Guide</h4>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Download the full step-by-step documentation as a collection of images for offline use.</p>
-                </div>
-                <button onClick={handleDownloadGuide} disabled={isDownloading} className="btn btn-primary mt-2 sm:mt-0 flex-shrink-0">
-                    {isDownloading ? 'Generating...' : 'Download Guide as Images'}
-                </button>
-            </div>
             
             {storageProvider !== 'none' ? <ConnectedCard {...getProviderDetails()!} onDisconnect={() => disconnectFromStorage()} /> : renderProviderSelection()}
             
-            <div className="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
-                <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading text-center">
-                    Setup Instructions
-                </h3>
+            <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
+                <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Sync & API Settings</h3>
+                    <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
+                        <ChevronDownIcon className="w-5 h-5"/>
+                    </div>
+                </summary>
+                <div className="divide-y divide-gray-200 dark:divide-gray-700 px-4 sm:px-5">
+                    <div className="py-5 grid grid-cols-3 gap-4 items-center">
+                        <div className="col-span-1">
+                            <label htmlFor="autoSyncEnabled-toggle" className="block text-sm font-medium text-gray-800 dark:text-gray-200">Enable Auto-Sync</label>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Automatically push changes and check for updates when connected to a provider.</p>
+                        </div>
+                        <div className="mt-0 col-span-2 flex justify-end">
+                             <label htmlFor="autoSyncEnabled-toggle" className="flex items-center cursor-pointer">
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        id="autoSyncEnabled-toggle"
+                                        className="sr-only peer"
+                                        checked={settings.sync.autoSyncEnabled}
+                                        onChange={(e) => updateSettings({ sync: { ...settings.sync, autoSyncEnabled: e.target.checked }})}
+                                    />
+                                    <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
+                                    <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                     <div className="py-5 grid grid-cols-3 gap-4 items-center">
+                        <div className="col-span-1">
+                            <label htmlFor="customApiUrl" className="block text-sm font-medium text-gray-800 dark:text-gray-200">Custom API URL</label>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Endpoint for the 'Custom API Sync' provider.</p>
+                        </div>
+                        <div className="mt-0 col-span-2">
+                             <input
+                                type="url"
+                                id="customApiUrl"
+                                value={settings.customApiUrl}
+                                onChange={(e) => updateSettings({ customApiUrl: e.target.value })}
+                                className="w-full bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg shadow-sm py-2 px-3"
+                                placeholder="https://api.yourdomain.com/data"
+                            />
+                        </div>
+                    </div>
+                     <div className="py-5 grid grid-cols-3 gap-4 items-center">
+                        <div className="col-span-1">
+                            <label htmlFor="customApiKey" className="block text-sm font-medium text-gray-800 dark:text-gray-200">Custom API Auth Key</label>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Secret key for your custom API.</p>
+                        </div>
+                        <div className="mt-0 col-span-2">
+                            <input
+                                type="password"
+                                id="customApiKey"
+                                value={settings.customApiKey}
+                                onChange={(e) => updateSettings({ customApiKey: e.target.value })}
+                                className="w-full bg-gray-50 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg shadow-sm py-2 px-3"
+                                placeholder="Enter your secret API key"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </details>
 
-                <SetupInstruction title="The Definitive Guide: Cloud Sync Setup (Recommended)" defaultOpen>
+            <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
+                <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">PWA Installation</h3>
+                    <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
+                        <ChevronDownIcon className="w-5 h-5"/>
+                    </div>
+                </summary>
+                <div className="px-4 sm:px-5 py-5 border-t border-gray-200/80 dark:border-gray-700/50">
+                    <InstallPrompt />
+                </div>
+            </details>
+
+            <div className="space-y-4">
+                 <SetupInstruction title="The Definitive Guide: Cloud Sync Setup (Recommended)">
                     <p><strong>Use this for:</strong> The most powerful setup. Manage a main admin PC and multiple display kiosks (PCs, Android tablets) across different locations, all synced together over the internet.</p>
                     <p>This guide is in three parts. You will have two terminal windows running on your main computer by the end.</p>
                     
@@ -437,7 +503,6 @@ const AdminStorage: React.FC = () => {
                     </ol>
                     <p>Your setup is now complete! Changes will sync automatically.</p>
                 </SetupInstruction>
-
                  <SetupInstruction title="Alternative: How to use a Local or Network Folder">
                     <ol>
                         <li>Click the <strong>"Connect to Folder"</strong> button above.</li>
@@ -448,7 +513,6 @@ const AdminStorage: React.FC = () => {
                     </ol>
                 </SetupInstruction>
             </div>
-
         </div>
     );
 };

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 
 // Load environment variables. 
 // This must be done before accessing process.env.
@@ -21,6 +22,7 @@ if (dotenvResult.error) {
 const app = express();
 const port = process.env.PORT || 3001;
 const dbFilePath = path.join(__dirname, 'data.json');
+const uploadsDir = path.join(__dirname, 'uploads');
 const apiKey = process.env.API_KEY;
 
 if (!apiKey || apiKey === 'your-super-secret-key-here') {
@@ -29,9 +31,29 @@ if (!apiKey || apiKey === 'your-super-secret-key-here') {
     process.exit(1);
 }
 
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' })); // Increase limit for potentially large data blobs
+app.use('/files', express.static(uploadsDir)); // Serve uploaded files statically
+
+// Multer storage config
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        // To prevent filename conflicts and special character issues
+        const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+        cb(null, `${Date.now()}-${safeOriginalName}`);
+    }
+});
+const upload = multer({ storage });
+
 
 // API Key Auth Middleware
 const authenticateKey = (req, res, next) => {
@@ -41,7 +63,9 @@ const authenticateKey = (req, res, next) => {
     next();
 };
 
+// Apply auth to all data-mutating or sensitive endpoints
 app.use('/data', authenticateKey);
+app.use('/upload', authenticateKey);
 
 // Utility functions
 const readData = () => {
@@ -87,6 +111,15 @@ app.post('/data', (req, res) => {
     const newData = req.body;
     writeData(newData);
     res.status(200).json({ message: 'Data saved successfully' });
+});
+
+// POST /upload - Upload a single file
+app.post('/upload', upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file provided.' });
+    }
+    // Return the generated filename so the client can reference it
+    res.status(200).json({ filename: req.file.filename });
 });
 
 // Add a root route to show a status page
@@ -150,10 +183,13 @@ app.get('/', (req, res) => {
                     This is the backend API server for the Interactive Kiosk. It's working correctly!
                 </p>
                 <p>
-                    To use the application, you should open the frontend, which is typically served on port <code>3000</code>.
+                    The endpoint <code>/data</code> is used for database sync.
                 </p>
-                <p>
-                    <a href="http://localhost:3000" target="_blank" rel="noopener noreferrer">Click here to open the Kiosk App</a>
+                 <p>
+                    The endpoint <code>/upload</code> is used for file uploads.
+                </p>
+                 <p>
+                    The directory <code>/files</code> serves uploaded assets.
                 </p>
             </div>
         </body>

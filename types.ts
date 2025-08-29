@@ -97,6 +97,11 @@ export interface NavLink {
   enabled: boolean;
 }
 
+export interface KioskProfile {
+  id: string; // The unique kiosk identifier
+  name: string; // The user-friendly, editable name
+}
+
 export interface Settings {
   logoUrl: string;
   sharedUrl?: string;
@@ -136,6 +141,7 @@ export interface Settings {
   };
   kiosk: {
     idleRedirectTimeout: number; // in seconds, 0 to disable
+    profiles?: KioskProfile[];
   };
   navigation: {
     links: NavLink[];
@@ -216,6 +222,12 @@ export interface Quote {
   }[];
 }
 
+// FIX: Export ViewCounts type to be used in AppContext and other components.
+export type ViewCounts = Record<string, {
+  brands: Record<string, number>;
+  products: Record<string, number>;
+}>;
+
 export interface BackupData {
   brands: Brand[];
   products: Product[];
@@ -228,8 +240,6 @@ export interface BackupData {
   categories?: Category[];
   clients?: Client[];
   quotes?: Quote[];
-  viewCounts?: {
-    brands: Record<string, number>;
-    products: Record<string, number>;
-  };
+  // FIX: Use the exported ViewCounts type.
+  viewCounts?: ViewCounts;
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { useAppContext } from './context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from './context/AppContext.tsx';
 import { ArrowDownTrayIcon } from './Icons';
 
 const InstallPrompt: React.FC = () => {

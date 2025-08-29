@@ -10,7 +10,9 @@ if (!rootElement) {
 // Register Service Worker for PWA functionality
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(registration => {
+    // Construct the URL to the service worker from the origin to avoid path resolution issues in sandboxed environments.
+    const swUrl = `${window.location.origin}/sw.js`;
+    navigator.serviceWorker.register(swUrl).then(registration => {
       console.log('Service Worker registered: ', registration);
     }).catch(registrationError => {
       console.log('Service Worker registration failed: ', registrationError);

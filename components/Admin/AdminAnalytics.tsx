@@ -1,42 +1,79 @@
-
-import React, { useMemo } from 'react';
-import { useAppContext } from '../context/AppContext';
+import React, { useMemo, useState } from 'react';
+// FIX: Correct import path for AppContext
+import { useAppContext } from '../context/AppContext.tsx';
 import { ChartBarIcon, CubeIcon } from '../Icons';
+// FIX: Import ViewCounts type to correctly type analytics data.
+import type { ViewCounts } from '../../types.ts';
 
 const AdminAnalytics: React.FC = () => {
-    const { brands, products, viewCounts } = useAppContext();
+    const { brands, products, viewCounts, settings } = useAppContext();
+    const [selectedKioskId, setSelectedKioskId] = useState('all');
+
+    const kioskProfiles = useMemo(() => {
+        const profiles = settings.kiosk?.profiles || [];
+        const allKioskIds = Object.keys(viewCounts);
+        
+        const profileMap = new Map(profiles.map(p => [p.id, p.name]));
+        
+        return allKioskIds.map(id => ({
+            id,
+            name: profileMap.get(id) || `Unnamed Kiosk (${id.substring(0, 8)}...)`
+        })).sort((a,b) => a.name.localeCompare(b.name));
+
+    }, [viewCounts, settings.kiosk?.profiles]);
+
+    const aggregatedData = useMemo(() => {
+        if (selectedKioskId === 'all') {
+            const aggregatedBrands: Record<string, number> = {};
+            const aggregatedProducts: Record<string, number> = {};
+
+            // FIX: Explicitly type kioskData to prevent properties from being 'unknown'.
+            Object.values(viewCounts).forEach((kioskData: ViewCounts[string]) => {
+                Object.entries(kioskData.brands).forEach(([brandId, count]) => {
+                    aggregatedBrands[brandId] = (aggregatedBrands[brandId] || 0) + count;
+                });
+                Object.entries(kioskData.products).forEach(([productId, count]) => {
+                    aggregatedProducts[productId] = (aggregatedProducts[productId] || 0) + count;
+                });
+            });
+            return { brands: aggregatedBrands, products: aggregatedProducts };
+        } else {
+            return viewCounts[selectedKioskId] || { brands: {}, products: {} };
+        }
+    }, [selectedKioskId, viewCounts]);
+
 
     const brandData = useMemo(() => {
-        if (!viewCounts?.brands) return [];
-        return Object.entries(viewCounts.brands)
+        if (!aggregatedData.brands) return [];
+        return Object.entries(aggregatedData.brands)
             .map(([brandId, count]) => {
-                const brand = brands.find(b => b.id === brandId);
+                const brand = brands.find(b => b.id === brandId && !b.isDeleted);
                 return {
                     id: brandId,
-                    name: brand?.name || `Deleted Brand (${brandId})`,
+                    name: brand?.name || `Deleted Brand`,
                     count: count,
                 };
             })
-            .filter(b => b.count > 0)
+            .filter(b => b.count > 0 && b.name !== 'Deleted Brand')
             .sort((a, b) => b.count - a.count);
-    }, [viewCounts.brands, brands]);
+    }, [aggregatedData.brands, brands]);
 
     const productData = useMemo(() => {
-        if (!viewCounts?.products) return [];
-        return Object.entries(viewCounts.products)
+        if (!aggregatedData.products) return [];
+        return Object.entries(aggregatedData.products)
             .map(([productId, count]) => {
-                const product = products.find(p => p.id === productId);
+                const product = products.find(p => p.id === productId && !p.isDeleted);
                 const brand = brands.find(b => b.id === product?.brandId);
                 return {
                     id: productId,
-                    name: product?.name || `Deleted Product (${productId})`,
+                    name: product?.name || `Deleted Product`,
                     brandName: brand?.name || 'N/A',
                     count: count,
                 };
             })
-            .filter(p => p.count > 0)
+            .filter(p => p.count > 0 && p.name !== 'Deleted Product')
             .sort((a, b) => b.count - a.count);
-    }, [viewCounts.products, products, brands]);
+    }, [aggregatedData.products, products, brands]);
     
     const maxBrandViews = brandData.length > 0 ? Math.max(...brandData.map(b => b.count)) : 0;
     const maxProductViews = productData.length > 0 ? Math.max(...productData.map(p => p.count)) : 0;
@@ -51,12 +88,30 @@ const AdminAnalytics: React.FC = () => {
     
     return (
         <div className="space-y-8">
-            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Kiosk Analytics</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 -mt-6">
-                View simple analytics based on customer interactions. Counts are incremented each time a brand or product page is viewed.
-            </p>
+            <div className="flex justify-between items-center">
+                 <div>
+                    <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Kiosk Analytics</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        View interactions per kiosk or see an aggregated total.
+                    </p>
+                </div>
+                 <div className="w-64">
+                     <label htmlFor="kiosk-select" className="sr-only">Select Kiosk</label>
+                     <select
+                        id="kiosk-select"
+                        value={selectedKioskId}
+                        onChange={e => setSelectedKioskId(e.target.value)}
+                        className="block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2 px-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 dark:focus:ring-offset-gray-900 dark:focus:ring-gray-200 sm:text-sm"
+                    >
+                        <option value="all">All Kiosks (Aggregated)</option>
+                        {kioskProfiles.map(profile => (
+                            <option key={profile.id} value={profile.id}>{profile.name}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
 
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Most Viewed Brands */}
                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                     <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading mb-4">Most Viewed Brands</h4>

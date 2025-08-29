@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Brand, Catalogue, Pamphlet, Client } from '../../types';
+import type { Brand, Catalogue, Pamphlet, Client, TvContent } from '../../types';
 import AdminSettings from './AdminSettings';
 import AdminScreensaverAds from './AdminScreensaverAds';
+// FIX: Correct import path for AppContext
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons';
 import AdminUserManagement from './AdminUserManagement';
 import AdminBulkImport from './AdminBulkImport';
 import AdminZipBulkImport from './AdminZipBulkImport';
@@ -17,7 +18,7 @@ import AdminPdfConverter from './AdminPdfConverter';
 import AdminAnalytics from './AdminAnalytics';
 
 type Section = 'brands' | 'content' | 'kiosk' | 'settings' | 'system' | 'users' | 'analytics' | 'quotes' | 'trash' | 'pdf';
-type SubSection = 'catalogues' | 'pamphlets';
+type SubSection = 'catalogues' | 'pamphlets' | 'screensaver' | 'tv';
 
 const MotionDiv = motion.div as any;
 
@@ -64,7 +65,7 @@ const AdminFooter: React.FC<{ activeSection: Section; setActiveSection: (section
                                 </button>
                             ))}
                             <Link to="/" className="flex flex-col items-center p-2 rounded-lg transition-colors text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-800/50">
-                                <EyeIcon className="w-5 h-5" />
+                                <ViewKioskIcon className="w-5 h-5" />
                                 <span className="text-xs mt-1 font-semibold">View Kiosk</span>
                             </Link>
                             <button onClick={logout} className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-red-500">
@@ -134,7 +135,7 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 overflow-hidden flex flex-col">
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-8 pb-32">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-8 pb-40">
                 <div className="w-full max-w-6xl mx-auto">
                     <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
                         <AnimatePresence mode="wait">
@@ -334,8 +335,87 @@ const ContentCard: React.FC<{ item: Catalogue | Pamphlet; type: 'catalogue' | 'p
 };
 
 const AdminKioskManagement: React.FC = () => {
-    // This component can be expanded to include TV content management as well
-    return <AdminScreensaverAds />;
+    const [subSection, setSubSection] = useState<SubSection>('screensaver');
+    const { loggedInUser } = useAppContext();
+    const perms = loggedInUser?.permissions;
+    const canManageScreensaver = loggedInUser?.isMainAdmin || perms?.canManageScreensaver;
+    const canManageTvContent = loggedInUser?.isMainAdmin || perms?.canManageTvContent;
+
+    return (
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <div className="border-b border-gray-200 dark:border-gray-700">
+                    <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button onClick={() => setSubSection('screensaver')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm ${subSection === 'screensaver' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Screensaver Ads</button>
+                        <button onClick={() => setSubSection('tv')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm ${subSection === 'tv' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>TV Content</button>
+                    </nav>
+                </div>
+                {subSection === 'screensaver' && canManageScreensaver && <Link to="/admin/ad/new" className="btn btn-primary"><PlusIcon className="h-4 w-4" /> Add New</Link>}
+                {subSection === 'tv' && canManageTvContent && <Link to="/admin/tv-content/new" className="btn btn-primary"><PlusIcon className="h-4 w-4" /> Add New</Link>}
+            </div>
+
+            <AnimatePresence mode="wait">
+                <MotionDiv key={subSection} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                    {subSection === 'screensaver' && <AdminScreensaverAds />}
+                    {subSection === 'tv' && <AdminTvContentView />}
+                </MotionDiv>
+            </AnimatePresence>
+        </div>
+    );
+};
+
+const AdminTvContentView: React.FC = () => {
+    const { tvContent, brands, loggedInUser, showConfirmation, deleteTvContent } = useAppContext();
+    const navigate = useNavigate();
+    const perms = loggedInUser?.permissions;
+    const canManageTvContent = loggedInUser?.isMainAdmin || perms?.canManageTvContent;
+
+    const handleDeleteTvContent = (id: string, modelName: string) => {
+        showConfirmation(
+            `Are you sure you want to move the TV content for "${modelName}" to the trash?`,
+            () => deleteTvContent(id)
+        );
+    };
+
+    const visibleTvContent = tvContent.filter(tc => !tc.isDeleted);
+    const groupedByBrand = visibleTvContent.reduce((acc, content) => {
+        const brandName = brands.find(b => b.id === content.brandId)?.name || 'Unknown Brand';
+        if (!acc[brandName]) acc[brandName] = [];
+        acc[brandName].push(content);
+        return acc;
+    }, {} as Record<string, TvContent[]>);
+
+    return (
+        <div className="space-y-8">
+            {Object.keys(groupedByBrand).length > 0 ? Object.entries(groupedByBrand).map(([brandName, contents]) => (
+                <div key={brandName}>
+                    <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 section-heading">{brandName}</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {contents.map(content => (
+                            <div key={content.id} className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/50 p-4 flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                    <p className="font-semibold text-gray-800 dark:text-gray-100 truncate item-title">{content.modelName}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{content.media.length} media items</p>
+                                </div>
+                                {canManageTvContent && (
+                                    <div className="flex items-center shrink-0">
+                                        <button type="button" onClick={() => navigate(`/admin/tv-content/edit/${content.id}`)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Edit TV Content"><PencilIcon className="h-4 w-4" /></button>
+                                        <button type="button" onClick={() => handleDeleteTvContent(content.id, content.modelName)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Delete TV Content"><TrashIcon className="h-4 w-4" /></button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )) : (
+                <div className="text-center py-12 bg-white dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700/50">
+                    <TvIcon className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">No TV Content Found</h3>
+                    {canManageTvContent && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding your first TV model content.</p>}
+                </div>
+            )}
+        </div>
+    );
 };
 
 const AdminQuotesView: React.FC = () => {

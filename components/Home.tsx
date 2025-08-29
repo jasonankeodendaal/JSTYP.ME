@@ -4,7 +4,6 @@ import { useAppContext } from './context/AppContext.tsx';
 import { EyeIcon, EyeOffIcon, PlusIcon, ClipboardDocumentListIcon } from './Icons.tsx';
 import PamphletDisplay from './PamphletCarousel.tsx';
 import LocalMedia from './LocalMedia.tsx';
-import InstallPrompt from './InstallPrompt.tsx';
 
 const BrandGrid: React.FC = () => {
     const { brands } = useAppContext();
@@ -113,7 +112,6 @@ const Home: React.FC = () => {
       <ClientStockPickCTA />
       <PamphletDisplay />
       <BrandGrid />
-      <InstallPrompt />
       <ScreensaverToggle />
     </div>
   );

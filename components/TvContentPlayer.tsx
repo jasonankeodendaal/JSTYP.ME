@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppContext } from './context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from './context/AppContext.tsx';
 import type { TvContent } from '../types';
 import LocalMedia from './LocalMedia';
 import { XIcon } from './Icons';

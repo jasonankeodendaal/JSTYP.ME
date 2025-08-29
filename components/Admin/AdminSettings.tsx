@@ -29,11 +29,6 @@ const Bars3Icon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) 
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
     </svg>
 );
-const LinkIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
-  </svg>
-);
 
 
 // --- SHARED DATA & STYLES ---
@@ -175,7 +170,7 @@ const ThemeEditor: React.FC<{
 // --- MAIN SETTINGS COMPONENT ---
 
 const AdminSettings: React.FC = () => {
-    const { settings: initialSettings, updateSettings, saveFileToStorage, loggedInUser } = useAppContext();
+    const { settings: initialSettings, updateSettings, saveFileToStorage, loggedInUser, viewCounts } = useAppContext();
     const [localSettings, setLocalSettings] = useState<Settings>(initialSettings);
     const [activeSection, setActiveSection] = useState('general');
     const [isDirty, setIsDirty] = useState(false);
@@ -220,6 +215,21 @@ const AdminSettings: React.FC = () => {
             },
         }));
         markDirty();
+    };
+
+    const handleKioskProfileNameChange = (kioskId: string, name: string) => {
+        const profiles = localSettings.kiosk?.profiles || [];
+        const existingProfileIndex = profiles.findIndex(p => p.id === kioskId);
+        let newProfiles;
+
+        if (existingProfileIndex > -1) {
+            newProfiles = profiles.map((p, index) =>
+                index === existingProfileIndex ? { ...p, name } : p
+            );
+        } else {
+            newProfiles = [...profiles, { id: kioskId, name }];
+        }
+        handleNestedSettingChange('kiosk', 'profiles' as any, newProfiles);
     };
     
     const handleNavigationChange = (index: number, field: keyof NavLink, value: string | boolean) => {
@@ -334,7 +344,6 @@ const AdminSettings: React.FC = () => {
         { id: 'navigation', title: 'Navigation', icon: <Bars3Icon /> },
         { id: 'components', title: 'Components', icon: <ViewColumnsIcon /> },
         { id: 'kiosk', title: 'Kiosk Mode', icon: <ComputerDesktopIcon /> },
-        { id: 'api', title: 'API Integrations', icon: <LinkIcon className="w-6 h-6" /> },
     ];
     
     const renderPanel = () => {
@@ -515,24 +524,6 @@ const AdminSettings: React.FC = () => {
                  <div className="space-y-6">
                     <CollapsibleSection title="Kiosk & Screensaver Settings" defaultOpen>
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                            <SettingRow label="Enable Auto-Sync" description="When connected to a storage provider, automatically push changes and check for updates.">
-                                <label htmlFor="autoSyncEnabled-toggle" className="flex items-center cursor-pointer">
-                                    <div className="relative">
-                                        <input
-                                            type="checkbox"
-                                            id="autoSyncEnabled-toggle"
-                                            className="sr-only peer"
-                                            checked={localSettings.sync.autoSyncEnabled}
-                                            onChange={(e) => handleNestedSettingChange('sync', 'autoSyncEnabled' as any, e.target.checked)}
-                                        />
-                                        <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
-                                        <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
-                                    </div>
-                                    <span className={`ml-3 text-sm font-medium ${localSettings.sync.autoSyncEnabled ? 'text-gray-800 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                                        {localSettings.sync.autoSyncEnabled ? 'Enabled' : 'Disabled'}
-                                    </span>
-                                </label>
-                            </SettingRow>
                             <SettingRow label="Screensaver Delay" description="Time of inactivity before screensaver starts.">
                                 <RangeSlider name="screensaverDelay" value={localSettings.screensaverDelay} onChange={handleGeneralChange} min={5} max={180} step={5} unit="s" />
                             </SettingRow>
@@ -579,35 +570,34 @@ const AdminSettings: React.FC = () => {
                             <SettingRow label="Music Volume" description="Relative volume for the background music, multiplied by the main volume.">
                                  <RangeSlider name="backgroundMusicVolume" value={localSettings.backgroundMusicVolume} onChange={handleGeneralChange} min={0} max={1} step={0.05} />
                             </SettingRow>
+                             <SettingRow label="Kiosk Profiles" description="Assign friendly names to your kiosks for easier analytics. New kiosks will appear here after they've been used at least once.">
+                                <div className="space-y-3">
+                                    {Object.keys(viewCounts).map(kioskId => {
+                                        const profile = localSettings.kiosk?.profiles?.find(p => p.id === kioskId);
+                                        const currentName = profile?.name || '';
+                                        return (
+                                            <div key={kioskId} className="grid grid-cols-3 gap-2 items-center">
+                                                <div className="col-span-1">
+                                                    <label className="text-xs text-gray-500 dark:text-gray-400 truncate" title={kioskId}>{kioskId.substring(0, 15)}...</label>
+                                                </div>
+                                                <div className="col-span-2">
+                                                    <input
+                                                        type="text"
+                                                        value={currentName}
+                                                        onChange={(e) => handleKioskProfileNameChange(kioskId, e.target.value)}
+                                                        placeholder="Enter kiosk name (e.g., 'Front Desk')"
+                                                        className={textInputStyle}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {Object.keys(viewCounts).length === 0 && <p className="text-xs text-gray-500">No kiosk activity recorded yet.</p>}
+                                </div>
+                            </SettingRow>
                         </div>
                     </CollapsibleSection>
                 </div>
-            );
-            case 'api': return (
-                <CollapsibleSection title="API Integrations" defaultOpen>
-                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                        <SettingRow label="Custom API URL" description="The endpoint for your self-hosted API server. Used for the 'Custom API Sync' provider.">
-                            <input
-                                type="url"
-                                name="customApiUrl"
-                                value={localSettings.customApiUrl}
-                                onChange={handleGeneralChange}
-                                className={textInputStyle}
-                                placeholder="https://api.yourdomain.com/data"
-                            />
-                        </SettingRow>
-                        <SettingRow label="Custom API Auth Key" description="The secret key to authenticate with your custom API server.">
-                            <input
-                                type="password"
-                                name="customApiKey"
-                                value={localSettings.customApiKey}
-                                onChange={handleGeneralChange}
-                                className={textInputStyle}
-                                placeholder="Enter your secret API key"
-                            />
-                        </SettingRow>
-                    </div>
-                </CollapsibleSection>
             );
             default: return null;
         }

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useAppContext } from '../context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from '../context/AppContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import type { Client } from '../../types';
 import { XIcon } from '../Icons';

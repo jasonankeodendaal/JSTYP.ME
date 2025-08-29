@@ -1,5 +1,6 @@
 import React, { useState, useEffect, forwardRef, Ref } from 'react';
-import { useAppContext } from './context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from './context/AppContext.tsx';
 import { motion } from 'framer-motion';
 
 // Discriminated union for props to avoid type conflicts between img and video attributes.

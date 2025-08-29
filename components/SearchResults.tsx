@@ -4,7 +4,8 @@ import React, { useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { ChevronLeftIcon } from './Icons';
-import { useAppContext } from './context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from './context/AppContext.tsx';
 
 const SearchResults: React.FC = () => {
     const [searchParams] = useSearchParams();

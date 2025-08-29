@@ -1,7 +1,9 @@
 
+
 import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAppContext } from './context/AppContext';
+// FIX: Correct import path for AppContext
+import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon, TvIcon } from './Icons';
 import LocalMedia from './LocalMedia';
 

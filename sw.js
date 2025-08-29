@@ -1,10 +1,9 @@
 const CACHE_NAME = 'product-catalogue-cache-v4'; // Incremented version
 const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v4'; // Incremented version
 
-// APP_SHELL_URLS should include the root path to ensure index.html is cached correctly for navigation.
+// Use relative paths for the app shell to avoid issues in sandboxed/nested environments.
 const APP_SHELL_URLS = [
   './',
-  './index.html',
   './manifest.json',
   './index.css',
 ];
@@ -95,34 +94,32 @@ self.addEventListener('fetch', event => {
         return;
     }
     
-    // For navigation requests (opening the app, refreshing a page), use a network-first strategy
-    // that gracefully falls back to the cached app shell (index.html).
+    // For navigation requests, use a network-first strategy.
+    // If the network fails (or returns an error page like a 404), fall back to the cached app shell.
     if (request.mode === 'navigate') {
         event.respondWith(
-            caches.open(CACHE_NAME).then(cache => {
-                return fetch(request)
-                    .then(networkResponse => {
-                        // If the network response is good, use it and cache it.
-                        if (networkResponse.ok) {
-                            cache.put(request, networkResponse.clone());
-                            return networkResponse;
-                        }
-                        // If the network returns a 404 or other error, it's a client-side route.
-                        // Serve the cached app shell instead of the error page.
-                        console.log('Service Worker: Navigation request returned non-OK response, serving index.html from cache.');
-                        return cache.match('./');
-                    })
-                    .catch(() => {
-                        // If the network fails entirely (offline), serve the app shell from the cache.
-                        console.log('Service Worker: Navigation fetch failed, serving index.html from cache.');
-                        return cache.match('./');
-                    });
-            })
+            fetch(request)
+                .then(response => {
+                    // If we get a valid response, cache it and return it.
+                    if (response.ok) {
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            cache.put(request, responseToCache);
+                        });
+                    }
+                    // For a SPA, even a 404 from the server should be handled by the client-side app.
+                    // So we fall back to the cached root page ('./').
+                    return response.ok ? response : caches.match('./');
+                })
+                .catch(() => {
+                    // This catches network errors (e.g., offline) and returns the app shell.
+                    return caches.match('./');
+                })
         );
         return;
     }
 
-    // For all other assets (app shell files, local components), use a network-first strategy
+    // For all other assets (app shell files, etc.), use a network-first strategy
     event.respondWith(
         caches.open(CACHE_NAME).then(cache => {
             return fetch(request)
