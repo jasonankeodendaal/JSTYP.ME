@@ -262,6 +262,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [localVolume, setLocalVolume] = useState(settings.videoVolume);
     const [kioskId, setKioskId] = useState('');
 
+    // FIX: Hoist updateSettings to be a useCallback function within the component's scope.
+    // This makes it accessible to other functions being defined in the context value object.
+    const updateSettings = useCallback((newSettings: Partial<Settings>) => {
+        setSettings(prev => deepMerge(prev, newSettings));
+    }, []);
+
     // --- GENERIC CRUD ---
     const createCrudOperations = <T extends { id: string }>(
         state: T[],
@@ -470,9 +476,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: q.status === 'pending' ? 'quoted' : 'pending'} : q));
         },
 
-        updateSettings: (newSettings: Partial<Settings>) => {
-            setSettings(prev => deepMerge(prev, newSettings));
-        },
+        updateSettings,
         restoreBackup: (data: Partial<BackupData>) => {
             if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
             if (data.brands) setBrands(data.brands);
@@ -520,9 +524,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isStorageConnected: storageProvider !== 'none',
         directoryHandle,
         connectToLocalProvider: async () => {},
-        connectToCloudProvider: () => {},
-        connectToSharedUrl: () => {},
-        disconnectFromStorage: () => {},
+        connectToCloudProvider: (provider: 'customApi' | 'googleDrive') => {
+            if (provider === 'customApi') {
+                if (!settings.customApiUrl) {
+                    alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
+                    const settingsSection = document.getElementById('api-settings-section');
+                    if (settingsSection) {
+                        settingsSection.setAttribute('open', '');
+                        settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+            }
+            setStorageProvider(provider);
+            idbSet('storageProvider', provider);
+        },
+        connectToSharedUrl: (url: string) => {
+            if (!url) {
+                alert("Please enter a URL to connect.");
+                return;
+            }
+            updateSettings({ sharedUrl: url });
+            setStorageProvider('sharedUrl');
+            idbSet('storageProvider', 'sharedUrl');
+        },
+        disconnectFromStorage: () => {
+            showConfirmation(
+                "Are you sure you want to disconnect? Auto-sync will be disabled.",
+                () => {
+                    setStorageProvider('none');
+                    idbSet('storageProvider', 'none');
+                    if (directoryHandle) {
+                        setDirectoryHandle(null);
+                        idbSet('directoryHandle', null);
+                    }
+                }
+            );
+        },
         saveFileToStorage: async (file: File) => {
             try {
                 const isCustomApi = storageProvider === 'customApi';

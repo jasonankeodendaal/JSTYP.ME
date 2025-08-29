@@ -1,21 +1,19 @@
-
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent } from '../../types';
-import AdminSettings from './AdminSettings';
-import AdminScreensaverAds from './AdminScreensaverAds';
-import { useAppContext } from '../context/AppContext';
-import AdminBackupRestore from './AdminBackupRestore';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon } from '../Icons';
-import AdminUserManagement from './AdminUserManagement';
-import AdminBulkImport from './AdminBulkImport';
-import AdminZipBulkImport from './AdminZipBulkImport';
-import AdminStorage from './AdminStorage';
-import LocalMedia from '../LocalMedia';
-import AdminTrash from './AdminTrash';
-import AdminPdfConverter from './AdminPdfConverter';
-import AdminAnalytics from './AdminAnalytics';
+import AdminSettings from './AdminSettings.tsx';
+import AdminScreensaverAds from './AdminScreensaverAds.tsx';
+import { useAppContext } from '../context/AppContext.tsx';
+import AdminBackupRestore from './AdminBackupRestore.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon } from '../Icons.tsx';
+import AdminUserManagement from './AdminUserManagement.tsx';
+import AdminBulkImport from './AdminBulkImport.tsx';
+import AdminZipBulkImport from './AdminZipBulkImport.tsx';
+import AdminStorage from './AdminStorage.tsx';
+import LocalMedia from '../LocalMedia.tsx';
+import AdminTrash from './AdminTrash.tsx';
+import AdminPdfConverter from './AdminPdfConverter.tsx';
+import AdminAnalytics from './AdminAnalytics.tsx';
 
 type Tab = 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'settings' | 'storage' | 'backup' | 'users' | 'trash' | 'pdfConverter' | 'analytics';
 
@@ -95,7 +93,7 @@ const AdminContentCard: React.FC<{
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<Tab>('brands');
+    const [activeTab, setActiveTab] = useState<Tab>('storage');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
     const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent } = useAppContext();
 
@@ -389,42 +387,46 @@ const AdminDashboard: React.FC = () => {
     }
 
     return (
-        <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                  <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Admin Dashboard</h1>
-                  {loggedInUser && <p className="text-gray-600 dark:text-gray-400 mt-1">Signed in as {loggedInUser.firstName} {loggedInUser.lastName}</p>}
-                </div>
-                <button type="button" onClick={handleLogout} className="btn btn-destructive">
-                    Logout
-                </button>
-            </div>
-             <p className="text-gray-600 dark:text-gray-400">
-                Welcome to the admin panel. All changes made here are live for the current session.
-                <br />
-                <strong className="font-semibold">Note:</strong> To persist changes across devices or sessions, connect a storage provider and sync your data.
-            </p>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
+            <div className="w-full max-w-6xl mx-auto">
+                <div className="space-y-8">
+                    <div className="flex justify-between items-center">
+                        <div>
+                        <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Admin Dashboard</h1>
+                        {loggedInUser && <p className="text-gray-600 dark:text-gray-400 mt-1">Signed in as {loggedInUser.firstName} {loggedInUser.lastName}</p>}
+                        </div>
+                        <button type="button" onClick={handleLogout} className="btn btn-destructive">
+                            Logout
+                        </button>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400">
+                        Welcome to the admin panel. All changes made here are live for the current session.
+                        <br />
+                        <strong className="font-semibold">Note:</strong> To persist changes across devices or sessions, connect a storage provider and sync your data.
+                    </p>
 
-            <div>
-                <div className="border-b border-gray-200 dark:border-gray-700">
-                    <nav className="flex items-center flex-wrap gap-x-8 gap-y-1" aria-label="Tabs">
-                        {canManageBrands && <TabButton tabName="brands" label="Brands" icon={<CircleStackIcon className="h-4 w-4"/>} />}
-                        {canViewAnalytics && <TabButton tabName="analytics" label="Analytics" icon={<ChartPieIcon className="h-4 w-4"/>} />}
-                        {canManageCatalogues && <TabButton tabName="catalogues" label="Catalogues" icon={<BookOpenIcon className="h-4 w-4"/>} />}
-                        {canManagePamphlets && <TabButton tabName="pamphlets" label="Pamphlets" icon={<DocumentTextIcon className="h-4 w-4"/>} />}
-                        {canManageScreensaver && <TabButton tabName="screensaverAds" label="Screensaver" icon={<EyeIcon className="h-4 w-4"/>} />}
-                        {canManageTvContent && <TabButton tabName="tv-content" label="TV Content" icon={<TvIcon className="h-4 w-4"/>} />}
-                        {canManageSystem && <TabButton tabName="pdfConverter" label="PDF Converter" icon={<DocumentArrowRightIcon className="h-4 w-4"/>} />}
-                        {canManageSettings && <TabButton tabName="settings" label="Settings" icon={<PencilIcon className="h-4 w-4"/>} />}
-                        {canManageSystem && <TabButton tabName="storage" label="Storage" icon={<ServerStackIcon className="h-4 w-4"/>} />}
-                        {canManageSystem && <TabButton tabName="backup" label={backupTabLabel} icon={<RestoreIcon className="h-4 w-4"/>} />}
-                        {loggedInUser?.isMainAdmin && <TabButton tabName="users" label="Users" icon={<UsersIcon className="h-4 w-4"/>}/>}
-                        {canManageSystem && <TabButton tabName="trash" label="Trash" icon={<TrashIcon className="h-4 w-4"/>} />}
-                    </nav>
-                </div>
-                
-                <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-b-2xl rounded-tr-2xl shadow-xl mt-0">
-                     {renderContent()}
+                    <div>
+                        <div className="border-b border-gray-200 dark:border-gray-700">
+                            <nav className="flex items-center flex-wrap gap-x-8 gap-y-1" aria-label="Tabs">
+                                {canManageBrands && <TabButton tabName="brands" label="Brands" icon={<CircleStackIcon className="h-4 w-4"/>} />}
+                                {canViewAnalytics && <TabButton tabName="analytics" label="Analytics" icon={<ChartPieIcon className="h-4 w-4"/>} />}
+                                {canManageCatalogues && <TabButton tabName="catalogues" label="Catalogues" icon={<BookOpenIcon className="h-4 w-4"/>} />}
+                                {canManagePamphlets && <TabButton tabName="pamphlets" label="Pamphlets" icon={<DocumentTextIcon className="h-4 w-4"/>} />}
+                                {canManageScreensaver && <TabButton tabName="screensaverAds" label="Screensaver" icon={<EyeIcon className="h-4 w-4"/>} />}
+                                {canManageTvContent && <TabButton tabName="tv-content" label="TV Content" icon={<TvIcon className="h-4 w-4"/>} />}
+                                {canManageSystem && <TabButton tabName="pdfConverter" label="PDF Converter" icon={<DocumentArrowRightIcon className="h-4 w-4"/>} />}
+                                {canManageSettings && <TabButton tabName="settings" label="Settings" icon={<PencilIcon className="h-4 w-4"/>} />}
+                                {canManageSystem && <TabButton tabName="storage" label="Storage" icon={<ServerStackIcon className="h-4 w-4"/>} />}
+                                {canManageSystem && <TabButton tabName="backup" label={backupTabLabel} icon={<RestoreIcon className="h-4 w-4"/>} />}
+                                {loggedInUser?.isMainAdmin && <TabButton tabName="users" label="Users" icon={<UsersIcon className="h-4 w-4"/>}/>}
+                                {canManageSystem && <TabButton tabName="trash" label="Trash" icon={<TrashIcon className="h-4 w-4"/>} />}
+                            </nav>
+                        </div>
+                        
+                        <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-b-2xl rounded-tr-2xl shadow-xl mt-0">
+                            {renderContent()}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

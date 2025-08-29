@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Brand, Catalogue, Pamphlet, Client, TvContent } from '../../types';
 import AdminSettings from './AdminSettings';
 import AdminScreensaverAds from './AdminScreensaverAds';
-// FIX: Correct import path for AppContext
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore';
 import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons';
@@ -108,7 +107,7 @@ const AdminFooter: React.FC<{ activeSection: Section; setActiveSection: (section
 
 // Main Dashboard Component
 const AdminDashboard: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<Section>('brands');
+    const [activeSection, setActiveSection] = useState<Section>('system');
     const { loggedInUser, logout } = useAppContext();
     const navigate = useNavigate();
 
@@ -134,24 +133,22 @@ const AdminDashboard: React.FC = () => {
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 overflow-hidden flex flex-col">
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-8 pb-40">
-                <div className="w-full max-w-6xl mx-auto">
-                    <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
-                        <AnimatePresence mode="wait">
-                            <MotionDiv
-                                key={activeSection}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                {renderContent()}
-                            </MotionDiv>
-                        </AnimatePresence>
-                    </div>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800">
+            <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 pt-8 pb-40">
+                <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
+                    <AnimatePresence mode="wait">
+                        <MotionDiv
+                            key={activeSection}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {renderContent()}
+                        </MotionDiv>
+                    </AnimatePresence>
                 </div>
-            </main>
+            </div>
             <AdminFooter activeSection={activeSection} setActiveSection={setActiveSection} logout={handleLogout} loggedInUser={loggedInUser} />
         </div>
     );
