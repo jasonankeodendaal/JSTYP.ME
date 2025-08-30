@@ -6,7 +6,7 @@ import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon, SparklesIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -17,7 +17,6 @@ import AdminPdfConverter from './AdminPdfConverter.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
 import SetupInstruction from './SetupInstruction.tsx';
 import DataImporter from './DataImporter.tsx';
-import AdminWebsiteImporter from './AdminWebsiteImporter.tsx';
 
 
 type Section = 'brands' | 'content' | 'settings' | 'system' | 'users' | 'analytics' | 'quotes' | 'trash' | 'pdf';
@@ -169,21 +168,6 @@ const AdminSystemManagement = () => (
             </div>
         </div>
         
-        <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
-            <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <div className="flex items-center gap-3">
-                    <SparklesIcon className="h-6 w-6 text-indigo-500" />
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">AI Website Importer (Beta)</h3>
-                </div>
-                <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
-                    <ChevronDownIcon className="w-5 h-5"/>
-                </div>
-            </summary>
-            <div className="px-4 sm:px-5 py-6 border-t border-gray-200/80 dark:border-gray-700">
-                <AdminWebsiteImporter />
-            </div>
-        </details>
-
         <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
             <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <div className="flex items-center gap-3">

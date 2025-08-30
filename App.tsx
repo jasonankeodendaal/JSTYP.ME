@@ -77,46 +77,6 @@ const useIdleRedirect = () => {
     }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, clientDetailsModal.isOpen]);
 };
 
-const useAdminIdleLogout = () => {
-    const { logout, loggedInUser } = useAppContext();
-    const location = useLocation();
-    const idleTimer = useRef<number | null>(null);
-    const timeout = 180; // 3 minutes in seconds
-
-    useEffect(() => {
-        const resetTimer = () => {
-            if (idleTimer.current) {
-                clearTimeout(idleTimer.current);
-            }
-            // Only run if user is logged in and on an admin page
-            if (!loggedInUser || !location.pathname.startsWith('/admin')) {
-                return;
-            }
-            idleTimer.current = window.setTimeout(() => {
-                logout();
-            }, timeout * 1000);
-        };
-
-        const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'touchstart'];
-        
-        // Don't add listeners if not on an admin page or not logged in.
-        if (!loggedInUser || !location.pathname.startsWith('/admin')) {
-            if (idleTimer.current) clearTimeout(idleTimer.current); // clear any existing timer
-            return;
-        }
-
-        const activityHandler = () => resetTimer();
-        
-        events.forEach(event => window.addEventListener(event, activityHandler));
-        resetTimer(); // Start the timer on component mount/location change
-
-        return () => {
-            if (idleTimer.current) clearTimeout(idleTimer.current);
-            events.forEach(event => window.removeEventListener(event, activityHandler));
-        };
-    }, [timeout, logout, location.pathname, loggedInUser]);
-};
-
 const useScreensaverManager = () => {
     const { settings, isScreensaverEnabled, startScreensaver, isScreensaverActive } = useAppContext();
     const location = useLocation();
@@ -164,7 +124,6 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const MotionMain = motion.main as any;
   useIdleRedirect();
-  useAdminIdleLogout();
   useScreensaverManager();
   
   const pageTransitionVariants = {
