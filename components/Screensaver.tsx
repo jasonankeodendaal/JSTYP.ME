@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -107,6 +105,25 @@ const Screensaver: React.FC = () => {
     const [kbVariant, setKbVariant] = useState(kenBurnsVariants[0]);
     const navigate = useNavigate();
     const videoNodeRef = useRef<HTMLVideoElement | null>(null);
+
+    useEffect(() => {
+        const handleActivity = () => {
+            // This will be called on any general user activity to dismiss the screensaver.
+            exitScreensaver();
+        };
+
+        // A click is handled by the `handleClick` function to allow for navigation.
+        // Other activities should just dismiss the screensaver.
+        const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'touchstart'];
+        
+        // Use `{ once: true }` so the listener is automatically removed after firing once.
+        events.forEach(event => window.addEventListener(event, handleActivity, { once: true }));
+
+        // Cleanup function for when the component unmounts before any activity occurs.
+        return () => {
+            events.forEach(event => window.removeEventListener(event, handleActivity));
+        };
+    }, [exitScreensaver]);
 
     const playlist: PlaylistItem[] = useMemo(() => {
         type MediaSource = Omit<PlaylistItem, 'type' | 'url'> & {

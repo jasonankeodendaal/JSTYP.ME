@@ -1,39 +1,60 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
+import { UserCircleIcon, CloudSlashIcon } from './Icons.tsx';
 
-const SyncStatusIndicator: React.FC = () => {
+const SyncStatusIndicator: React.FC<{ 
+    isConnecting: boolean;
+    connectionStatus: string;
+    handleTestConnection: () => void;
+}> = ({ isConnecting, connectionStatus, handleTestConnection }) => {
     const { syncStatus, storageProvider } = useAppContext();
 
+    // Disconnected State
     if (storageProvider === 'none') {
         return (
-            <div className="flex items-center gap-2 text-xs opacity-60">
-                 <span className="relative flex h-2.5 w-2.5 rounded-full bg-gray-400" title="Storage not connected"></span>
-                <span>Not Connected</span>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 text-base font-semibold text-yellow-600 dark:text-yellow-400">
+                    <CloudSlashIcon className="h-6 w-6" />
+                    <span>Not Connected</span>
+                </div>
+                {!isConnecting && (
+                    <button 
+                        onClick={handleTestConnection}
+                        className="btn bg-sky-500 hover:bg-sky-600 text-white !py-2 !px-4"
+                    >
+                       Test Connection & Sync
+                    </button>
+                )}
+                {isConnecting && (
+                    <span className="text-sm text-yellow-500 dark:text-yellow-400">{connectionStatus}</span>
+                )}
             </div>
-        )
+        );
     }
 
+    // Connected States
     const statusMap = {
-        idle: { text: 'Idle', color: 'bg-gray-400', animate: false },
-        pending: { text: 'Unsaved', color: 'bg-yellow-500', animate: false },
-        syncing: { text: 'Syncing...', color: 'bg-blue-500', animate: true },
-        synced: { text: 'Synced', color: 'bg-green-500', animate: false },
-        error: { text: 'Error', color: 'bg-red-500', animate: false },
+        idle: { text: 'Idle', color: 'text-gray-500 dark:text-gray-400', iconColor: 'bg-gray-400', animate: false },
+        pending: { text: 'Unsaved', color: 'text-yellow-600 dark:text-yellow-400', iconColor: 'bg-yellow-500', animate: false },
+        syncing: { text: 'Syncing...', color: 'text-blue-600 dark:text-blue-400', iconColor: 'bg-blue-500', animate: true },
+        synced: { text: 'Synced', color: 'text-green-600 dark:text-green-400', iconColor: 'bg-green-500', animate: false },
+        error: { text: 'Error', color: 'text-red-600 dark:text-red-400', iconColor: 'bg-red-500', animate: false },
     };
     const currentStatus = statusMap[syncStatus];
 
     return (
-        <div className="flex items-center gap-2 text-xs opacity-80" title={`Sync status: ${currentStatus.text}`}>
-            <span className={`relative flex h-2.5 w-2.5 rounded-full ${currentStatus.color}`}>
+        <div className="flex items-center gap-2 text-sm" title={`Sync status: ${currentStatus.text}`}>
+            <span className={`relative flex h-3 w-3 rounded-full ${currentStatus.iconColor}`}>
                 {currentStatus.animate && (
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
                 )}
             </span>
-            <span>Sync: {currentStatus.text}</span>
+            <span className={`font-semibold ${currentStatus.color}`}>{currentStatus.text}</span>
         </div>
     );
 };
+
 
 const Footer: React.FC = () => {
   const { settings, storageProvider, testAndConnectProvider } = useAppContext();
@@ -52,7 +73,7 @@ const Footer: React.FC = () => {
             // Button disappears automatically, no need to reset state here
         } else {
             // Show a concise error message for a few seconds
-            const conciseMessage = result.message.length > 60 ? 'Connection failed. Check settings in admin panel.' : result.message;
+            const conciseMessage = result.message.length > 60 ? 'Connection failed. Check settings.' : result.message;
             setConnectionStatus(conciseMessage);
             setTimeout(() => {
                 setConnectionStatus('');
@@ -89,28 +110,21 @@ const Footer: React.FC = () => {
     <footer className="border-t border-gray-200/50 mt-auto" style={footerStyle}>
       <div style={backgroundStyle}></div>
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-        <div className="sm:flex sm:items-center sm:justify-between">
-            <p className="text-center sm:text-left text-sm">
+        <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
                 &copy; {new Date().getFullYear()}. All rights reserved.
             </p>
-            <div className="mt-2 text-center sm:mt-0 sm:text-right flex flex-col items-center sm:items-end">
-                <Link to="/login" className="text-sm opacity-80 hover:opacity-100 hover:underline transition-opacity">
-                    Admin Login
+            <div className="flex items-center gap-4 sm:gap-6">
+                 <SyncStatusIndicator 
+                    isConnecting={isConnecting}
+                    connectionStatus={connectionStatus}
+                    handleTestConnection={handleTestConnection}
+                />
+                <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block" />
+                <Link to="/login" className="btn bg-green-600 hover:bg-green-700 text-white !py-2 !px-4">
+                    <UserCircleIcon className="h-5 w-5" />
+                    <span>Admin Login</span>
                 </Link>
-                <div className="flex items-center gap-3 mt-1">
-                    <SyncStatusIndicator />
-                     {storageProvider === 'none' && !isConnecting && (
-                        <button 
-                            onClick={handleTestConnection}
-                            className="text-xs font-semibold text-blue-500 dark:text-blue-400 hover:underline transition-all"
-                        >
-                           Test Connection & Sync
-                        </button>
-                    )}
-                    {isConnecting && (
-                        <span className="text-xs text-yellow-500 dark:text-yellow-400">{connectionStatus}</span>
-                    )}
-                </div>
             </div>
         </div>
       </div>

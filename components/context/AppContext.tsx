@@ -154,6 +154,7 @@ interface AppContextType {
   restoreBackup: (data: Partial<BackupData>) => void;
   isScreensaverActive: boolean;
   isScreensaverEnabled: boolean;
+  startScreensaver: () => void;
   exitScreensaver: () => void;
   toggleScreensaver: () => void;
   deferredPrompt: BeforeInstallPromptEvent | null;
@@ -233,7 +234,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Screensaver state
     const [isScreensaverActive, setIsScreensaverActive] = useState(false);
     const [isScreensaverEnabled, setIsScreensaverEnabled] = useState(true);
-    const screensaverTimer = useRef<number | null>(null);
 
     // Modals state
     const [confirmation, setConfirmation] = useState<ConfirmationState>({ isOpen: false, message: '', onConfirm: () => {} });
@@ -351,18 +351,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const stopTvContent = () => setActiveTvContent(null);
 
     // --- SCREENSAVER ---
+    const startScreensaver = () => setIsScreensaverActive(true);
     const exitScreensaver = useCallback(() => setIsScreensaverActive(false), []);
     const toggleScreensaver = () => setIsScreensaverEnabled(prev => !prev);
-    
-    // Reset timer on activity
-    const resetScreensaverTimer = useCallback(() => {
-        if (screensaverTimer.current) clearTimeout(screensaverTimer.current);
-        if (settings.screensaverDelay > 0 && isScreensaverEnabled) {
-            screensaverTimer.current = window.setTimeout(() => {
-                setIsScreensaverActive(true);
-            }, settings.screensaverDelay * 1000);
-        }
-    }, [settings.screensaverDelay, isScreensaverEnabled]);
 
     // Apply settings and load data on mount
     useEffect(() => {
@@ -563,6 +554,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         isScreensaverActive,
         isScreensaverEnabled,
+        startScreensaver,
         exitScreensaver,
         toggleScreensaver,
 

@@ -217,43 +217,38 @@ const CatalogueEdit: React.FC = () => {
                                     <input type="number" name="year" id="year" value={formData.year} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
                                 <div className="col-span-6">
-                                    <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Brand (Optional)</label>
-                                    <select id="brandId" name="brandId" value={formData.brandId || ''} onChange={handleInputChange} className={selectStyle}>
-                                        <option value="">Select a brand</option>
-                                        {brands.filter(b => !b.isDeleted).map(brand => (
-                                            <option key={brand.id} value={brand.id}>{brand.name}</option>
-                                        ))}
+                                    <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Associated Brand (Optional)</label>
+                                    <select name="brandId" id="brandId" value={formData.brandId || ''} onChange={handleInputChange} className={selectStyle}>
+                                        <option value="">None</option>
+                                        {brands.filter(b => !b.isDeleted).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Column - Assets */}
-                    <div className="space-y-6">
+                     {/* Right Column - Assets */}
+                     <div className="space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Catalogue Assets</h3>
                             <div className="mt-4 space-y-6">
                                 <div>
-                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">Thumbnail</span>
-                                    <div className="mt-2 flex items-center gap-4">
-                                        <div className="h-24 w-[72px] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
-                                            <LocalMedia src={formData.thumbnailUrl} alt="Thumbnail preview" type="image" className="h-full w-full object-cover rounded-xl"/>
-                                        </div>
-                                        <label htmlFor="thumbnail-upload" className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                            <UploadIcon className="h-4 w-4" />
-                                            <span>{formData.thumbnailUrl ? 'Change' : 'Upload'}</span>
-                                        </label>
-                                        <input id="thumbnail-upload" type="file" className="sr-only" onChange={handleThumbnailChange} accept="image/*" />
+                                    <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cover Image (Thumbnail)</span>
+                                    <div className="h-48 w-auto aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
+                                        <LocalMedia src={formData.thumbnailUrl} alt="Thumbnail preview" type="image" className="rounded-xl object-cover h-full w-full"/>
                                     </div>
+                                    <label htmlFor="thumbnail-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <UploadIcon className="h-4 w-4"/>
+                                        <span>{formData.thumbnailUrl ? 'Change Thumbnail' : 'Upload Thumbnail'}</span>
+                                    </label>
+                                    <input id="thumbnail-upload" type="file" className="sr-only" onChange={handleThumbnailChange} accept="image/*" />
                                 </div>
                                 <div>
                                     <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">Catalogue Pages</span>
                                     <div className="mt-2 space-y-3">
                                         <div className="grid grid-cols-3 gap-2">
                                             {formData.type === 'image' && formData.imageUrls.map((img, index) => (
-                                                <div key={index} className="relative group aspect-square">
-                                                    <LocalMedia src={img} type="image" alt={`Page ${index+1}`} className="rounded-md object-cover w-full h-full" />
+                                                <div key={index} className="relative group aspect-[3/4]">
+                                                    <LocalMedia src={img} alt={`Page ${index+1}`} type="image" className="rounded-md object-cover w-full h-full" />
                                                     <button type="button" onClick={() => removeDocumentImage(index)} className="absolute top-1 right-1 p-1 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete image">
                                                         <TrashIcon className="w-3 h-3"/>
                                                     </button>
@@ -284,7 +279,7 @@ const CatalogueEdit: React.FC = () => {
             </form>
         )
     );
-    
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-6xl mx-auto">

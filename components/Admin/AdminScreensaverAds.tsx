@@ -69,14 +69,14 @@ const AdCard: React.FC<{
                  <div className="p-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-1">
                     <button
                         onClick={() => navigate(`/admin/ad/${item.id}`)}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="p-3 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         title={`Edit ${item.title}`}
                     >
                         <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                         onClick={() => onDelete(item.id, item.title)}
-                        className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                        className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                         title={`Delete ${item.title}`}
                     >
                         <TrashIcon className="h-4 w-4" />

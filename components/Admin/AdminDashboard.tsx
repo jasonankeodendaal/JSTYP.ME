@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Brand, Catalogue, Pamphlet, Client, TvContent } from '../../types';
@@ -6,7 +6,7 @@ import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon as ViewKioskIcon, ServerStackIcon, UsersIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon, XIcon, ChevronUpIcon, BuildingStorefrontIcon, ClipboardDocumentListIcon, SparklesIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -16,6 +16,8 @@ import AdminTrash from './AdminTrash.tsx';
 import AdminPdfConverter from './AdminPdfConverter.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
 import SetupInstruction from './SetupInstruction.tsx';
+import DataImporter from './DataImporter.tsx';
+import AdminWebsiteImporter from './AdminWebsiteImporter.tsx';
 
 
 type Section = 'brands' | 'content' | 'settings' | 'system' | 'users' | 'analytics' | 'quotes' | 'trash' | 'pdf';
@@ -166,6 +168,37 @@ const AdminSystemManagement = () => (
                 <AdminBackupRestore />
             </div>
         </div>
+        
+        <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
+            <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <div className="flex items-center gap-3">
+                    <SparklesIcon className="h-6 w-6 text-indigo-500" />
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">AI Website Importer (Beta)</h3>
+                </div>
+                <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
+                    <ChevronDownIcon className="w-5 h-5"/>
+                </div>
+            </summary>
+            <div className="px-4 sm:px-5 py-6 border-t border-gray-200/80 dark:border-gray-700">
+                <AdminWebsiteImporter />
+            </div>
+        </details>
+
+        <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
+            <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <div className="flex items-center gap-3">
+                    <DocumentArrowRightIcon className="h-6 w-6 text-indigo-500" />
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Catalogue Data Importer</h3>
+                </div>
+                <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
+                    <ChevronDownIcon className="w-5 h-5"/>
+                </div>
+            </summary>
+            <div className="px-4 sm:px-5 py-6 border-t border-gray-200/80 dark:border-gray-700">
+                <DataImporter />
+            </div>
+        </details>
+
         <div className="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
             <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading mb-4">Setup Guides</h3>
             <div className="space-y-4">
@@ -216,12 +249,6 @@ const AdminSystemManagement = () => (
                     <ol>
                         <li>Push your project to a GitHub repository.</li>
                         <li>Create a free account at <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">Vercel.com</a> and import your GitHub repository.</li>
-                        <li><strong>IMPORTANT:</strong> During the Vercel import process, expand the <strong>"Environment Variables"</strong> section. You must add your Google Gemini API Key for AI features to work.
-                            <ul>
-                                <li>Name: <code>API_KEY</code></li>
-                                <li>Value: Paste your actual <strong>Google Gemini API Key</strong> here.</li>
-                            </ul>
-                        </li>
                         <li>Deploy. Vercel will give you a public URL (e.g., <code>your-app.vercel.app</code>). This is the URL you will use on your kiosk devices.</li>
                     </ol>
                     <hr/>
@@ -249,7 +276,7 @@ const AdminSystemManagement = () => (
                     <ol>
                         <li>Click the <strong>"Connect to Folder"</strong> button in the Storage section.</li>
                         <li>Your browser will ask you to select a folder. Choose a folder on your computer or a shared network drive accessible by other kiosks. Grant permission when prompted.</li>
-                        <li>Once connected, go to the <strong>"Backup & Restore"</strong> tab.</li>
+                        <li>Once setup is complete and you are in the admin panel, go to the <strong>"Backup & Restore"</strong> tab.</li>
                         <li>Click <strong>"Save to Drive"</strong> to create a `database.json` file and save all your current product data and assets to the selected folder.</li>
                         <li>On other kiosks, connect to the same folder and use the <strong>"Load from Drive"</strong> button to get the latest data.</li>
                     </ol>
@@ -300,8 +327,8 @@ const AdminBrandsView: React.FC = () => {
                                 </div>
                                 {canManageBrands && (
                                     <div className="flex items-center shrink-0">
-                                        <button type="button" onClick={() => navigate(`/admin/brand/edit/${brand.id}`)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Edit Brand"><PencilIcon className="h-4 w-4" /></button>
-                                        <button type="button" onClick={() => handleDeleteBrand(brand.id, brand.name)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Delete Brand"><TrashIcon className="h-4 w-4" /></button>
+                                        <button type="button" onClick={() => navigate(`/admin/brand/edit/${brand.id}`)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Edit Brand"><PencilIcon className="h-4 w-4" /></button>
+                                        <button type="button" onClick={() => handleDeleteBrand(brand.id, brand.name)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Delete Brand"><TrashIcon className="h-4 w-4" /></button>
                                     </div>
                                 )}
                             </div>
@@ -424,8 +451,8 @@ const AdminContentAndKioskManagement: React.FC = () => {
                                                 </div>
                                                 {canManageTvContent && (
                                                     <div className="flex items-center shrink-0">
-                                                        <button type="button" onClick={() => navigate(`/admin/tv-content/edit/${content.id}`)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Edit TV Content"><PencilIcon className="h-4 w-4" /></button>
-                                                        <button type="button" onClick={() => handleDelete('tv', content.id, content.modelName)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Delete TV Content"><TrashIcon className="h-4 w-4" /></button>
+                                                        <button type="button" onClick={() => navigate(`/admin/tv-content/edit/${content.id}`)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Edit TV Content"><PencilIcon className="h-4 w-4" /></button>
+                                                        <button type="button" onClick={() => handleDelete('tv', content.id, content.modelName)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title="Delete TV Content"><TrashIcon className="h-4 w-4" /></button>
                                                     </div>
                                                 )}
                                             </div>
@@ -463,8 +490,8 @@ const ContentCard: React.FC<{ item: Catalogue | Pamphlet; type: 'catalogue' | 'p
             </div>
             {canEdit && (
                 <div className="p-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-1">
-                    <button onClick={() => navigate(`/admin/${type}/edit/${item.id}`)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title={`Edit`}><PencilIcon className="h-4 w-4" /></button>
-                    <button onClick={() => onDelete(type, item.id, item.title)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title={`Delete`}><TrashIcon className="h-4 w-4" /></button>
+                    <button onClick={() => navigate(`/admin/${type}/edit/${item.id}`)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title={`Edit`}><PencilIcon className="h-4 w-4" /></button>
+                    <button onClick={() => onDelete(type, item.id, item.title)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" title={`Delete`}><TrashIcon className="h-4 w-4" /></button>
                 </div>
             )}
         </div>
@@ -475,13 +502,13 @@ const AdminQuotesView: React.FC = () => {
     const { quotes, clients, adminUsers, toggleQuoteStatus } = useAppContext();
     const navigate = useNavigate();
 
-    const enrichedQuotes = useMemo(() => quotes.map(quote => {
+    const enrichedQuotes = React.useMemo(() => quotes.map(quote => {
         const client = clients.find(c => c.id === quote.clientId);
         const admin = adminUsers.find(a => a.id === quote.adminId);
         return { ...quote, client, admin };
     }).sort((a, b) => b.createdAt - a.createdAt), [quotes, clients, adminUsers]);
     
-    const quotesByClient = useMemo(() => {
+    const quotesByClient = React.useMemo(() => {
         const grouped: { [clientId: string]: { client: Client | undefined, quotes: typeof enrichedQuotes } } = {};
         for (const quote of enrichedQuotes) {
             if (!grouped[quote.clientId]) {

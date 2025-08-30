@@ -71,66 +71,53 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
     const { request } = event;
+    const url = new URL(request.url);
 
     // Only handle GET requests
     if (request.method !== 'GET') {
         return;
     }
 
-    const url = new URL(request.url);
-
-    // For immutable assets (CDNs, fonts), use a cache-first strategy
-    if (IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com')) {
-        event.respondWith(
-            caches.open(IMMUTABLE_CACHE_NAME).then(cache => {
-                return cache.match(request).then(response => {
-                    return response || fetch(request).then(networkResponse => {
-                        cache.put(request, networkResponse.clone());
-                        return networkResponse;
-                    });
-                });
-            })
-        );
-        return;
-    }
-    
-    // For navigation requests, use a network-first strategy.
-    // If the network fails (or returns an error page like a 404), fall back to the cached app shell.
-    if (request.mode === 'navigate') {
-        event.respondWith(
-            fetch(request)
-                .then(response => {
-                    // If we get a valid response, cache it and return it.
-                    if (response.ok) {
-                        const responseToCache = response.clone();
-                        caches.open(CACHE_NAME).then(cache => {
-                            cache.put(request, responseToCache);
-                        });
-                    }
-                    // For a SPA, even a 404 from the server should be handled by the client-side app.
-                    // So we fall back to the cached root page ('./').
-                    return response.ok ? response : caches.match('./');
-                })
-                .catch(() => {
-                    // This catches network errors (e.g., offline) and returns the app shell.
-                    return caches.match('./');
-                })
-        );
-        return;
-    }
-
-    // For all other assets (app shell files, etc.), use a network-first strategy
+    // Use a cache-first strategy for most assets.
+    // This provides the best performance and offline experience.
     event.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
+        caches.match(request).then(cachedResponse => {
+            // If the resource is in the cache, return it
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+
+            // If it's not in the cache, fetch it from the network
             return fetch(request)
                 .then(networkResponse => {
-                    if (networkResponse.ok) {
-                        cache.put(request, networkResponse.clone());
+                    // Check for a valid response
+                    if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'error') {
+                        // For navigation requests that fail, fall back to the app shell.
+                        if (request.mode === 'navigate') {
+                            return caches.match('./');
+                        }
+                        // For other types, just return the failed response.
+                        return networkResponse;
                     }
+
+                    // Cache the new valid response
+                    const responseToCache = networkResponse.clone();
+                    const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
+                    const cacheName = isImmutable ? IMMUTABLE_CACHE_NAME : CACHE_NAME;
+
+                    caches.open(cacheName).then(cache => {
+                        cache.put(request, responseToCache);
+                    });
+
                     return networkResponse;
                 })
                 .catch(() => {
-                    return cache.match(request);
+                    // If the network request fails completely (e.g., offline)
+                    // and it was a navigation request, serve the main app shell.
+                    if (request.mode === 'navigate') {
+                        return caches.match('./');
+                    }
+                    // For other failed requests, we don't have a fallback, so the request will fail.
                 });
         })
     );

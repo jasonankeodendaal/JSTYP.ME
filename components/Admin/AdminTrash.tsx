@@ -29,10 +29,10 @@ const TrashItemRow: React.FC<{
             </div>
         </div>
         <div className="flex items-center shrink-0">
-            <button onClick={onRestore} className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Restore">
+            <button onClick={onRestore} className="p-3 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Restore">
                 <RestoreIcon className="h-5 w-5" />
             </button>
-            <button onClick={onDelete} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete Permanently">
+            <button onClick={onDelete} className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete Permanently">
                 <TrashIcon className="h-5 w-5" />
             </button>
         </div>

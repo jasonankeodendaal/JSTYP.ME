@@ -2,10 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Product, ProductDocument } from '../../types';
-import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon, SparklesIcon } from '../Icons';
+import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
-import AiDescriptionModal from './AiDescriptionModal.tsx';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
 
@@ -37,7 +36,6 @@ const ProductEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     const [conversionState, setConversionState] = useState<{ [docId: string]: { progress: string; isConverting: boolean } }>({});
-    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
     const brand = brands.find(b => b.id === formData?.brandId);
@@ -49,13 +47,6 @@ const ProductEdit: React.FC = () => {
         return categories.filter(c => c.brandId === formData.brandId && !c.isDeleted);
     }, [categories, formData?.brandId]);
 
-    const handleApplyAiDescription = (description: string) => {
-        if (!formData) return;
-        setFormData({ ...formData, description });
-        markDirty();
-    };
-
-    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (!formData) return;
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -389,16 +380,6 @@ const ProductEdit: React.FC = () => {
                                 <div className="col-span-6">
                                     <div className="flex justify-between items-center">
                                         <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAiModalOpen(true)}
-                                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 disabled:opacity-50"
-                                            disabled={!formData.name}
-                                            title={!formData.name ? "Please enter a product name first" : "Generate description with AI"}
-                                        >
-                                            <SparklesIcon className="h-4 w-4" />
-                                            Generate with AI
-                                        </button>
                                     </div>
                                     <textarea id="description" name="description" rows={5} value={formData.description} onChange={handleInputChange} className={inputStyle + ' mt-1'}></textarea>
                                 </div>
@@ -564,16 +545,6 @@ const ProductEdit: React.FC = () => {
                     {pageContent}
                 </div>
             </div>
-             {formData && isAiModalOpen && (
-                <AiDescriptionModal
-                    isOpen={isAiModalOpen}
-                    onClose={() => setIsAiModalOpen(false)}
-                    onApplyDescription={handleApplyAiDescription}
-                    productName={formData.name}
-                    brandName={brand?.name || ''}
-                    specifications={formData.specifications}
-                />
-            )}
         </div>
     );
 };

@@ -1,5 +1,7 @@
 
 
+
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -49,11 +51,11 @@ const AdminUserManagement: React.FC = () => {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex items-center justify-end gap-1">
-                                        <Link to={`/admin/user/edit/${user.id}`} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Edit User">
+                                        <Link to={`/admin/user/edit/${user.id}`} className="p-3 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Edit User">
                                             <PencilIcon className="h-4 w-4" />
                                         </Link>
                                         {!user.isMainAdmin && user.id !== loggedInUser?.id && (
-                                            <button onClick={() => handleDelete(user.id, `${user.firstName} ${user.lastName}`)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete User">
+                                            <button onClick={() => handleDelete(user.id, `${user.firstName} ${user.lastName}`)} className="p-3 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete User">
                                                 <TrashIcon className="h-4 w-4" />
                                             </button>
                                         )}

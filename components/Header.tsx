@@ -12,17 +12,10 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
   const [isVolumeControlOpen, setIsVolumeControlOpen] = useState(false);
-  const [lastVolume, setLastVolume] = useState(0.75);
-  const volumeControlTimeout = useRef<number | null>(null);
+  const volumeControlRef = useRef<HTMLDivElement>(null);
   
   const navigate = useNavigate();
   const { settings, localVolume, setLocalVolume, theme, toggleTheme } = useAppContext();
-
-  useEffect(() => {
-    if (localVolume > 0) {
-      setLastVolume(localVolume);
-    }
-  }, [localVolume]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -30,6 +23,18 @@ const Header: React.FC = () => {
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (volumeControlRef.current && !volumeControlRef.current.contains(event.target as Node)) {
+            setIsVolumeControlOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -40,8 +45,8 @@ const Header: React.FC = () => {
     }
   };
   
-  const toggleMute = () => {
-    setLocalVolume(localVolume > 0 ? 0 : lastVolume);
+  const toggleVolumeControl = () => {
+    setIsVolumeControlOpen(prev => !prev);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,19 +61,6 @@ const Header: React.FC = () => {
       return <VolumeLowIcon className="h-6 w-6" />;
     }
     return <VolumeUpIcon className="h-6 w-6" />;
-  };
-  
-  const handleMouseEnter = () => {
-    if (volumeControlTimeout.current) {
-        clearTimeout(volumeControlTimeout.current);
-    }
-    setIsVolumeControlOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-      volumeControlTimeout.current = window.setTimeout(() => {
-        setIsVolumeControlOpen(false);
-      }, 300);
   };
 
   const toggleFullScreen = () => {
@@ -158,14 +150,13 @@ const Header: React.FC = () => {
                 </button>
               </form>
                <div
+                  ref={volumeControlRef}
                   className="relative flex items-center"
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
                >
                   <button
-                    onClick={toggleMute}
+                    onClick={toggleVolumeControl}
                     className="p-2 opacity-70 hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors"
-                    aria-label="Toggle volume"
+                    aria-label="Adjust volume"
                   >
                     {getVolumeIcon()}
                   </button>

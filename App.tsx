@@ -1,6 +1,6 @@
 /// <reference path="./swiper.d.ts" />
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,12 +117,55 @@ const useAdminIdleLogout = () => {
     }, [timeout, logout, location.pathname, loggedInUser]);
 };
 
+const useScreensaverManager = () => {
+    const { settings, isScreensaverEnabled, startScreensaver, isScreensaverActive } = useAppContext();
+    const location = useLocation();
+    const screensaverTimer = useRef<number | null>(null);
+
+    const resetScreensaverTimer = useCallback(() => {
+        if (screensaverTimer.current) {
+            clearTimeout(screensaverTimer.current);
+        }
+        const isOnAdminPage = location.pathname.startsWith('/admin');
+        if (settings.screensaverDelay > 0 && isScreensaverEnabled && !isOnAdminPage) {
+            screensaverTimer.current = window.setTimeout(() => {
+                startScreensaver();
+            }, settings.screensaverDelay * 1000);
+        }
+    }, [settings.screensaverDelay, isScreensaverEnabled, location.pathname, startScreensaver]);
+
+    useEffect(() => {
+        if (isScreensaverActive) {
+            if (screensaverTimer.current) {
+                clearTimeout(screensaverTimer.current);
+            }
+            return;
+        }
+
+        const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'touchstart'];
+        const activityHandler = () => {
+            resetScreensaverTimer();
+        };
+
+        events.forEach(event => window.addEventListener(event, activityHandler, { passive: true }));
+        resetScreensaverTimer(); // Initial call
+
+        return () => {
+            if (screensaverTimer.current) {
+                clearTimeout(screensaverTimer.current);
+            }
+            events.forEach(event => window.removeEventListener(event, activityHandler));
+        };
+    }, [isScreensaverActive, resetScreensaverTimer]);
+};
+
 const AppContent: React.FC = () => {
   const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, clientDetailsModal } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
   useIdleRedirect();
   useAdminIdleLogout();
+  useScreensaverManager();
   
   const pageTransitionVariants = {
     none: {
