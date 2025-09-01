@@ -171,13 +171,10 @@ app.get('/', (req, res) => {
                     border-radius: 4px;
                     font-family: "Courier New", Courier, monospace;
                 }
-                a {
-                    color: #3498db;
-                    text-decoration: none;
-                    font-weight: bold;
-                }
-                a:hover {
-                    text-decoration: underline;
+                .endpoint {
+                    margin-top: 1.5em;
+                    text-align: left;
+                    font-size: 0.9em;
                 }
             </style>
         </head>
@@ -187,15 +184,12 @@ app.get('/', (req, res) => {
                 <p>
                     This is the backend API server for the Interactive Kiosk. It's working correctly!
                 </p>
-                <p>
-                    The endpoint <code>/data</code> is used for database sync.
-                </p>
-                 <p>
-                    The endpoint <code>/upload</code> is used for file uploads.
-                </p>
-                 <p>
-                    The directory <code>/files</code> serves uploaded assets.
-                </p>
+                <div class="endpoint">
+                    <p><strong>Database:</strong> <code>/data</code> (Accepts GET and POST)</p>
+                    <p><strong>File Uploads:</strong> <code>/upload</code> (Accepts POST with multipart/form-data)</p>
+                    <p><strong>Uploaded Files:</strong> <code>/files/:filename</code> (Serves static assets)</p>
+                    <p><strong>Health Check:</strong> <code>/status</code> (Returns JSON status)</p>
+                </div>
             </div>
         </body>
         </html>

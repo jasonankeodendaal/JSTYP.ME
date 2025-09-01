@@ -35,21 +35,22 @@ const SetupInstruction: React.FC<{ title: string, children: React.ReactNode, id?
 const SetupWizard: React.FC = () => {
     const { 
         connectToLocalProvider, 
-        connectToCloudProvider,
-        connectToSharedUrl,
+        testAndConnectProvider,
         updateSettings, 
         directoryHandle,
         storageProvider,
-        completeSetup 
+        completeSetup,
+        settings
     } = useAppContext();
     
     const navigate = useNavigate();
     const [step, setStep] = useState<number | 'guides'>(1);
     const [provider, setProvider] = useState<'local' | 'sharedUrl' | 'customApi' | null>(null);
-    const [apiConfig, setApiConfig] = useState({ url: '', key: '' });
-    const [sharedUrl, setSharedUrl] = useState('');
+    const [apiConfig, setApiConfig] = useState({ url: settings.customApiUrl || '', key: settings.customApiKey || '' });
+    const [sharedUrl, setSharedUrl] = useState(settings.sharedUrl || '');
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState('');
+    const [connectionResult, setConnectionResult] = useState<{success: boolean, message: string} | null>(null);
     const [isPotentiallyRestricted, setIsPotentiallyRestricted] = useState(false);
 
     useEffect(() => {
@@ -72,31 +73,25 @@ const SetupWizard: React.FC = () => {
         setError('');
         await connectToLocalProvider();
         setIsConnecting(false);
-        // Step will automatically advance if directoryHandle is set, handled in render logic
     };
 
-    const handleApiConnect = () => {
-        if (!apiConfig.url) {
-            setError('API URL is required.');
-            return;
-        }
+    const handleCloudConnect = async () => {
         setError('');
+        setConnectionResult(null);
         setIsConnecting(true);
-        updateSettings({ customApiUrl: apiConfig.url, customApiKey: apiConfig.key });
-        connectToCloudProvider('customApi');
-        setIsConnecting(false);
-    };
-    
-    const handleSharedUrlConnect = () => {
-        if (!sharedUrl) {
-            setError('Shared URL is required.');
-            return;
+        
+        if (provider === 'customApi') {
+            await updateSettings({ customApiUrl: apiConfig.url, customApiKey: apiConfig.key });
+        } else if (provider === 'sharedUrl') {
+            await updateSettings({ sharedUrl: sharedUrl });
         }
-        setError('');
-        setIsConnecting(true);
-        updateSettings({ sharedUrl }); // Update settings with the URL
-        connectToSharedUrl(sharedUrl);
-        setIsConnecting(false);
+        
+        // Use a short delay to ensure settings are updated before testing
+        setTimeout(async () => {
+            const result = await testAndConnectProvider();
+            setConnectionResult(result);
+            setIsConnecting(false);
+        }, 200);
     };
 
     const handleFinish = () => {
@@ -174,11 +169,23 @@ const SetupWizard: React.FC = () => {
                         </MotionDiv>
                     );
                 }
+                const commonCloudContent = (
+                    <>
+                        <div className="mt-8 flex justify-between items-center">
+                            <button onClick={() => {setStep(2); setConnectionResult(null);}} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200">Back</button>
+                            <button onClick={handleFinish} className="btn btn-primary" disabled={!isConnected || isConnecting}>Finish Setup</button>
+                        </div>
+                         {connectionResult && (
+                            <div className={`mt-4 p-3 rounded-lg text-sm ${connectionResult.success ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'}`}>
+                                {connectionResult.message}
+                            </div>
+                         )}
+                    </>
+                );
                 if (provider === 'sharedUrl') {
                     return (
                         <MotionDiv key="step3-sharedurl" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
                             <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">Shared URL / Simple API Setup</h2>
-                            {!isConnected ? (
                                 <div className="space-y-4">
                                     <div className="mt-2 p-4 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-lg text-sm text-left">
                                         <h4 className="font-semibold">Read/Write vs Read-Only</h4>
@@ -191,21 +198,11 @@ const SetupWizard: React.FC = () => {
                                         <input type="url" id="sharedUrl" value={sharedUrl} onChange={e => setSharedUrl(e.target.value)} placeholder="https://.../database.json" className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4"/>
                                     </div>
                                     {error && <p className="text-sm text-red-500">{error}</p>}
-                                    <button onClick={handleSharedUrlConnect} disabled={isConnecting || !sharedUrl} className="btn btn-primary w-full">
-                                        {isConnecting ? 'Connecting...' : 'Connect to URL'}
+                                    <button onClick={handleCloudConnect} disabled={isConnecting || !sharedUrl} className="btn btn-primary w-full">
+                                        {isConnecting ? 'Testing Connection...' : 'Test & Connect'}
                                     </button>
                                 </div>
-                            ) : (
-                                <div className="text-center">
-                                     <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded-lg text-sm">
-                                        Successfully connected to your provider!
-                                    </div>
-                                </div>
-                            )}
-                            <div className="mt-8 flex justify-between items-center">
-                               <button onClick={() => setStep(2)} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200">Back</button>
-                               <button onClick={handleFinish} className="btn btn-primary" disabled={!isConnected}>Finish Setup</button>
-                           </div>
+                            {commonCloudContent}
                         </MotionDiv>
                     );
                 }
@@ -213,7 +210,6 @@ const SetupWizard: React.FC = () => {
                      return (
                         <MotionDiv key="step3-api" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
                              <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">API Configuration</h2>
-                             {!isConnected ? (
                                 <div className="space-y-4">
                                      <div>
                                          <label htmlFor="apiUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Custom API URL</label>
@@ -224,21 +220,11 @@ const SetupWizard: React.FC = () => {
                                          <input type="password" id="apiKey" value={apiConfig.key} onChange={e => setApiConfig(p => ({...p, key: e.target.value}))} placeholder="Enter your secret API key" className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
                                      </div>
                                      {error && <p className="text-sm text-red-500">{error}</p>}
-                                     <button onClick={handleApiConnect} disabled={isConnecting || !apiConfig.url} className="btn btn-primary w-full">
-                                        {isConnecting ? 'Connecting...' : 'Save & Connect'}
+                                     <button onClick={handleCloudConnect} disabled={isConnecting || !apiConfig.url} className="btn btn-primary w-full">
+                                        {isConnecting ? 'Testing Connection...' : 'Test & Connect'}
                                     </button>
                                 </div>
-                             ) : (
-                                <div className="text-center">
-                                     <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded-lg text-sm">
-                                        Successfully connected to Custom API!
-                                    </div>
-                                </div>
-                             )}
-                             <div className="mt-8 flex justify-between items-center">
-                                <button onClick={() => setStep(2)} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200">Back</button>
-                                <button onClick={handleFinish} className="btn btn-primary" disabled={!isConnected}>Finish Setup</button>
-                            </div>
+                            {commonCloudContent}
                         </MotionDiv>
                     );
                 }
@@ -254,97 +240,70 @@ const SetupWizard: React.FC = () => {
                             </button>
                         </div>
                         <div className="space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
-                             <SetupInstruction title="The Definitive Guide: Cloud Sync Setup (Recommended)" defaultOpen>
-                                <p><strong>Use this for:</strong> The most powerful setup. Manage a main admin PC and multiple display kiosks (PCs, Android tablets) across different locations, all synced together over the internet.</p>
-                                <p>This guide is in three parts. You will have two terminal windows running on your main computer by the end.</p>
+                             <SetupInstruction title="The Definitive Guide: Cloud Sync with PM2 (Recommended)" defaultOpen>
+                                <p><strong>Use this for:</strong> The most powerful and reliable setup. Manage a main admin PC and multiple display kiosks across different locations, all synced together over the internet.</p>
+                                <p>This setup uses <strong>PM2</strong>, a professional process manager, to ensure your server and the secure connection run 24/7 and restart automatically.</p>
                                 
                                 <hr/>
-                                <h4>Part 1: Start Your Central Server (On Your Main PC)</h4>
-                                <p>This turns your main PC into the central "brain" for all your kiosks.</p>
+                                <h4>Part 1: Configure Your Central Server (On Your Main PC)</h4>
+                                
+                                <h5>Step 1.1: One-Time System Installations</h5>
                                 <ol>
-                                    <li>
-                                        <strong>Open a Terminal in the `server` Folder:</strong><br/>
-                                        In your project, find the new <code>server</code> directory. You need to open a terminal *inside this specific folder*. On Windows, Shift + Right-click and choose "Open PowerShell window here". On Mac, type <code>cd </code> and drag the folder into the terminal window.
-                                    </li>
-                                    <li>
-                                        <strong>Install Server Dependencies (First time only):</strong><br/>
-                                        Copy and paste this command into your terminal and press Enter:
-                                        <pre><code>npm install</code></pre>
-                                    </li>
-                                    <li>
-                                        <strong>Create Your Secret API Key:</strong><br/>
-                                        In the <code>server</code> folder, find the file named <strong><code>.env.example</code></strong>. Rename it to exactly <strong><code>.env</code></strong>. Open this new file and replace <code>your-super-secret-key-here</code> with your own private password.
-                                    </li>
-                                    <li>
-                                        <strong>Start the Server:</strong><br/>
-                                        Go back to your terminal window, paste this command, and press Enter. <strong>LEAVE THIS TERMINAL WINDOW OPEN.</strong>
-                                        <pre><code>node server.js</code></pre>
-                                    </li>
+                                    <li><strong>Install Node.js:</strong> If you don't have it, go to <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">nodejs.org</a>, download and install the <strong>LTS version</strong>. Verify the installation by opening a terminal and running <code>node -v</code> and <code>npm -v</code>.</li>
+                                    <li><strong>Install PM2:</strong> In your terminal, run this command to install PM2 globally: <pre><code>npm install -g pm2</code></pre></li>
+                                    <li><strong>Install Cloudflare Tunnel:</strong> Follow the official guide to install the <code>cloudflared</code> tool from <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/" target="_blank" rel="noopener noreferrer">this link</a>.</li>
                                 </ol>
 
-                                <hr/>
-                                <h4>Part 2: Make Your Server Publicly Accessible</h4>
-                                <p>This step uses a free, secure tool called Cloudflare Tunnel to create a "bridge" from the public internet to the server running on your PC.</p>
+                                <h5>Step 1.2: Configure the Server Project</h5>
                                 <ol>
-                                    <li>
-                                        <strong>Install Cloudflare Tunnel (First time only):</strong><br/>
-                                        Follow the official guide: <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/" target="_blank" rel="noopener noreferrer">Cloudflare Tunnel Installation Guide</a>.
-                                    </li>
-                                    <li>
-                                        <strong>Open a NEW Terminal Window:</strong><br/>
-                                        Do not close the first terminal. Open a second, completely new terminal window.
-                                    </li>
-                                    <li>
-                                        <strong>Run the Tunnel:</strong><br/>
-                                        Copy and paste the following command into your <strong>new</strong> terminal window and press Enter:
-                                        <pre><code>cloudflared tunnel --url http://localhost:3001</code></pre>
-                                    </li>
-                                    <li>
-                                        <strong>Get Your Public URL:</strong><br/>
-                                        The terminal will show a public URL like <code>https://random-words.trycloudflare.com</code>. This is your public server address. Copy it. <strong>LEAVE THIS SECOND TERMINAL WINDOW OPEN.</strong>
-                                    </li>
+                                    <li><strong>Open a Terminal in the `server` Folder:</strong> In your project, navigate into the <code>server</code> directory.</li>
+                                    <li><strong>Install Server Dependencies:</strong> Run this command once: <pre><code>npm install</code></pre></li>
+                                    <li><strong>CRITICAL - Set Your Secret API Key:</strong> In the <code>server</code> folder, rename the file <code>.env.example</code> to exactly <code>.env</code>. Open this new file and replace the placeholder key with your own private password.</li>
                                 </ol>
 
-                                <hr/>
-                                <h4>Part 3: Configure All Your Kiosk Devices</h4>
-                                <p>You must repeat these steps on <strong>every single device</strong> you want to sync (your main PC and all your Android devices).</p>
+                                <h5>Step 1.3: Run and Persist the Server with PM2</h5>
                                 <ol>
                                     <li>
-                                        <strong>Log In as Admin:</strong><br/>
-                                        On the kiosk app screen, go to the footer and click <strong>Admin Login</strong> (Default PIN: <code>1723</code>).
+                                        <strong>Start Both Services:</strong> In your terminal (still inside the <code>server</code> folder), run this command. It uses the project's configuration file to start both your API server and the Cloudflare tunnel in the background.
+                                        <pre><code>pm2 start</code></pre>
+                                        <p className="text-xs"><strong>Tip:</strong> You can run <code>pm2 delete all</code> first for a clean start. Check that both <code>kiosk-api</code> and <code>kiosk-tunnel</code> are online with <code>pm2 list</code>.</p>
                                     </li>
                                     <li>
-                                        <strong>Enter Your Public URL and API Key:</strong><br/>
-                                        Navigate to <code>Settings &gt; API Integrations</code>.
-                                        <ul>
-                                            <li>In the <strong>"Custom API URL"</strong> field, paste your public URL from Part 2. <strong>VERY IMPORTANT:</strong> You must add <code>/data</code> to the end of the URL.</li>
-                                            <li>In the <strong>"Custom API Auth Key"</strong> field, enter the exact same secret API Key from Part 1.</li>
-                                            <li>Click <strong>Save Changes</strong>.</li>
-                                        </ul>
+                                        <strong>Get Your Public URL:</strong> The "Cloudflare terminal" is now running in the background. To see its output and get your permanent public URL, run:
+                                        <pre><code>pm2 logs kiosk-tunnel</code></pre>
+                                        Look for a URL like <code>https://...trycloudflare.com</code>. <strong>Copy this URL</strong>. You can press <code>Ctrl + C</code> to exit the logs view.
                                     </li>
                                     <li>
-                                        <strong>Connect to the Storage Provider:</strong><br/>
-                                        Navigate to the <code>Storage</code> tab in the admin panel and click the <strong>"Connect"</strong> button on the "Custom API Sync" card.
-                                    </li>
-                                    <li>
-                                        <strong>Do the First Sync (Critical Step!):</strong>
-                                        <ul>
-                                            <li><strong>On your main admin PC:</strong> Go to the <code>Cloud Sync</code> tab and click <strong>"Push to Cloud"</strong>.</li>
-                                            <li><strong>On all other devices:</strong> Go to the <code>Cloud Sync</code> tab and click <strong>"Pull from Cloud"</strong>.</li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <strong>Enable Auto-Sync:</strong><br/>
-                                        On <strong>every device</strong>, go to <code>Settings &gt; Kiosk Mode</code> and turn on the <strong>"Enable Auto-Sync"</strong> toggle.
+                                        <strong>Make it Permanent (Crucial for Reliability):</strong> To make PM2 restart everything automatically after a computer reboot, run this command:
+                                        <pre><code>pm2 startup</code></pre>
+                                        <strong>The command will output another command.</strong> You must copy that entire new command, paste it back into the same terminal, and press Enter. Finally, save your current process list so it knows what to restart:
+                                        <pre><code>pm2 save</code></pre>
+                                        Your server is now fully configured and running 24/7. You can close the terminal.
                                     </li>
                                 </ol>
-                                <p>Your setup is now complete! Changes will sync automatically.</p>
+                                <hr/>
+                                <h4>Part 2: Connect Your Kiosks to Your Server</h4>
+                                <p>You must do this on <strong>every single device</strong> you want to sync, including your main PC's browser.</p>
+                                <ol>
+                                    <li>In this setup wizard, choose the <strong>"Custom API Sync"</strong> option.</li>
+                                    <li>In <strong>"Custom API URL"</strong>, paste your public Cloudflare URL from Part 1 and <strong>add <code>/data</code></strong> to the end (e.g., <code>https://...com/data</code>).</li>
+                                    <li>In <strong>"Custom API Auth Key"</strong>, enter the secret <code>API_KEY</code> from your server's <code>.env</code> file.</li>
+                                    <li>Click <strong>"Test &amp; Connect"</strong>. If it succeeds, click <strong>"Finish Setup"</strong>.</li>
+                                    <li>After setup, log in as admin and go to the <strong>System</strong> tab in the admin panel.
+                                        <ul>
+                                            <li><strong>On your main admin PC:</strong> Click <strong>"Push to Cloud"</strong> in the Backup/Sync section. This uploads your local data to the server for the first time.</li>
+                                            <li><strong>On all other devices:</strong> Click <strong>"Pull from Cloud"</strong>. This downloads the master data from your server.</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Enable Auto-Sync:</strong> On <strong>every device</strong>, go to <strong>System &gt; Storage &gt; Sync &amp; API Settings</strong> and turn on the <strong>"Enable Auto-Sync"</strong> toggle.</li>
+                                </ol>
+                                <p>Your multi-device kiosk system is now fully configured and running!</p>
                             </SetupInstruction>
                             <SetupInstruction title="Alternative: How to use a Local or Network Folder">
                                 <ol>
                                     <li>Click the <strong>"Connect to Folder"</strong> button on the previous step.</li>
                                     <li>Your browser will ask you to select a folder. Choose a folder on your computer or a shared network drive accessible by other kiosks. Grant permission when prompted.</li>
-                                    <li>Once setup is complete and you are in the admin panel, go to the <strong>"Backup & Restore"</strong> tab.</li>
+                                    <li>Once setup is complete and you are in the admin panel, go to the <strong>"System"</strong> tab.</li>
                                     <li>Click <strong>"Save to Drive"</strong> to create a `database.json` file and save all your current product data and assets to the selected folder.</li>
                                     <li>On other kiosks, connect to the same folder and use the <strong>"Load from Drive"</strong> button to get the latest data.</li>
                                 </ol>
@@ -363,7 +322,7 @@ const SetupWizard: React.FC = () => {
                 initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 30 }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full ${step === 'guides' ? 'max-w-3xl' : 'max-w-lg'} min-h-[350px] flex flex-col p-8 overflow-hidden transition-all duration-300`}
+                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full ${step === 'guides' ? 'max-w-3xl' : 'max-w-xl'} min-h-[450px] flex flex-col p-8 overflow-hidden transition-all duration-300`}
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}

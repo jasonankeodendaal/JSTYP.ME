@@ -190,6 +190,7 @@ interface AppContextType {
   testAndConnectProvider: () => Promise<{ success: boolean; message: string; }>;
   trackBrandView: (brandId: string) => void;
   trackProductView: (productId: string) => void;
+  lastUpdated?: number;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   localVolume: number;
@@ -263,37 +264,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [localVolume, setLocalVolume] = useState(settings.videoVolume);
     const [kioskId, setKioskId] = useState('');
 
-    // FIX: Hoisted `updateSettings` before its usage in other callbacks like `connectToSharedUrl`
-    // to resolve the "used before its declaration" error.
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => deepMerge(prev, newSettings));
     }, []);
 
-    const connectToCloudProvider = useCallback((provider: 'customApi' | 'googleDrive') => {
-        if (provider === 'customApi') {
-            if (!settings.customApiUrl) {
-                alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
-                const settingsSection = document.getElementById('api-settings-section');
-                if (settingsSection) {
-                    settingsSection.setAttribute('open', '');
-                    settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-                return;
-            }
-        }
-        setStorageProvider(provider);
-        idbSet('storageProvider', provider);
-    }, [settings.customApiUrl]);
-
-    const connectToSharedUrl = useCallback((url: string) => {
-        if (!url) {
-            alert("Please enter a URL to connect.");
-            return;
-        }
-        updateSettings({ sharedUrl: url });
-        setStorageProvider('sharedUrl');
-        idbSet('storageProvider', 'sharedUrl');
-    }, [updateSettings]);
+    const restoreBackup = useCallback((data: Partial<BackupData>) => {
+        if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
+        if (data.brands) setBrands(data.brands);
+        if (data.products) setProducts(data.products);
+        if (data.catalogues) setCatalogues(data.catalogues);
+        if (data.pamphlets) setPamphlets(data.pamphlets);
+        if (data.screensaverAds) setScreensaverAds(data.screensaverAds);
+        if (data.adminUsers) setAdminUsers(data.adminUsers);
+        if (data.tvContent) setTvContent(data.tvContent);
+        if (data.categories) setCategories(data.categories);
+        if (data.clients) setClients(data.clients);
+        if (data.quotes) setQuotes(data.quotes);
+        if (data.viewCounts) setViewCounts(data.viewCounts);
+    }, []);
     
     // --- GENERIC CRUD ---
     const createCrudOperations = <T extends { id: string }>(
@@ -354,70 +342,144 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const startScreensaver = () => setIsScreensaverActive(true);
     const exitScreensaver = useCallback(() => setIsScreensaverActive(false), []);
     const toggleScreensaver = () => setIsScreensaverEnabled(prev => !prev);
+    
+    // --- SYNC & STORAGE ---
 
-    // Apply settings and load data on mount
-    useEffect(() => {
-        const loadData = async () => {
-            interface DataMapValue {
-                setter: (value: any) => void;
-                initial: any;
-                merge?: boolean;
-            }
-            const dataMap: Record<string, DataMapValue> = {
-                settings: { setter: setSettings, initial: initialSettings, merge: true },
-                brands: { setter: setBrands, initial: initialBrands },
-                products: { setter: setProducts, initial: initialProducts },
-                catalogues: { setter: setCatalogues, initial: initialCatalogues },
-                pamphlets: { setter: setPamphlets, initial: initialPamphlets },
-                screensaverAds: { setter: setScreensaverAds, initial: initialScreensaverAds },
-                adminUsers: { setter: setAdminUsers, initial: initialAdminUsers },
-                tvContent: { setter: setTvContent, initial: initialTvContent },
-                categories: { setter: setCategories, initial: initialCategories },
-                clients: { setter: setClients, initial: initialClients },
-                quotes: { setter: setQuotes, initial: initialQuotes },
-                viewCounts: { setter: setViewCounts, initial: initialViewCounts },
-                storageProvider: { setter: setStorageProvider, initial: 'none' },
-                directoryHandle: { setter: setDirectoryHandle, initial: null },
-            };
+    const saveDatabaseToLocal = useCallback(async (): Promise<boolean> => {
+        if (!directoryHandle) return false;
+        try {
+            setSyncStatus('syncing');
+            const fileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
+            const writable = await fileHandle.createWritable();
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts };
+            await writable.write(JSON.stringify(backupData, null, 2));
+            await writable.close();
+            updateSettings({ lastUpdated: Date.now() });
+            setSyncStatus('synced');
+            return true;
+        } catch (error) {
+            console.error("Failed to save database to local folder:", error);
+            setSyncStatus('error');
+            return false;
+        }
+    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, updateSettings]);
 
-            for (const [key, config] of Object.entries(dataMap)) {
-                const storedValue = await idbGet(key);
-                if (storedValue) {
-                    if (config.merge && isObject(config.initial) && isObject(storedValue)) {
-                        config.setter(deepMerge(config.initial, storedValue));
-                    } else {
-                        config.setter(storedValue);
-                    }
-                }
-            }
-            
-            const storedTheme = await idbGet<'light' | 'dark'>('kioskTheme');
-            if (storedTheme) {
-                setTheme(storedTheme);
-            }
+    const loadDatabaseFromLocal = useCallback(async (): Promise<boolean> => {
+        if (!directoryHandle) return false;
+        try {
+            setSyncStatus('syncing');
+            const fileHandle = await directoryHandle.getFileHandle('database.json');
+            const file = await fileHandle.getFile();
+            const text = await file.text();
+            const data: BackupData = JSON.parse(text);
+            restoreBackup(data);
+            setSyncStatus('synced');
+            return true;
+        } catch (error) {
+            console.error("Failed to load database from local folder:", error);
+            setSyncStatus('error');
+            return false;
+        }
+    }, [directoryHandle, restoreBackup]);
+    
+    const pushToCloud = useCallback(async (): Promise<boolean> => {
+        const url = settings.customApiUrl;
+        if (storageProvider !== 'customApi' || !url) return false;
+        try {
+            setSyncStatus('syncing');
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts };
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': settings.customApiKey,
+                },
+                body: JSON.stringify(backupData),
+            });
+            if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+            updateSettings({ lastUpdated: Date.now() });
+            setSyncStatus('synced');
+            return true;
+        } catch (error) {
+            console.error("Failed to push to cloud:", error);
+            setSyncStatus('error');
+            return false;
+        }
+    }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, updateSettings]);
 
-            let kid = await idbGet<string>('kioskId');
-            if (!kid) {
-                kid = `kiosk_${Math.random().toString(16).slice(2)}`;
-                await idbSet('kioskId', kid);
-            }
-            setKioskId(kid);
+    const pullFromCloud = useCallback(async (): Promise<boolean> => {
+        const isCustomApi = storageProvider === 'customApi' && settings.customApiUrl;
+        const isSharedUrl = storageProvider === 'sharedUrl' && settings.sharedUrl;
+        if (!isCustomApi && !isSharedUrl) return false;
+        
+        const url = isCustomApi ? settings.customApiUrl : settings.sharedUrl!;
 
-            setIsDataLoaded(true);
-        };
-        loadData();
+        try {
+            setSyncStatus('syncing');
+            const response = await fetch(url, {
+                headers: isCustomApi ? { 'x-api-key': settings.customApiKey } : {},
+            });
+            if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+            const data: BackupData = await response.json();
+            restoreBackup(data);
+            setSyncStatus('synced');
+            return true;
+        } catch (error) {
+            console.error("Failed to pull from cloud:", error);
+            setSyncStatus('error');
+            return false;
+        }
+    }, [storageProvider, settings, restoreBackup]);
+    
+    const connectToLocalProvider = useCallback(async () => {
+        try {
+            if (!('showDirectoryPicker' in window)) {
+                alert("Your browser does not support the File System Access API. Please try a different browser like Chrome or Edge.");
+                return;
+            }
+            const handle = await window.showDirectoryPicker();
+            if (await verifyPermission(handle, true)) {
+                setDirectoryHandle(handle);
+                await idbSet('directoryHandle', handle);
+                setStorageProvider('local');
+                await idbSet('storageProvider', 'local');
+            } else {
+                alert("Permission to read/write to the folder was not granted.");
+            }
+        } catch (error) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                 console.log("User cancelled the directory picker.");
+            } else {
+                console.error("Error connecting to local provider:", error);
+            }
+        }
     }, []);
 
-    useEffect(() => {
-        const root = document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
+    const connectToCloudProvider = useCallback((provider: 'customApi' | 'googleDrive') => {
+        if (provider === 'customApi') {
+            if (!settings.customApiUrl) {
+                alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
+                const settingsSection = document.getElementById('api-settings-section');
+                if (settingsSection) {
+                    settingsSection.setAttribute('open', '');
+                    settingsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
         }
-        localStorage.setItem('kioskTheme', theme);
-        idbSet('kioskTheme', theme);
-    }, [theme]);
+        setStorageProvider(provider);
+        idbSet('storageProvider', provider);
+    }, [settings.customApiUrl]);
+
+    const connectToSharedUrl = useCallback((url: string) => {
+        if (!url) {
+            alert("Please enter a URL to connect.");
+            return;
+        }
+        updateSettings({ sharedUrl: url });
+        setStorageProvider('sharedUrl');
+        idbSet('storageProvider', 'sharedUrl');
+    }, [updateSettings]);
 
     const testAndConnectProvider = async (): Promise<{ success: boolean; message: string; }> => {
         if (settings.customApiUrl) {
@@ -462,217 +524,224 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, message: 'No sync provider is configured in Settings.' };
     };
 
+    const saveFileToStorage = useCallback(async (file: File): Promise<string> => {
+        if (storageProvider === 'local' && directoryHandle) {
+            try {
+                const assetsDir = await directoryHandle.getDirectoryHandle('assets', { create: true });
+                const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                const fileName = `${Date.now()}-${safeName}`;
+                const fileHandle = await assetsDir.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(file);
+                await writable.close();
+                return fileName;
+            } catch (error) {
+                console.error('Error saving file to local directory:', error);
+                throw new Error('Failed to save file to local directory.');
+            }
+        }
+        
+        const isCustomApi = storageProvider === 'customApi';
+        const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
+
+        if (isCustomApi || isSharedUrlApi) {
+            const url = isCustomApi ? settings.customApiUrl : settings.sharedUrl;
+            if (!url) throw new Error("API URL is not configured for upload.");
+            
+            const uploadUrl = new URL(url);
+            uploadUrl.pathname = uploadUrl.pathname.replace(/\/data$/, '/upload');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await fetch(uploadUrl.toString(), {
+                method: 'POST',
+                headers: { 'x-api-key': settings.customApiKey },
+                body: formData,
+            });
+            if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
+            const result = await response.json();
+            return result.filename;
+        }
+        
+        return fileToBase64(file);
+    }, [storageProvider, directoryHandle, settings]);
+
+    const getFileUrl = useCallback(async (fileName: string): Promise<string> => {
+        if (!fileName || fileName.startsWith('http') || fileName.startsWith('data:')) {
+            return fileName || '';
+        }
+        
+        if (storageProvider === 'local' && directoryHandle) {
+            try {
+                const assetsDir = await directoryHandle.getDirectoryHandle('assets');
+                const fileHandle = await assetsDir.getFileHandle(fileName);
+                const file = await fileHandle.getFile();
+                return URL.createObjectURL(file);
+            } catch (error) {
+                console.error(`Could not get file "${fileName}" from local storage:`, error);
+                return '';
+            }
+        }
+
+        const isCustomApi = storageProvider === 'customApi';
+        const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
+    
+        if (isCustomApi || isSharedUrlApi) {
+            try {
+                const baseUrlString = isCustomApi ? settings.customApiUrl : settings.sharedUrl;
+                if (!baseUrlString) return fileName;
+    
+                const baseUrl = new URL(baseUrlString);
+                const fileUrl = new URL(`/files/${fileName}`, baseUrl.origin);
+                
+                return fileUrl.toString();
+            } catch (error) {
+                console.error("Error constructing file URL:", error);
+                return fileName;
+            }
+        }
+        
+        return fileName;
+    }, [storageProvider, directoryHandle, settings]);
+    
+    // --- APP LIFECYCLE & AUTO-SYNC ---
+
+    useEffect(() => {
+        const loadAndConnect = async () => {
+             interface DataMapValue { setter: (value: any) => void; initial: any; merge?: boolean; }
+            const dataMap: Record<string, DataMapValue> = {
+                settings: { setter: setSettings, initial: initialSettings, merge: true },
+                brands: { setter: setBrands, initial: initialBrands },
+                products: { setter: setProducts, initial: initialProducts },
+                catalogues: { setter: setCatalogues, initial: initialCatalogues },
+                pamphlets: { setter: setPamphlets, initial: initialPamphlets },
+                screensaverAds: { setter: setScreensaverAds, initial: initialScreensaverAds },
+                adminUsers: { setter: setAdminUsers, initial: initialAdminUsers },
+                tvContent: { setter: setTvContent, initial: initialTvContent },
+                categories: { setter: setCategories, initial: initialCategories },
+                clients: { setter: setClients, initial: initialClients },
+                quotes: { setter: setQuotes, initial: initialQuotes },
+                viewCounts: { setter: setViewCounts, initial: initialViewCounts },
+            };
+
+            for (const [key, config] of Object.entries(dataMap)) {
+                const storedValue = await idbGet(key);
+                if (storedValue) {
+                    if (config.merge && isObject(config.initial) && isObject(storedValue)) {
+                        config.setter(deepMerge(config.initial, storedValue));
+                    } else {
+                        config.setter(storedValue);
+                    }
+                }
+            }
+
+            const provider = await idbGet<StorageProvider>('storageProvider');
+            if (provider === 'local') {
+                const handle = await idbGet<FileSystemDirectoryHandle>('directoryHandle');
+                if (handle) {
+                    if (await verifyPermission(handle, true)) {
+                        setDirectoryHandle(handle);
+                        setStorageProvider('local');
+                    } else {
+                        console.warn("Permission for local directory was lost. Please reconnect.");
+                        await idbSet('storageProvider', 'none');
+                        await idbSet('directoryHandle', null);
+                    }
+                }
+            } else if (provider === 'customApi' || provider === 'sharedUrl') {
+                const loadedSettings = await idbGet<Settings>('settings');
+                const isAutoSyncEnabled = loadedSettings?.sync?.autoSyncEnabled ?? settings.sync.autoSyncEnabled;
+                setStorageProvider(provider);
+                if (isAutoSyncEnabled) {
+                    console.log("Auto-pull triggered on load.");
+                    pullFromCloud();
+                }
+            }
+            setIsDataLoaded(true);
+        };
+        loadAndConnect();
+    }, [pullFromCloud, settings.sync.autoSyncEnabled]);
+
+    const dataToWatch = [brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts];
+    const stringifiedData = JSON.stringify(dataToWatch);
+    const debounceTimerRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (!isDataLoaded) return;
+        setSyncStatus(prev => (prev === 'synced' || prev === 'idle') ? 'pending' : prev);
+    }, [stringifiedData, isDataLoaded]);
+
+    useEffect(() => {
+        if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') return;
+
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+        debounceTimerRef.current = window.setTimeout(() => {
+            console.log("Auto-sync triggered.");
+            if (storageProvider === 'local') saveDatabaseToLocal();
+            else if (storageProvider === 'customApi') pushToCloud();
+        }, 2000);
+
+        return () => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); };
+    }, [syncStatus, settings.sync.autoSyncEnabled, storageProvider, isDataLoaded, saveDatabaseToLocal, pushToCloud]);
+
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('kioskTheme', theme);
+        idbSet('kioskTheme', theme);
+    }, [theme]);
+
     const contextValue: AppContextType = {
         isSetupComplete,
         completeSetup: () => {
             setIsSetupComplete(true);
             localStorage.setItem('kioskSetupComplete', 'true');
         },
-        settings,
-        brands,
-        products,
-        catalogues,
-        pamphlets,
-        screensaverAds,
-        adminUsers,
-        loggedInUser,
-        tvContent,
-        categories,
-        clients,
-        quotes,
-        viewCounts,
-        login,
-        logout,
-
-        // CRUD functions
-        addBrand: brandOps.add,
-        updateBrand: brandOps.update,
-        deleteBrand: brandOps.softDelete,
-        restoreBrand: brandOps.restore,
-        permanentlyDeleteBrand: brandOps.hardDelete,
-
-        addProduct: productOps.add,
-        updateProduct: productOps.update,
-        deleteProduct: productOps.softDelete,
-        restoreProduct: productOps.restore,
-        permanentlyDeleteProduct: productOps.hardDelete,
-
-        addCatalogue: catalogueOps.add,
-        updateCatalogue: catalogueOps.update,
-        deleteCatalogue: catalogueOps.softDelete,
-        restoreCatalogue: catalogueOps.restore,
-        permanentlyDeleteCatalogue: catalogueOps.hardDelete,
-        
-        addPamphlet: pamphletOps.add,
-        updatePamphlet: pamphletOps.update,
-        deletePamphlet: pamphletOps.softDelete,
-        restorePamphlet: pamphletOps.restore,
-        permanentlyDeletePamphlet: pamphletOps.hardDelete,
-
-        addAd: adOps.add,
-        updateAd: adOps.update,
-        deleteAd: adOps.hardDelete,
-
-        addAdminUser: userOps.add,
-        updateAdminUser: userOps.update,
-        deleteAdminUser: userOps.hardDelete,
-        
-        addTvContent: tvOps.add,
-        updateTvContent: tvOps.update,
-        deleteTvContent: tvOps.softDelete,
-        restoreTvContent: tvOps.restore,
-        permanentlyDeleteTvContent: tvOps.hardDelete,
-
-        addCategory: categoryOps.add,
-        updateCategory: categoryOps.update,
-        deleteCategory: categoryOps.softDelete,
-        restoreCategory: categoryOps.restore,
-        permanentlyDeleteCategory: categoryOps.hardDelete,
-        
+        settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, quotes, viewCounts,
+        login, logout,
+        addBrand: brandOps.add, updateBrand: brandOps.update, deleteBrand: brandOps.softDelete, restoreBrand: brandOps.restore, permanentlyDeleteBrand: brandOps.hardDelete,
+        addProduct: productOps.add, updateProduct: productOps.update, deleteProduct: productOps.softDelete, restoreProduct: productOps.restore, permanentlyDeleteProduct: productOps.hardDelete,
+        addCatalogue: catalogueOps.add, updateCatalogue: catalogueOps.update, deleteCatalogue: catalogueOps.softDelete, restoreCatalogue: catalogueOps.restore, permanentlyDeleteCatalogue: catalogueOps.hardDelete,
+        addPamphlet: pamphletOps.add, updatePamphlet: pamphletOps.update, deletePamphlet: pamphletOps.softDelete, restorePamphlet: pamphletOps.restore, permanentlyDeletePamphlet: pamphletOps.hardDelete,
+        addAd: adOps.add, updateAd: adOps.update, deleteAd: adOps.hardDelete,
+        addAdminUser: userOps.add, updateAdminUser: userOps.update, deleteAdminUser: userOps.hardDelete,
+        addTvContent: tvOps.add, updateTvContent: tvOps.update, deleteTvContent: tvOps.softDelete, restoreTvContent: tvOps.restore, permanentlyDeleteTvContent: tvOps.hardDelete,
+        addCategory: categoryOps.add, updateCategory: categoryOps.update, deleteCategory: categoryOps.softDelete, restoreCategory: categoryOps.restore, permanentlyDeleteCategory: categoryOps.hardDelete,
         addClient: (client: Client) => { clientOps.add(client); return client.id; },
-        addQuote: quoteOps.add,
-        updateQuote: quoteOps.update,
-        toggleQuoteStatus: (quoteId: string) => {
-            setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: q.status === 'pending' ? 'quoted' : 'pending'} : q));
-        },
-
-        updateSettings,
-        restoreBackup: (data: Partial<BackupData>) => {
-            if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
-            if (data.brands) setBrands(data.brands);
-            if (data.products) setProducts(data.products);
-            if (data.catalogues) setCatalogues(data.catalogues);
-            if (data.pamphlets) setPamphlets(data.pamphlets);
-            if (data.screensaverAds) setScreensaverAds(data.screensaverAds);
-            if (data.adminUsers) setAdminUsers(data.adminUsers);
-            if (data.tvContent) setTvContent(data.tvContent);
-            if (data.categories) setCategories(data.categories);
-            if (data.clients) setClients(data.clients);
-            if (data.quotes) setQuotes(data.quotes);
-            if (data.viewCounts) setViewCounts(data.viewCounts);
-        },
-
-        isScreensaverActive,
-        isScreensaverEnabled,
-        startScreensaver,
-        exitScreensaver,
-        toggleScreensaver,
-
-        deferredPrompt,
-        triggerInstallPrompt: () => deferredPrompt?.prompt(),
-        
-        confirmation,
-        showConfirmation,
-        hideConfirmation,
-
-        bookletModalState,
-        closeBookletModal,
-
-        pdfModalState,
-        closePdfModal,
-
-        clientDetailsModal,
-        openClientDetailsModal,
-        closeClientDetailsModal,
-
+        addQuote: quoteOps.add, updateQuote: quoteOps.update,
+        toggleQuoteStatus: (quoteId: string) => setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: q.status === 'pending' ? 'quoted' : 'pending'} : q)),
+        updateSettings, restoreBackup,
+        isScreensaverActive, isScreensaverEnabled, startScreensaver, exitScreensaver, toggleScreensaver,
+        deferredPrompt, triggerInstallPrompt: () => deferredPrompt?.prompt(),
+        confirmation, showConfirmation, hideConfirmation,
+        bookletModalState, closeBookletModal,
+        pdfModalState, closePdfModal,
+        clientDetailsModal, openClientDetailsModal, closeClientDetailsModal,
         openDocument,
-
-        activeTvContent,
-        playTvContent,
-        stopTvContent,
-
-        storageProvider,
-        isStorageConnected: storageProvider !== 'none',
-        directoryHandle,
-        connectToLocalProvider: async () => {},
-        connectToCloudProvider,
-        connectToSharedUrl,
+        activeTvContent, playTvContent, stopTvContent,
+        storageProvider, isStorageConnected: storageProvider !== 'none', directoryHandle,
+        connectToLocalProvider, connectToCloudProvider, connectToSharedUrl,
         disconnectFromStorage: () => {
             showConfirmation(
                 "Are you sure you want to disconnect? Auto-sync will be disabled.",
                 () => {
-                    setStorageProvider('none');
-                    idbSet('storageProvider', 'none');
-                    if (directoryHandle) {
-                        setDirectoryHandle(null);
-                        idbSet('directoryHandle', null);
-                    }
+                    setStorageProvider('none'); idbSet('storageProvider', 'none');
+                    if (directoryHandle) { setDirectoryHandle(null); idbSet('directoryHandle', null); }
                 }
             );
         },
-        saveFileToStorage: async (file: File) => {
-            try {
-                const isCustomApi = storageProvider === 'customApi';
-                const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
-    
-                if (isCustomApi || isSharedUrlApi) {
-                    const url = isCustomApi ? settings.customApiUrl : settings.sharedUrl;
-                    if (!url) throw new Error("API URL is not configured for upload.");
-                    
-                    const uploadUrl = new URL(url);
-                    uploadUrl.pathname = '/upload';
-                    
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    const response = await fetch(uploadUrl.toString(), {
-                        method: 'POST',
-                        headers: { 'x-api-key': settings.customApiKey },
-                        body: formData,
-                    });
-                    if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
-                    const result = await response.json();
-                    return result.filename;
-                }
-                return await fileToBase64(file);
-            } catch (error) {
-                console.error("Error saving file to storage:", error);
-                throw error;
-            }
-        },
-        getFileUrl: async (fileName: string) => {
-            if (!fileName || fileName.startsWith('http') || fileName.startsWith('data:')) {
-                return fileName || '';
-            }
-        
-            const isCustomApi = storageProvider === 'customApi';
-            const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
-        
-            if (isCustomApi || isSharedUrlApi) {
-                try {
-                    const baseUrlString = isCustomApi ? settings.customApiUrl : settings.sharedUrl;
-                    if (!baseUrlString) return fileName;
-        
-                    const baseUrl = new URL(baseUrlString);
-                    const fileUrl = new URL(`/files/${fileName}`, baseUrl.origin);
-                    
-                    return fileUrl.toString();
-                } catch (error) {
-                    console.error("Error constructing file URL:", error);
-                    return fileName;
-                }
-            }
-            
-            return fileName;
-        },
-
-        syncStatus,
-        saveDatabaseToLocal: async () => false,
-        loadDatabaseFromLocal: async () => false,
-        pushToCloud: async () => false,
-        pullFromCloud: async () => false,
-        
+        saveFileToStorage, getFileUrl, syncStatus,
+        saveDatabaseToLocal, loadDatabaseFromLocal, pushToCloud, pullFromCloud,
         testAndConnectProvider,
-
-        trackBrandView: () => {},
-        trackProductView: () => {},
-
-        theme,
-        toggleTheme: () => setTheme(t => (t === 'light' ? 'dark' : 'light')),
-        localVolume,
-        setLocalVolume: (vol: number) => {
-            setLocalVolume(vol);
-            idbSet('localVolume', vol);
-        },
+        trackBrandView: () => {}, trackProductView: () => {},
+        lastUpdated: settings.lastUpdated,
+        theme, toggleTheme: () => setTheme(t => (t === 'light' ? 'dark' : 'light')),
+        localVolume, setLocalVolume: (vol: number) => { setLocalVolume(vol); idbSet('localVolume', vol); },
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

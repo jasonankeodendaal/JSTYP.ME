@@ -270,7 +270,7 @@ export const settings: Settings = {
         ]
     },
     sync: {
-        autoSyncEnabled: false,
+        autoSyncEnabled: true,
     }
 };
 

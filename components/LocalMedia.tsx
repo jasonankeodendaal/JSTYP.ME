@@ -1,5 +1,4 @@
 import React, { useState, useEffect, forwardRef, Ref } from 'react';
-// FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
 import { motion } from 'framer-motion';
 
@@ -20,6 +19,7 @@ const LocalMedia = forwardRef<HTMLImageElement | HTMLVideoElement, LocalMediaPro
 
   useEffect(() => {
     let isMounted = true;
+    let objectUrl: string | null = null;
 
     const fetchAndSetUrl = async () => {
         // Immediately use src if it's a full URL (http or data)
@@ -46,6 +46,9 @@ const LocalMedia = forwardRef<HTMLImageElement | HTMLVideoElement, LocalMediaPro
             const url = await getFileUrl(src);
             if (isMounted) {
                 if (url) {
+                    if (url.startsWith('blob:')) {
+                        objectUrl = url;
+                    }
                     setDisplayUrl(url);
                 } else {
                     const placeholder = type === 'image' ? `https://placehold.co/400x400/F87171/FFFFFF?text=Not+Found` : '';
@@ -67,6 +70,9 @@ const LocalMedia = forwardRef<HTMLImageElement | HTMLVideoElement, LocalMediaPro
 
     return () => {
       isMounted = false;
+      if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+      }
     };
   }, [src, getFileUrl, isStorageConnected, type]);
 

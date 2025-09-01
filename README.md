@@ -5,14 +5,7 @@ This guide provides technical information for developers working on the Interact
 ## Project Structure
 
 - **`/` (Root)**: Contains the frontend application built with Vite, React, and TypeScript.
-  - `src/`: Source code for the React application.
-  - `public/`: Static assets.
 - **`/server`**: Contains a simple, self-contained Node.js Express server for data persistence.
-  - `server.js`: The main server file.
-  - `data.json`: The local JSON file used as a database.
-  - `uploads/`: Directory where all media files are stored.
-  - `ecosystem.config.js`: Configuration for the PM2 process manager.
-  - `.env.example`: Template for environment variables.
 
 ---
 
@@ -27,7 +20,7 @@ This guide provides technical information for developers working on the Interact
 - Navigate to the `/server` directory: `cd server`
 - Install dependencies: `npm install`
 - **Crucially**, rename `.env.example` to `.env` and set a secure `API_KEY`.
-- Run the server: `npm start` or `node server.js`
+- Run the server: `npm start`
 - The server will be available at `http://localhost:3001`.
 
 ---
@@ -54,45 +47,4 @@ The server is designed to be run persistently using **PM2**, a process manager f
 3.  **Enable Automatic Startup**:
     To ensure PM2 starts on boot, run `pm2 startup` and execute the command it provides. Then, save the process list with `pm2 save`.
 
-For detailed, user-friendly instructions on connecting the frontend to this server, please use the guides within the application itself.
-
-### Frontend Deployment (Vercel)
-
-1.  Push your project to a GitHub repository.
-2.  Import the project into Vercel.
-3.  **Add Environment Variable**:
-    -   Name: `VITE_GEMINI_API_KEY`
-    -   Value: Your Google Gemini API Key.
-    *(Note: The variable must be prefixed with `VITE_` for Vite to expose it to the frontend code.)*
-4.  Deploy.
-
----
-
-## Building a Native Android App (APK)
-
-This project uses Capacitor to bundle the web app into a native Android application.
-
-### One-Time Setup
-1.  **Install Capacitor CLI**:
-    ```bash
-    npm install @capacitor/cli
-    ```
-2.  **Generate a Keystore**: You need a signing key to create a release build. Follow the official Android guide to generate a `keystore.jks` file.
-
-### Build Process
-1.  **Build the Web App**:
-    ```bash
-    npm run build
-    ```
-2.  **Sync with Capacitor**:
-    ```bash
-    npx cap sync android
-    ```
-3.  **Open in Android Studio**:
-    ```bash
-    npx cap open android
-    ```
-4.  **Build the Signed APK**:
-    In Android Studio, go to `Build > Generate Signed Bundle / APK...` and follow the prompts, using the keystore you generated.
-
-An automated APK build process using GitHub Actions is also included. See the workflow file for details on required repository secrets.
+For detailed, user-friendly instructions on connecting the frontend to this server, please use the guides within the application itself in `Admin > System`.

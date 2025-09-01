@@ -11,7 +11,13 @@ const SyncStatusIndicator: React.FC = () => {
         return null;
     }
 
-    const providerName = storageProvider === 'local' ? 'drive' : 'cloud';
+    const providerName = {
+        local: 'Local Folder',
+        customApi: 'Custom API',
+        sharedUrl: 'Shared URL',
+        googleDrive: 'Google Drive',
+        none: 'None'
+    }[storageProvider];
 
     const statusMap = {
         idle: { text: 'Status: Idle', color: 'text-gray-500 dark:text-gray-400', animate: false },
@@ -144,6 +150,8 @@ const AdminBackupRestore: React.FC = () => {
                 const success = await loadDatabaseFromLocal();
                 if(success) {
                     alert("Data successfully loaded from the connected folder.");
+                } else {
+                    alert("Error loading data. Check console for details.");
                 }
                 setIsLoading(false);
             }
@@ -156,6 +164,8 @@ const AdminBackupRestore: React.FC = () => {
             const success = await pushToCloud();
             if(success) {
                 alert("Data successfully pushed to the cloud.");
+            } else {
+                 alert("Error pushing data. Check console for details.");
             }
             setIsPushing(false);
         });
@@ -167,6 +177,8 @@ const AdminBackupRestore: React.FC = () => {
             const success = await pullFromCloud();
             if (success) {
                  alert("Data successfully pulled from the cloud.");
+            } else {
+                 alert("Error pulling data. Check console for details.");
             }
             setIsPulling(false);
         });
@@ -178,64 +190,64 @@ const AdminBackupRestore: React.FC = () => {
             case 'sharedUrl':
                 const providerName = storageProvider === 'sharedUrl' ? 'Shared URL' : 'Custom API';
                 return (
-                     <div className="space-y-8">
+                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Connected Storage Sync</h3>
+                            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Cloud Sync</h3>
                             <SyncStatusIndicator />
                         </div>
-                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Push to {providerName}</h3>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Send your current local data to the cloud provider. This will overwrite the data currently on the server.
+                        <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-100">Push to {providerName}</h4>
+                            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                Overwrite cloud data with your current local data.
                             </p>
-                            <div className="mt-6">
-                                <button type="button" onClick={handlePushToCloud} disabled={isPushing || isPulling || !isSuperAdmin || syncStatus === 'syncing'} className="btn btn-primary">{isPushing ? 'Pushing...' : `Push to ${providerName}`}</button>
+                            <div className="mt-3">
+                                <button type="button" onClick={handlePushToCloud} disabled={isPushing || isPulling || !isSuperAdmin || syncStatus === 'syncing'} className="btn btn-primary !text-sm !py-2 w-full">{isPushing ? 'Pushing...' : `Push to ${providerName}`}</button>
                                 {!isSuperAdmin && (
                                     <p className="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
-                                        Only the Main Admin can push data to the cloud.
+                                        Only the Main Admin can push data.
                                     </p>
                                 )}
                             </div>
                         </div>
-                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Pull from {providerName}</h3>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Retrieve the latest data from the cloud provider. This will <strong className="font-semibold text-yellow-600 dark:text-yellow-400">overwrite</strong> your current local data.
+                         <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-100">Pull from {providerName}</h4>
+                            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                Overwrite your local data with the latest cloud data.
                             </p>
-                            <div className="mt-6">
-                                <button type="button" onClick={handlePullFromCloud} disabled={isPushing || isPulling || syncStatus === 'syncing'} className="btn btn-primary">{isPulling ? 'Pulling...' : `Pull from ${providerName}`}</button>
+                            <div className="mt-3">
+                                <button type="button" onClick={handlePullFromCloud} disabled={isPushing || isPulling || syncStatus === 'syncing'} className="btn btn-primary !text-sm !py-2 w-full">{isPulling ? 'Pulling...' : `Pull from ${providerName}`}</button>
                             </div>
                         </div>
                     </div>
                 );
             case 'local':
                  return (
-                    <div className="space-y-8">
+                    <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Connected Storage Sync</h3>
+                            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Local Folder Sync</h3>
                              <SyncStatusIndicator />
                         </div>
-                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Save to Drive</h3>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Save the current local data to the `database.json` file in your connected folder. This will overwrite the existing file on the drive.
+                        <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-100">Save to Folder</h4>
+                            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                Overwrite the `database.json` and assets in your connected folder.
                             </p>
-                            <div className="mt-6">
-                                <button type="button" onClick={handleSaveToDrive} disabled={isSaving || isLoading || !isSuperAdmin || syncStatus === 'syncing'} className="btn btn-primary">{isSaving ? 'Saving...' : 'Save to Drive'}</button>
+                            <div className="mt-3">
+                                <button type="button" onClick={handleSaveToDrive} disabled={isSaving || isLoading || !isSuperAdmin || syncStatus === 'syncing'} className="btn btn-primary !text-sm !py-2 w-full">{isSaving ? 'Saving...' : 'Save to Folder'}</button>
                                 {!isSuperAdmin && (
                                     <p className="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
-                                        Only the Main Admin can save data to the network drive.
+                                        Only the Main Admin can save data.
                                     </p>
                                 )}
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Load from Drive</h3>
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Load data from the `database.json` file in your connected folder. This will <strong className="font-semibold text-yellow-600 dark:text-yellow-400">overwrite</strong> your current local data.
+                        <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-100">Load from Folder</h4>
+                            <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                                Overwrite your current local data with data from the folder.
                             </p>
-                            <div className="mt-6">
-                                <button type="button" onClick={handleLoadFromDrive} disabled={isSaving || isLoading || syncStatus === 'syncing'} className="btn btn-primary">{isLoading ? 'Loading...' : 'Load from Drive'}</button>
+                            <div className="mt-3">
+                                <button type="button" onClick={handleLoadFromDrive} disabled={isSaving || isLoading || syncStatus === 'syncing'} className="btn btn-primary !text-sm !py-2 w-full">{isLoading ? 'Loading...' : 'Load from Folder'}</button>
                             </div>
                         </div>
                     </div>
@@ -246,63 +258,46 @@ const AdminBackupRestore: React.FC = () => {
     };
 
     const renderLocalFileUI = () => (
-         <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Create Local Backup File</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                    Download a complete backup file of all application data to your computer. Store this file in a safe place.
+         <div className="space-y-4">
+            <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Create Local Backup File</h4>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                    Download a complete `.json` backup file of all data. Store this file in a safe place.
                 </p>
-                <div className="mt-6">
-                    <button type="button" onClick={handleCreateBackup} className="btn btn-primary">Download Backup File</button>
+                <div className="mt-3">
+                    <button type="button" onClick={handleCreateBackup} className="btn btn-primary !text-sm !py-2 w-full">Download Backup File</button>
                 </div>
             </div>
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                <h3 className="text-xl font-semibold leading-6 text-gray-800 dark:text-gray-100 section-heading">Restore from Local Backup File</h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                    Restore the application state from a backup file. <strong className="font-semibold text-yellow-600 dark:text-yellow-400">Warning:</strong> This will overwrite all current data.
+            <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Restore from Backup File</h4>
+                <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                    <strong className="text-yellow-600 dark:text-yellow-400">Warning:</strong> This will overwrite all current data.
                 </p>
-                <form onSubmit={handleRestore} className="mt-4 space-y-4">
-                    <div className="mt-1">
-                         <label htmlFor="restore-file-upload" className="w-full cursor-pointer flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            <div className="space-y-1 text-center">
-                                <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                <span className="relative rounded-md font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500"><span>Upload a file</span></span>
-                                <input ref={fileInputRef} id="restore-file-upload" type="file" className="sr-only" accept=".json" onChange={handleFileChange} />
-                            </div>
-                        </label>
-                        {fileName && <p className="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">Selected: <span className="font-semibold">{fileName}</span></p>}
-                    </div>
-                    <div className="mt-4">
-                        <button type="submit" className="btn btn-destructive w-full" disabled={isRestoring || !fileName}>{isRestoring ? 'Restoring...' : 'Restore from Backup'}</button>
-                    </div>
+                <form onSubmit={handleRestore} className="mt-3 space-y-3">
+                     <label htmlFor="restore-file-upload" className="w-full cursor-pointer flex items-center justify-center p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{fileName || 'Click to select .json file'}</span>
+                        <input ref={fileInputRef} id="restore-file-upload" type="file" className="sr-only" accept=".json" onChange={handleFileChange} />
+                    </label>
+                    <button type="submit" className="btn btn-destructive !text-sm !py-2 w-full" disabled={isRestoring || !fileName}>{isRestoring ? 'Restoring...' : 'Restore from Backup'}</button>
                 </form>
             </div>
         </div>
     );
 
     return (
-        <div className="space-y-8">
-            {renderProviderSync()}
-
+        <div className="space-y-6">
+            {storageProvider !== 'none' ? renderProviderSync() : (
+                 <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Local Backup & Restore</h3>
+            )}
+            
             {storageProvider !== 'none' && (
-                 <div className="relative my-8">
-                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-                    </div>
-                    <div className="relative flex justify-center">
-                        <span className="bg-gray-100/50 dark:bg-gray-800/20 px-3 text-base font-medium text-gray-700 dark:text-gray-300">
-                            Or
-                        </span>
-                    </div>
+                 <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-gray-300 dark:border-gray-600" /></div>
+                    <div className="relative flex justify-center"><span className="bg-gray-100/50 dark:bg-gray-800/20 px-3 text-sm font-medium text-gray-700 dark:text-gray-300">Or use Local Files</span></div>
                 </div>
             )}
             
-            <div className="space-y-8">
-                {storageProvider === 'none' && (
-                     <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Local Backup & Restore</h3>
-                )}
-                {renderLocalFileUI()}
-            </div>
+            {renderLocalFileUI()}
         </div>
     );
 };

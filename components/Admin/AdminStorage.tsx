@@ -57,8 +57,7 @@ const ConnectedCard: React.FC<{ icon: React.ReactNode; title: string; onDisconne
 const AdminStorage: React.FC = () => {
     const { 
         connectToLocalProvider,
-        connectToCloudProvider,
-        connectToSharedUrl,
+        testAndConnectProvider,
         disconnectFromStorage,
         storageProvider,
         directoryHandle,
@@ -70,6 +69,7 @@ const AdminStorage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isPotentiallyRestricted, setIsPotentiallyRestricted] = useState(false);
     const [sharedUrl, setSharedUrl] = useState(settings.sharedUrl || '');
+    const [connectionResult, setConnectionResult] = useState<{success: boolean, message: string} | null>(null);
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSystem;
 
@@ -99,8 +99,20 @@ const AdminStorage: React.FC = () => {
         setIsLoading(false);
     };
 
-    const handleSharedUrlConnect = () => {
-        connectToSharedUrl(sharedUrl);
+    const handleCloudConnect = async (provider: 'customApi' | 'sharedUrl') => {
+        setConnectionResult(null);
+        setIsLoading(true);
+        
+        if (provider === 'sharedUrl') {
+            await updateSettings({ sharedUrl: sharedUrl });
+        }
+        
+        // Use a short delay to ensure settings are updated before testing
+        setTimeout(async () => {
+            const result = await testAndConnectProvider();
+            setConnectionResult(result);
+            setIsLoading(false);
+        }, 200);
     };
     
     const getProviderDetails = () => {
@@ -115,7 +127,7 @@ const AdminStorage: React.FC = () => {
                 return {
                     icon: <CodeBracketIcon className="h-8 w-8" />,
                     title: 'Custom API Sync',
-                    name: 'Remote cloud sync active',
+                    name: settings.customApiUrl,
                 };
             case 'sharedUrl':
                  return {
@@ -163,22 +175,27 @@ const AdminStorage: React.FC = () => {
                 >
                     <div className="space-y-2">
                         <input type="url" value={sharedUrl} onChange={e => setSharedUrl(e.target.value)} placeholder="https://.../database.json" className="block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2 px-3 text-sm"/>
-                        <button onClick={handleSharedUrlConnect} className="btn btn-primary w-full max-w-xs mx-auto" disabled={isLoading || !sharedUrl}>
-                            {isLoading ? 'Connecting...' : 'Connect to URL'}
+                        <button onClick={() => handleCloudConnect('sharedUrl')} className="btn btn-primary w-full max-w-xs mx-auto" disabled={isLoading || !sharedUrl}>
+                            {isLoading ? 'Testing...' : 'Test & Connect'}
                         </button>
                     </div>
                 </ProviderCard>
                  <ProviderCard
                     icon={<CodeBracketIcon className="h-8 w-8" />}
                     title="Custom API Sync"
-                    description="For advanced users. Sync data with your own backend API (e.g., Node.js with Redis, MongoDB, etc.)."
+                    description="For advanced users. Sync data with your own backend API (e.g., the provided Node.js server)."
                     disabled={isLoading}
                 >
-                    <button onClick={() => connectToCloudProvider('customApi')} className="btn btn-primary w-full max-w-xs mx-auto" disabled={isLoading}>
-                        Connect
+                    <button onClick={() => handleCloudConnect('customApi')} className="btn btn-primary w-full max-w-xs mx-auto" disabled={isLoading}>
+                        {isLoading ? 'Testing...' : 'Test & Connect'}
                     </button>
                 </ProviderCard>
             </div>
+            {connectionResult && (
+                 <div className={`mt-4 p-3 rounded-lg text-sm ${connectionResult.success ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'}`}>
+                    {connectionResult.message}
+                </div>
+            )}
         </>
     );
 
