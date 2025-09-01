@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import type { BackupData } from '../../types.ts';
