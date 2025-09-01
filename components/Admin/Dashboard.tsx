@@ -12,10 +12,9 @@ import AdminZipBulkImport from './AdminZipBulkImport.tsx';
 import AdminStorage from './AdminStorage.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 import AdminTrash from './AdminTrash.tsx';
-import AdminPdfConverter from './AdminPdfConverter.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
 
-type Tab = 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'settings' | 'storage' | 'backup' | 'users' | 'trash' | 'pdfConverter' | 'analytics';
+type Tab = 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'settings' | 'storage' | 'backup' | 'users' | 'trash' | 'analytics';
 
 const getStatus = (item: Catalogue | Pamphlet) => {
     const today = new Date();
@@ -378,8 +377,6 @@ const AdminDashboard: React.FC = () => {
                 return <AdminUserManagement />;
             case 'trash':
                 return <AdminTrash />;
-            case 'pdfConverter':
-                return <AdminPdfConverter />;
             case 'analytics':
                 return <AdminAnalytics />;
             default: return null;
@@ -414,7 +411,6 @@ const AdminDashboard: React.FC = () => {
                                 {canManagePamphlets && <TabButton tabName="pamphlets" label="Pamphlets" icon={<DocumentTextIcon className="h-4 w-4"/>} />}
                                 {canManageScreensaver && <TabButton tabName="screensaverAds" label="Screensaver" icon={<EyeIcon className="h-4 w-4"/>} />}
                                 {canManageTvContent && <TabButton tabName="tv-content" label="TV Content" icon={<TvIcon className="h-4 w-4"/>} />}
-                                {canManageSystem && <TabButton tabName="pdfConverter" label="PDF Converter" icon={<DocumentArrowRightIcon className="h-4 w-4"/>} />}
                                 {canManageSettings && <TabButton tabName="settings" label="Settings" icon={<PencilIcon className="h-4 w-4"/>} />}
                                 {canManageSystem && <TabButton tabName="storage" label="Storage" icon={<ServerStackIcon className="h-4 w-4"/>} />}
                                 {canManageSystem && <TabButton tabName="backup" label={backupTabLabel} icon={<RestoreIcon className="h-4 w-4"/>} />}

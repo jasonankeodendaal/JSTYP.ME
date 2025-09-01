@@ -13,13 +13,11 @@ import AdminZipBulkImport from './AdminZipBulkImport.tsx';
 import AdminStorage from './AdminStorage.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 import AdminTrash from './AdminTrash.tsx';
-import AdminPdfConverter from './AdminPdfConverter.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
 import SetupInstruction from './SetupInstruction.tsx';
-import DataImporter from './DataImporter.tsx';
 
 
-type Section = 'brands' | 'content' | 'settings' | 'system' | 'users' | 'analytics' | 'quotes' | 'trash' | 'pdf';
+type Section = 'brands' | 'content' | 'settings' | 'system' | 'users' | 'analytics' | 'quotes' | 'trash';
 type SubSection = 'catalogues' | 'pamphlets' | 'screensaver' | 'tv';
 
 const MotionDiv = motion.div as any;
@@ -40,7 +38,6 @@ const AdminFooter: React.FC<{ activeSection: Section; setActiveSection: (section
         { id: 'analytics', label: 'Analytics', icon: <ChartPieIcon className="w-5 h-5" /> },
         { id: 'quotes', label: 'Quotes', icon: <ClipboardDocumentListIcon className="w-5 h-5" /> },
         { id: 'trash', label: 'Trash', icon: <TrashIcon className="w-5 h-5" /> },
-        { id: 'pdf', label: 'PDF Tool', icon: <DocumentArrowRightIcon className="w-5 h-5" /> },
     ];
 
     return (
@@ -128,7 +125,6 @@ const AdminDashboard: React.FC = () => {
             case 'analytics': return <AdminAnalytics />;
             case 'quotes': return <AdminQuotesView />;
             case 'trash': return <AdminTrash />;
-            case 'pdf': return <AdminPdfConverter />;
             default: return <AdminBrandsView />;
         }
     };
@@ -168,21 +164,6 @@ const AdminSystemManagement = () => (
             </div>
         </div>
         
-        <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
-            <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                <div className="flex items-center gap-3">
-                    <DocumentArrowRightIcon className="h-6 w-6 text-indigo-500" />
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">Catalogue Data Importer</h3>
-                </div>
-                <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
-                    <ChevronDownIcon className="w-5 h-5"/>
-                </div>
-            </summary>
-            <div className="px-4 sm:px-5 py-6 border-t border-gray-200/80 dark:border-gray-700">
-                <DataImporter />
-            </div>
-        </details>
-
         <div className="pt-8 mt-8 border-t border-gray-200 dark:border-gray-700">
             <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading mb-4">Setup Guides</h3>
             <div className="space-y-4">
