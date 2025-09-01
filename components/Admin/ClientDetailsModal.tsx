@@ -9,7 +9,8 @@ import { XIcon } from '../Icons';
 const MotionDiv = motion.div as any;
 
 const ClientDetailsModal: React.FC = () => {
-    const { clients, addClient, closeClientDetailsModal } = useAppContext();
+    // FIX: Destructure 'closeQuoteStartModal' and 'quoteStartModal' from context to fix the error and control visibility.
+    const { clients, addClient, closeQuoteStartModal, quoteStartModal } = useAppContext();
     const navigate = useNavigate();
 
     const [mode, setMode] = useState<'select' | 'new'>('select');
@@ -17,15 +18,22 @@ const ClientDetailsModal: React.FC = () => {
     // State for selecting an existing client
     const [selectedClientId, setSelectedClientId] = useState<string>('');
     
-    // State for creating a new client
-    const [companyName, setCompanyName] = useState('');
-    const [contactPerson, setContactPerson] = useState('');
-    const [contactEmail, setContactEmail] = useState('');
-    const [contactTel, setContactTel] = useState('');
-    const [vatNumber, setVatNumber] = useState('');
-    const [address, setAddress] = useState('');
+    // FIX: Consolidate new client state into a single object for easier management, mirroring QuoteStartModal.
+    const [newClient, setNewClient] = useState<Partial<Client>>({
+        companyName: '',
+        contactPerson: '',
+        contactEmail: '',
+        contactTel: '',
+        vatNumber: '',
+        address: ''
+    });
     
     const visibleClients = useMemo(() => clients.filter(c => !c.isDeleted).sort((a,b) => a.companyName.localeCompare(b.companyName)), [clients]);
+
+    // FIX: Add handler for consolidated new client state.
+    const handleNewClientChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setNewClient(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
 
     const handleSubmit = () => {
         let clientIdToUse: string | null = null;
@@ -37,36 +45,47 @@ const ClientDetailsModal: React.FC = () => {
             }
             clientIdToUse = selectedClientId;
         } else { // mode === 'new'
-            if (!companyName.trim() || !contactPerson.trim() || !contactTel.trim()) {
+            if (!newClient.companyName?.trim() || !newClient.contactPerson?.trim() || !newClient.contactTel?.trim()) {
                 alert('Company Name, Contact Person, and Tel are required fields.');
                 return;
             }
-            const newClient: Client = {
+            const clientToAdd: Client = {
                 id: `client_${Date.now()}`,
-                companyName: companyName.trim(),
-                contactPerson: contactPerson.trim(),
-                contactEmail: contactEmail.trim(),
-                contactTel: contactTel.trim(),
-                vatNumber: vatNumber.trim(),
-                address: address.trim(),
+                companyName: newClient.companyName.trim(),
+                contactPerson: newClient.contactPerson.trim(),
+                contactEmail: newClient.contactEmail?.trim(),
+                contactTel: newClient.contactTel.trim(),
+                vatNumber: newClient.vatNumber?.trim(),
+                address: newClient.address?.trim(),
             };
-            clientIdToUse = addClient(newClient);
+            clientIdToUse = addClient(clientToAdd);
         }
 
         if (clientIdToUse) {
-            closeClientDetailsModal();
-            navigate('/admin/stock-pick', { state: { clientId: clientIdToUse } });
+            // FIX: Use the correct function from context.
+            closeQuoteStartModal();
+            // FIX: Add a slight delay to allow modal to close gracefully before navigating.
+            setTimeout(() => {
+                navigate('/admin/stock-pick', { state: { clientId: clientIdToUse } });
+            }, 100);
         }
     };
+    
+    const isSubmitDisabled = 
+        (mode === 'select' && !selectedClientId) ||
+        (mode === 'new' && (!newClient.companyName?.trim() || !newClient.contactPerson?.trim() || !newClient.contactTel?.trim()));
 
     return (
         <AnimatePresence>
+            {/* FIX: Control modal visibility using state from context. */}
+            {quoteStartModal.isOpen && (
             <MotionDiv
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                onClick={closeClientDetailsModal}
+                // FIX: Use the correct function from context.
+                onClick={closeQuoteStartModal}
             >
                 <MotionDiv
                     initial={{ scale: 0.95, y: 20 }}
@@ -77,7 +96,8 @@ const ClientDetailsModal: React.FC = () => {
                 >
                     <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 section-heading">Start New Quote</h2>
-                        <button onClick={closeClientDetailsModal} className="p-1 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"><XIcon className="h-5 w-5" /></button>
+                        {/* FIX: Use the correct function from context. */}
+                        <button onClick={closeQuoteStartModal} className="p-1 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"><XIcon className="h-5 w-5" /></button>
                     </header>
 
                     <div className="p-6">
@@ -106,29 +126,30 @@ const ClientDetailsModal: React.FC = () => {
                                     </div>
                                 ) : (
                                     <>
+                                        {/* FIX: Update form inputs to use consolidated state. */}
                                         <div>
                                             <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name</label>
-                                            <input type="text" id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
+                                            <input type="text" id="companyName" name="companyName" value={newClient.companyName} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
                                         <div>
                                             <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Person</label>
-                                            <input type="text" id="contactPerson" value={contactPerson} onChange={e => setContactPerson(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
+                                            <input type="text" id="contactPerson" name="contactPerson" value={newClient.contactPerson} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
                                          <div>
                                             <label htmlFor="contactTel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tel</label>
-                                            <input type="tel" id="contactTel" value={contactTel} onChange={e => setContactTel(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
+                                            <input type="tel" id="contactTel" name="contactTel" value={newClient.contactTel} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
                                          <div>
                                             <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (Optional)</label>
-                                            <input type="email" id="contactEmail" value={contactEmail} onChange={e => setContactEmail(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
+                                            <input type="email" id="contactEmail" name="contactEmail" value={newClient.contactEmail} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
                                         </div>
                                         <div>
                                             <label htmlFor="vatNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">VAT Number (Optional)</label>
-                                            <input type="text" id="vatNumber" value={vatNumber} onChange={e => setVatNumber(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
+                                            <input type="text" id="vatNumber" name="vatNumber" value={newClient.vatNumber} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
                                         </div>
                                         <div>
                                             <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address (Optional)</label>
-                                            <textarea id="address" value={address} onChange={e => setAddress(e.target.value)} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" rows={3}></textarea>
+                                            <textarea id="address" name="address" value={newClient.address} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" rows={3}></textarea>
                                         </div>
                                     </>
                                 )}
@@ -137,11 +158,13 @@ const ClientDetailsModal: React.FC = () => {
                     </div>
 
                     <footer className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
-                        <button onClick={closeClientDetailsModal} type="button" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Cancel</button>
-                        <button onClick={handleSubmit} type="button" className="btn btn-primary">Start Stock Pick</button>
+                        {/* FIX: Use the correct function from context. */}
+                        <button onClick={closeQuoteStartModal} type="button" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Cancel</button>
+                        <button onClick={handleSubmit} type="button" className="btn btn-primary" disabled={isSubmitDisabled}>Start Stock Pick</button>
                     </footer>
                 </MotionDiv>
             </MotionDiv>
+            )}
         </AnimatePresence>
     );
 };

@@ -13,7 +13,7 @@ import PdfModal from './components/PdfModal.tsx'; // Import new PDF modal
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 import TvContentPlayer from './components/TvContentPlayer.tsx';
 import SetupWizard from './components/SetupWizard.tsx';
-import ClientDetailsModal from './components/Admin/ClientDetailsModal.tsx';
+import QuoteStartModal from './components/Admin/QuoteStartModal.tsx';
 
 // Component imports
 import Header from './components/Header.tsx';
@@ -44,7 +44,7 @@ import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 register();
 
 const useIdleRedirect = () => {
-    const { settings, activeTvContent, bookletModalState, pdfModalState, confirmation, clientDetailsModal } = useAppContext();
+    const { settings, activeTvContent, bookletModalState, pdfModalState, confirmation, quoteStartModal } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
     const idleTimer = useRef<number | null>(null);
@@ -56,7 +56,7 @@ const useIdleRedirect = () => {
                 clearTimeout(idleTimer.current);
             }
             // Don't start timer on home page, product pages, admin pages, if disabled, or if TV player or any modal is active
-            if (timeout <= 0 || location.pathname === '/' || location.pathname.startsWith('/product/') || location.pathname.startsWith('/admin') || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || clientDetailsModal.isOpen) {
+            if (timeout <= 0 || location.pathname === '/' || location.pathname.startsWith('/product/') || location.pathname.startsWith('/admin') || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || quoteStartModal.isOpen) {
                 return;
             }
             idleTimer.current = window.setTimeout(() => {
@@ -74,7 +74,7 @@ const useIdleRedirect = () => {
             if (idleTimer.current) clearTimeout(idleTimer.current);
             events.forEach(event => window.removeEventListener(event, activityHandler));
         };
-    }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, clientDetailsModal.isOpen]);
+    }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, quoteStartModal.isOpen]);
 };
 
 const useAdminIdleLogout = () => {
@@ -160,7 +160,7 @@ const useScreensaverManager = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, clientDetailsModal } = useAppContext();
+  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
   useIdleRedirect();
@@ -220,7 +220,7 @@ const AppContent: React.FC = () => {
               onClose={closePdfModal}
           />
       )}
-      {clientDetailsModal.isOpen && <ClientDetailsModal />}
+      {quoteStartModal.isOpen && <QuoteStartModal />}
       <ConfirmationModal />
       
       {isPrinting ? (

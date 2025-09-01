@@ -230,8 +230,12 @@ export const SaveIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
 );
 
-export const CubeIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+export const CubeIcon: React.FC<React.SVGProps<SVGSVGElement>> = ({ className, ...props }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.4)" strokeWidth="0.5" className={className} {...props}>
+        <path d="M12 2.25 3 7.5l9 5.25 9-5.25L12 2.25z" fill="rgba(255,255,255,0.4)" />
+        <path d="M3 7.5v9l9 5.25V12.75L3 7.5z" fill="rgba(255,255,255,0.2)" />
+        <path d="M21 7.5v9l-9 5.25V12.75L21 7.5z" fill="rgba(255,255,255,0.3)" />
+    </svg>
 );
 
 export const LinkIcon: React.FC<{ className?: string }> = ({ className }) => (

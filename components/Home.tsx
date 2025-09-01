@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
-import { EyeIcon, EyeOffIcon, PlusIcon, ClipboardDocumentListIcon } from './Icons.tsx';
+import { EyeIcon, EyeOffIcon, PlusIcon, CubeIcon } from './Icons.tsx';
 import PamphletDisplay from './PamphletCarousel.tsx';
 import LocalMedia from './LocalMedia.tsx';
 
@@ -33,12 +33,12 @@ const BrandGrid: React.FC = () => {
 }
 
 const ClientStockPickCTA: React.FC = () => {
-    const { loggedInUser, openClientDetailsModal } = useAppContext();
+    const { loggedInUser, openQuoteStartModal } = useAppContext();
     const navigate = useNavigate();
 
     const handleCreateStockPick = () => {
         if (loggedInUser) {
-            openClientDetailsModal();
+            openQuoteStartModal();
         } else {
             navigate('/login');
         }
@@ -47,8 +47,13 @@ const ClientStockPickCTA: React.FC = () => {
     return (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl shadow-xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left text-white">
              <div className="flex items-center gap-6">
-                <div className="hidden sm:block flex-shrink-0 flex items-center justify-center h-20 w-20 p-4 rounded-2xl bg-white/20 text-white shadow-xl backdrop-blur-sm border border-white/20 transition-all duration-300 ease-in-out hover:scale-110 hover:-rotate-6 hover:shadow-2xl">
-                    <ClipboardDocumentListIcon />
+                <div className="hidden sm:block [perspective:800px]">
+                    <div className="group relative h-24 w-24 rounded-3xl bg-gradient-to-br from-white/30 to-white/10 text-white shadow-2xl backdrop-blur-lg border border-white/20 transition-all duration-500 ease-in-out [transform-style:preserve-3d] hover:[transform:rotateY(20deg)_rotateX(-10deg)]">
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl"></div>
+                        <div className="flex h-full w-full items-center justify-center transition-all duration-500 ease-in-out [transform-style:preserve-3d] group-hover:[transform:translateZ(40px)]">
+                            <CubeIcon className="w-12 h-12 [transform:translateZ(20px)]" />
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <h3 className="text-2xl font-bold section-heading">Create Client Quote</h3>

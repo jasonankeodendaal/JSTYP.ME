@@ -88,7 +88,7 @@ const isApiEndpoint = (url: string | undefined): boolean => {
 interface ConfirmationState { isOpen: boolean; message: string; onConfirm: () => void; }
 interface BookletModalState { isOpen: boolean; title: string; imageUrls: string[]; }
 interface PdfModalState { isOpen: boolean; url: string; title: string; }
-interface ClientDetailsModalState { isOpen: boolean; }
+interface QuoteStartModalState { isOpen: boolean; }
 type DocumentType = ProductDocument | Catalogue | Pamphlet;
 type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
 
@@ -166,9 +166,9 @@ interface AppContextType {
   closeBookletModal: () => void;
   pdfModalState: PdfModalState;
   closePdfModal: () => void;
-  clientDetailsModal: ClientDetailsModalState;
-  openClientDetailsModal: () => void;
-  closeClientDetailsModal: () => void;
+  quoteStartModal: QuoteStartModalState;
+  openQuoteStartModal: () => void;
+  closeQuoteStartModal: () => void;
   openDocument: (doc: DocumentType, title: string) => void;
   activeTvContent: TvContent | null;
   playTvContent: (content: TvContent) => void;
@@ -240,7 +240,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [confirmation, setConfirmation] = useState<ConfirmationState>({ isOpen: false, message: '', onConfirm: () => {} });
     const [bookletModalState, setBookletModalState] = useState<BookletModalState>({ isOpen: false, title: '', imageUrls: [] });
     const [pdfModalState, setPdfModalState] = useState<PdfModalState>({ isOpen: false, url: '', title: '' });
-    const [clientDetailsModal, setClientDetailsModal] = useState<ClientDetailsModalState>({ isOpen: false });
+    const [quoteStartModal, setQuoteStartModal] = useState<QuoteStartModalState>({ isOpen: false });
 
     // TV Player state
     const [activeTvContent, setActiveTvContent] = useState<TvContent | null>(null);
@@ -331,8 +331,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     const closeBookletModal = () => setBookletModalState({ isOpen: false, title: '', imageUrls: [] });
     const closePdfModal = () => setPdfModalState({ isOpen: false, url: '', title: '' });
-    const openClientDetailsModal = () => setClientDetailsModal({ isOpen: true });
-    const closeClientDetailsModal = () => setClientDetailsModal({ isOpen: false });
+    const openQuoteStartModal = () => setQuoteStartModal({ isOpen: true });
+    const closeQuoteStartModal = () => setQuoteStartModal({ isOpen: false });
 
     // --- TV PLAYER ---
     const playTvContent = (content: TvContent) => setActiveTvContent(content);
@@ -721,7 +721,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         confirmation, showConfirmation, hideConfirmation,
         bookletModalState, closeBookletModal,
         pdfModalState, closePdfModal,
-        clientDetailsModal, openClientDetailsModal, closeClientDetailsModal,
+        quoteStartModal, openQuoteStartModal, closeQuoteStartModal,
         openDocument,
         activeTvContent, playTvContent, stopTvContent,
         storageProvider, isStorageConnected: storageProvider !== 'none', directoryHandle,
