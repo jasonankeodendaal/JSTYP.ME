@@ -39,7 +39,7 @@ const PamphletDisplay: React.FC = () => {
         return (
             <div className="mb-10 text-center">
                 <h2 className="text-2xl tracking-tight text-gray-900 dark:text-gray-100 mb-6 section-heading">Latest Offers & Pamphlets</h2>
-                <div className="py-12 bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-white/5">
+                <div className="py-12 bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-white/5 pamphlet-container">
                     <span className="text-5xl md:text-6xl tracking-tight" style={placeholderStyle}>
                         {text}
                     </span>
@@ -51,27 +51,29 @@ const PamphletDisplay: React.FC = () => {
     return (
         <div className="mb-10 text-center">
             <h2 className="text-2xl tracking-tight text-gray-900 dark:text-gray-100 mb-6 section-heading">Latest Offers & Pamphlets</h2>
-            <div className="flex justify-center items-start flex-wrap gap-x-6 gap-y-8">
-                {activePamphlets.map((pamphlet) => (
-                    <button
-                        key={pamphlet.id}
-                        onClick={() => openDocument(pamphlet, pamphlet.title)}
-                        className={`group block text-left w-[180px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'}`}
-                        aria-label={`View ${pamphlet.title}`}
-                    >
-                        <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-square ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
-                            <LocalMedia
-                                src={pamphlet.imageUrl}
-                                alt={pamphlet.title}
-                                type="image"
-                                className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-black/0">
-                                <h3 className="font-semibold text-white text-sm item-title drop-shadow-md">{pamphlet.title}</h3>
+            <div className="py-12 bg-gray-100 dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-white/5 pamphlet-container">
+                <div className="flex justify-center items-start flex-wrap gap-x-6 gap-y-8">
+                    {activePamphlets.map((pamphlet) => (
+                        <button
+                            key={pamphlet.id}
+                            onClick={() => openDocument(pamphlet, pamphlet.title)}
+                            className={`group block text-left w-[180px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'}`}
+                            aria-label={`View ${pamphlet.title}`}
+                        >
+                            <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-square ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
+                                <LocalMedia
+                                    src={pamphlet.imageUrl}
+                                    alt={pamphlet.title}
+                                    type="image"
+                                    className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-black/0">
+                                    <h3 className="font-semibold text-white text-sm item-title drop-shadow-md">{pamphlet.title}</h3>
+                                </div>
                             </div>
-                        </div>
-                    </button>
-                ))}
+                        </button>
+                    ))}
+                </div>
             </div>
         </div>
     );

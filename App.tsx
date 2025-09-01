@@ -249,7 +249,7 @@ const AppContent: React.FC = () => {
                <Route path="/admin/user/edit/:userId" element={<ProtectedRoute><AdminUserEdit /></ProtectedRoute>} />
            </Routes>
       ) : (
-        <div className="text-gray-900 dark:text-gray-200 font-sans flex flex-col antialiased overflow-hidden main-content-container">
+        <div className="text-gray-900 dark:text-gray-200 font-sans flex flex-col antialiased main-content-container">
             <Header />
             <AnimatePresence mode="wait">
                 <MotionMain

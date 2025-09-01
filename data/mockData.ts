@@ -235,11 +235,11 @@ export const settings: Settings = {
         typography: defaultHeadingsFont
     },
     footer: {
-        backgroundColor: "#1f2937",
+        backgroundColor: "transparent",
         textColor: "#e5e7eb",
         backgroundImageUrl: "",
         backgroundImageOpacity: 0.5,
-        effect: "none",
+        effect: "glassmorphism",
         typography: defaultBodyFont
     },
     pamphletPlaceholder: {

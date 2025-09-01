@@ -31,7 +31,7 @@
         --main-bg: #ffffff;
         --main-text: #1f2937;
         /* UPDATED: Stronger default shadow for light mode */
-        --main-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 5px 10px -5px rgba(0, 0, 0, 0.04);
+        --main-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.05);
         --main-border-color: #e5e7eb; /* gray-200 */
         
         --primary-color: #4f46e5;
@@ -120,12 +120,12 @@
       /* Stronger, more defined shadows for cards in light mode */
       html:not(.dark) .shadow-lg,
       html:not(.dark) .shadow-xl {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07) !important;
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1), 0 4px 8px -3px rgba(0, 0, 0, 0.08) !important;
       }
 
       /* Stronger hover shadow for cards */
       html:not(.dark) [class*="hover:shadow-"]:hover {
-         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+         box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.12), 0 5px 8px -4px rgba(0, 0, 0, 0.12) !important;
       }
       
       /* Add a clear border to cards and other elements in light mode. This targets elements that already have a border class. */
@@ -146,6 +146,16 @@
       html:not(.dark) textarea {
           border-color: #d1d5db; /* gray-300 */
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
+      }
+      
+      /* Add outline for Header */
+      html:not(.dark) header.sticky {
+        border-bottom-color: #d1d5db !important; /* gray-300 */
+      }
+      
+      /* Add outline for Pamphlet section */
+      html:not(.dark) .pamphlet-container {
+        border-color: #d1d5db !important; /* gray-300 */
       }
       
       /* --- END: Light Mode Enhancements --- */
