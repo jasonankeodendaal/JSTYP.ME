@@ -92,9 +92,14 @@ const Footer: React.FC = () => {
       <div style={backgroundStyle}></div>
       <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
         <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-                &copy; {new Date().getFullYear()}. All rights reserved.
-            </p>
+            <div className="flex items-center gap-2">
+                <a href="https://freeimage.host/" target="_blank" rel="noopener noreferrer">
+                    <img src="https://iili.io/FGWJCtj.jpg" alt="FGWJCtj.jpg" className="h-6 w-auto" />
+                </a>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                    JSTYP.me &copy; 2025. All rights reserved.
+                </p>
+            </div>
             <div className="flex items-center gap-4 sm:gap-6">
                 <SyncStatusIndicator />
                 <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 hidden sm:block" />
