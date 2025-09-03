@@ -163,6 +163,12 @@ export interface Settings {
   sync: {
     autoSyncEnabled: boolean;
   };
+  loginScreen: {
+    backgroundImageUrl: string;
+    backgroundColor: string;
+    boxBackgroundColor: string;
+    textColor: string;
+  };
   lastUpdated?: number; // Timestamp for sync checking
 }
 

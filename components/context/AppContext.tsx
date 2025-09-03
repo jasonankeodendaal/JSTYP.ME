@@ -707,14 +707,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loadAndConnect();
     }, [pullFromCloud, settings.sync.autoSyncEnabled]);
 
-    const dataToWatch = [brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts];
-    const stringifiedData = JSON.stringify(dataToWatch);
     const debounceTimerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (!isDataLoaded) return;
         setSyncStatus(prev => (prev === 'synced' || prev === 'idle') ? 'pending' : prev);
-    }, [stringifiedData, isDataLoaded]);
+    }, [isDataLoaded, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts]);
 
     useEffect(() => {
         if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') return;

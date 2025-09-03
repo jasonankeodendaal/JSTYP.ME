@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -42,21 +40,37 @@ const AdminLogin: React.FC = () => {
         }
     };
 
+    const loginSettings = settings.loginScreen;
+
+    const pageStyle: React.CSSProperties = {
+        backgroundImage: loginSettings.backgroundImageUrl ? `url(${loginSettings.backgroundImageUrl})` : 'none',
+        backgroundColor: loginSettings.backgroundColor || '#111827',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+    };
+
+    const boxStyle: React.CSSProperties = {
+        background: loginSettings.boxBackgroundColor || 'linear-gradient(to bottom right, #38bdf8, #3b82f6)',
+    };
+    
+    const textStyle: React.CSSProperties = {
+        color: loginSettings.textColor || '#ffffff',
+    };
+
     return (
-        <div className="min-h-screen bg-sky-100 dark:bg-gray-900 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
+        <div style={pageStyle} className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                 {/* FIX: Added the missing 'type="image"' prop to the LocalMedia component. */}
                  <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto mx-auto mb-8" />
-                 <div className="bg-gradient-to-br from-sky-400 to-blue-600 py-12 px-4 shadow-2xl rounded-2xl sm:px-10 text-white">
+                 <div style={boxStyle} className="py-12 px-4 shadow-2xl rounded-2xl sm:px-10">
                     <div className="mb-8 text-center">
-                        <h2 className="text-3xl font-extrabold tracking-tight">
-                            LOG IN
+                        <h2 className="text-3xl font-extrabold tracking-tight" style={textStyle}>
+                            ADMIN LOGIN
                         </h2>
                     </div>
                     
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="user-select" className="block text-sm font-medium text-left">
+                            <label htmlFor="user-select" className="block text-sm font-medium text-left" style={textStyle}>
                                 User
                             </label>
                             <div className="mt-1">
@@ -78,8 +92,8 @@ const AdminLogin: React.FC = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="pin-input" className="block text-sm font-medium text-left">
-                                Password
+                            <label htmlFor="pin-input" className="block text-sm font-medium text-left" style={textStyle}>
+                                PIN
                             </label>
                             <div className="mt-1">
                                 <input
@@ -90,7 +104,7 @@ const AdminLogin: React.FC = () => {
                                     required
                                     value={pin}
                                     onChange={(e) => setPin(e.target.value)}
-                                    placeholder="Enter your PIN"
+                                    placeholder="Enter your 4-digit PIN"
                                     maxLength={4}
                                     pattern="\d{4}"
                                     className="appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white sm:text-sm bg-white text-gray-900"
@@ -105,7 +119,7 @@ const AdminLogin: React.FC = () => {
                         <div>
                             <button
                                 type="submit"
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-blue-600 bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-black transition-colors"
+                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-blue-600 bg-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-black transition-colors"
                             >
                                 Login
                             </button>
@@ -113,7 +127,7 @@ const AdminLogin: React.FC = () => {
                     </form>
                 </div>
             </div>
-             <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
+             <p className="mt-8 text-center text-sm" style={{color: loginSettings.textColor, textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>
                 &copy; {new Date().getFullYear()} All rights reserved.
             </p>
         </div>

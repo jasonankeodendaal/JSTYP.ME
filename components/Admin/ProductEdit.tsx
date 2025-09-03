@@ -316,7 +316,7 @@ const ProductEdit: React.FC = () => {
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
-                    <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                    <button type="button" onClick={() => formData?.brandId ? navigate(`/admin/brand/${formData.brandId}`) : navigate('/admin')} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                         <ChevronLeftIcon className="h-5 w-5 mr-1" />
                         Back
                     </button>
