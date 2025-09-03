@@ -1,7 +1,9 @@
 /// <reference path="./swiper.d.ts" />
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { Routes, Route, useLocation, useNavigate } from 'react-router';
+import { HashRouter } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,7 +15,7 @@ import PdfModal from './components/PdfModal.tsx'; // Import new PDF modal
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 import TvContentPlayer from './components/TvContentPlayer.tsx';
 import SetupWizard from './components/SetupWizard.tsx';
-import QuoteStartModal from './components/Admin/QuoteStartModal.tsx';
+import ClientDetailsModal from './components/Admin/ClientDetailsModal.tsx';
 
 // Component imports
 import Header from './components/Header.tsx';
@@ -77,46 +79,6 @@ const useIdleRedirect = () => {
     }, [timeout, navigate, location.pathname, activeTvContent, bookletModalState.isOpen, pdfModalState.isOpen, confirmation.isOpen, quoteStartModal.isOpen]);
 };
 
-const useAdminIdleLogout = () => {
-    const { logout, loggedInUser } = useAppContext();
-    const location = useLocation();
-    const idleTimer = useRef<number | null>(null);
-    const timeout = 180; // 3 minutes in seconds
-
-    useEffect(() => {
-        const resetTimer = () => {
-            if (idleTimer.current) {
-                clearTimeout(idleTimer.current);
-            }
-            // Only run if user is logged in and on an admin page
-            if (!loggedInUser || !location.pathname.startsWith('/admin')) {
-                return;
-            }
-            idleTimer.current = window.setTimeout(() => {
-                logout();
-            }, timeout * 1000);
-        };
-
-        const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'touchstart'];
-        
-        // Don't add listeners if not on an admin page or not logged in.
-        if (!loggedInUser || !location.pathname.startsWith('/admin')) {
-            if (idleTimer.current) clearTimeout(idleTimer.current); // clear any existing timer
-            return;
-        }
-
-        const activityHandler = () => resetTimer();
-        
-        events.forEach(event => window.addEventListener(event, activityHandler));
-        resetTimer(); // Start the timer on component mount/location change
-
-        return () => {
-            if (idleTimer.current) clearTimeout(idleTimer.current);
-            events.forEach(event => window.removeEventListener(event, activityHandler));
-        };
-    }, [timeout, logout, location.pathname, loggedInUser]);
-};
-
 const useScreensaverManager = () => {
     const { settings, isScreensaverEnabled, startScreensaver, isScreensaverActive } = useAppContext();
     const location = useLocation();
@@ -164,7 +126,6 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const MotionMain = motion.main as any;
   useIdleRedirect();
-  useAdminIdleLogout();
   useScreensaverManager();
 
   // ADDED: Effect to disable context menu based on settings.
@@ -233,7 +194,7 @@ const AppContent: React.FC = () => {
               onClose={closePdfModal}
           />
       )}
-      {quoteStartModal.isOpen && <QuoteStartModal />}
+      {quoteStartModal.isOpen && <ClientDetailsModal />}
       <ConfirmationModal />
       
       {isPrinting ? (

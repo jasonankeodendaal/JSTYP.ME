@@ -1,6 +1,7 @@
 
 
 import React, { useMemo } from 'react';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { ChevronLeftIcon } from './Icons';

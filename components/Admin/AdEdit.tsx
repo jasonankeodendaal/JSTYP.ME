@@ -160,12 +160,12 @@ const AdEdit: React.FC = () => {
                 </div>
 
                 {/* Form Content */}
-                <div className="grid grid-cols-3 gap-8 items-start">
-                    <div className="col-span-2 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div className="col-span-1 lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Ad Details</h3>
-                                <div className="mt-6 grid grid-cols-2 gap-y-6 gap-x-4">
-                                <div className="col-span-2">
+                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
+                                <div className="col-span-1 sm:col-span-2">
                                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                                     <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required/>
                                 </div>
@@ -211,7 +211,7 @@ const AdEdit: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="col-span-1 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Ad Media</h3>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Upload one or more images or videos.</p>

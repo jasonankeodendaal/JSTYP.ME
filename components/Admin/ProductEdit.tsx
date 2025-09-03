@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useParams, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Product, ProductDocument } from '../../types';
 import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon, SparklesIcon } from '../Icons';
@@ -7,7 +9,8 @@ import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 import DescriptionAssistantModal from './AiDescriptionModal.tsx';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
+// @FIX: Corrected pdfjs-dist version in worker URL from non-existent v5 to v4.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
 
 const inputStyle = "block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -360,21 +363,21 @@ const ProductEdit: React.FC = () => {
                     </div>
 
                     {/* Form Content */}
-                    <div className="grid grid-cols-3 gap-8 items-start">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         {/* Left Column - Main Details */}
-                        <div className="col-span-2 space-y-6">
+                        <div className="col-span-1 lg:col-span-2 space-y-6">
                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                                 <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Product Information</h3>
-                                    <div className="mt-6 grid grid-cols-6 gap-y-6 gap-x-4">
-                                    <div className="col-span-3">
+                                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-6 gap-y-6 gap-x-4">
+                                    <div className="col-span-1 sm:col-span-3">
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label>
                                         <input type="text" name="name" id="name" value={formData.name} onChange={handleInputChange} className={inputStyle} required />
                                     </div>
-                                    <div className="col-span-3">
+                                    <div className="col-span-1 sm:col-span-3">
                                         <label htmlFor="sku" className="block text-sm font-medium text-gray-700 dark:text-gray-300">SKU</label>
                                         <input type="text" name="sku" id="sku" value={formData.sku} onChange={handleInputChange} className={inputStyle} required />
                                     </div>
-                                    <div className="col-span-3">
+                                    <div className="col-span-1 sm:col-span-3">
                                         <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                                         <select
                                             id="categoryId"
@@ -392,11 +395,11 @@ const ProductEdit: React.FC = () => {
                                         </select>
                                         {brandCategories.length === 0 && <p className="mt-1 text-xs text-gray-500">Create categories in the Brand's product list page.</p>}
                                     </div>
-                                    <div className="col-span-3">
+                                    <div className="col-span-1 sm:col-span-3">
                                         <label htmlFor="websiteUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Website URL (Optional)</label>
                                         <input type="url" name="websiteUrl" id="websiteUrl" value={formData.websiteUrl || ''} onChange={handleInputChange} className={inputStyle} placeholder="https://example.com/product" />
                                     </div>
-                                    <div className="col-span-6">
+                                    <div className="col-span-1 sm:col-span-6">
                                         <div className="flex justify-between items-center">
                                             <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                                             <button type="button" onClick={() => setIsDescriptionModalOpen(true)} className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 disabled:opacity-50" disabled={!formData.name}>
@@ -466,7 +469,7 @@ const ProductEdit: React.FC = () => {
                         </div>
 
                         {/* Right Column - Assets */}
-                        <div className="space-y-6">
+                        <div className="col-span-1 space-y-6">
                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                                 <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Product Media</h3>
                                 <div className="mt-4 space-y-6">

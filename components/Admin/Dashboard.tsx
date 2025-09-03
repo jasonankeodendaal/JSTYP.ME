@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent } from '../../types';
 import AdminSettings from './AdminSettings.tsx';

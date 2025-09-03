@@ -1,5 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import { EyeIcon, EyeOffIcon, PlusIcon, CubeIcon } from './Icons.tsx';
 import PamphletDisplay from './PamphletCarousel.tsx';
@@ -33,15 +35,10 @@ const BrandGrid: React.FC = () => {
 }
 
 const ClientStockPickCTA: React.FC = () => {
-    const { loggedInUser, openQuoteStartModal } = useAppContext();
-    const navigate = useNavigate();
+    const { openQuoteStartModal } = useAppContext();
 
     const handleCreateStockPick = () => {
-        if (loggedInUser) {
-            openQuoteStartModal();
-        } else {
-            navigate('/login');
-        }
+        openQuoteStartModal();
     };
 
     return (

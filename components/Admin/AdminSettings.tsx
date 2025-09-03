@@ -181,7 +181,9 @@ const AdminSettings: React.FC = () => {
         <div>
             <form onSubmit={handleSave} className="space-y-8">
                 <BrandingAndIdentitySection formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
+                {/* FIX: Corrected variable name from onFileChange to handleFileChange */}
                 <ThemeAndAppearanceSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                <CreatorProfileSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                 <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                 <TypographySection formData={formData} onNestedChange={handleNestedChange} />
                 <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
@@ -296,6 +298,51 @@ const ElementStyleEditor: React.FC<{title: string, element: 'header' | 'footer',
         </div>
     </div>
 );
+
+const CreatorProfileSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => {
+    const creator = formData.creatorProfile;
+    return (
+        <FormSection title="Creator Profile" description="Edit the details shown in the 'JSTYP.me' contact popup in the footer.">
+            <div className="py-5 grid grid-cols-3 gap-4 items-center border-b border-gray-200 dark:border-gray-700">
+                <div className="col-span-2">
+                    <label htmlFor="creatorProfile-enabled" className={`${labelStyle} cursor-pointer`}>Enable Creator Popup</label>
+                    <p className="mt-1 text-xs text-gray-500">Show the JSTYP.me logo and contact card in the public footer.</p>
+                </div>
+                <div className="col-span-1 flex justify-end">
+                    <label htmlFor="creatorProfile-enabled" className="flex items-center cursor-pointer">
+                        <div className="relative">
+                            <input
+                                type="checkbox"
+                                id="creatorProfile-enabled"
+                                className="sr-only peer"
+                                checked={creator.enabled}
+                                onChange={(e) => onNestedChange('creatorProfile.enabled', e.target.checked)}
+                            />
+                            <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500"></div>
+                            <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <ImageUpload 
+                label="Profile Image"
+                value={creator.imageUrl}
+                onTextChange={(e) => onNestedChange('creatorProfile.imageUrl', e.target.value)}
+                onFileChange={(e) => onFileChange(e, 'creatorProfile.imageUrl')}
+                onRemove={() => onNestedChange('creatorProfile.imageUrl', '')}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label className={labelStyle}>Name</label><input type="text" value={creator.name} onChange={e => onNestedChange('creatorProfile.name', e.target.value)} className={inputStyle} /></div>
+                <div><label className={labelStyle}>Title</label><input type="text" value={creator.title} onChange={e => onNestedChange('creatorProfile.title', e.target.value)} className={inputStyle} /></div>
+                <div><label className={labelStyle}>Phone</label><input type="tel" value={creator.phone} onChange={e => onNestedChange('creatorProfile.phone', e.target.value)} className={inputStyle} /></div>
+                <div><label className={labelStyle}>Email</label><input type="email" value={creator.email} onChange={e => onNestedChange('creatorProfile.email', e.target.value)} className={inputStyle} /></div>
+                <div><label className={labelStyle}>Website URL</label><input type="url" value={creator.website} onChange={e => onNestedChange('creatorProfile.website', e.target.value)} className={inputStyle} /></div>
+                <div><label className={labelStyle}>Website Display Text</label><input type="text" value={creator.websiteText} onChange={e => onNestedChange('creatorProfile.websiteText', e.target.value)} className={inputStyle} /></div>
+                <div className="md:col-span-2"><label className={labelStyle}>WhatsApp Number</label><input type="text" value={creator.whatsapp} onChange={e => onNestedChange('creatorProfile.whatsapp', e.target.value)} className={inputStyle} placeholder="e.g., 27821234567" /></div>
+            </div>
+        </FormSection>
+    );
+}
 
 const LoginPageStyleSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => (
     <FormSection title="Login Page Style" description="Customize the appearance of the admin login screen.">

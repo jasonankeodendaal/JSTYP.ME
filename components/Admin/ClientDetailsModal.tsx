@@ -1,24 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-// FIX: Correct import path for AppContext
 import { useAppContext } from '../context/AppContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import type { Client } from '../../types';
-import { XIcon } from '../Icons';
+import { XIcon, PlusIcon, ChevronUpIcon } from '../Icons.tsx';
 
 const MotionDiv = motion.div as any;
 
 const ClientDetailsModal: React.FC = () => {
-    // FIX: Destructure 'closeQuoteStartModal' and 'quoteStartModal' from context to fix the error and control visibility.
     const { clients, addClient, closeQuoteStartModal, quoteStartModal } = useAppContext();
     const navigate = useNavigate();
 
     const [mode, setMode] = useState<'select' | 'new'>('select');
     
-    // State for selecting an existing client
     const [selectedClientId, setSelectedClientId] = useState<string>('');
+    const [showMoreDetails, setShowMoreDetails] = useState(false);
     
-    // FIX: Consolidate new client state into a single object for easier management, mirroring QuoteStartModal.
     const [newClient, setNewClient] = useState<Partial<Client>>({
         companyName: '',
         contactPerson: '',
@@ -30,7 +27,6 @@ const ClientDetailsModal: React.FC = () => {
     
     const visibleClients = useMemo(() => clients.filter(c => !c.isDeleted).sort((a,b) => a.companyName.localeCompare(b.companyName)), [clients]);
 
-    // FIX: Add handler for consolidated new client state.
     const handleNewClientChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setNewClient(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
@@ -62,9 +58,7 @@ const ClientDetailsModal: React.FC = () => {
         }
 
         if (clientIdToUse) {
-            // FIX: Use the correct function from context.
             closeQuoteStartModal();
-            // FIX: Add a slight delay to allow modal to close gracefully before navigating.
             setTimeout(() => {
                 navigate('/admin/stock-pick', { state: { clientId: clientIdToUse } });
             }, 100);
@@ -77,14 +71,12 @@ const ClientDetailsModal: React.FC = () => {
 
     return (
         <AnimatePresence>
-            {/* FIX: Control modal visibility using state from context. */}
             {quoteStartModal.isOpen && (
             <MotionDiv
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                // FIX: Use the correct function from context.
                 onClick={closeQuoteStartModal}
             >
                 <MotionDiv
@@ -96,7 +88,6 @@ const ClientDetailsModal: React.FC = () => {
                 >
                     <header className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 section-heading">Start New Quote</h2>
-                        {/* FIX: Use the correct function from context. */}
                         <button onClick={closeQuoteStartModal} className="p-1 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700"><XIcon className="h-5 w-5" /></button>
                     </header>
 
@@ -126,30 +117,55 @@ const ClientDetailsModal: React.FC = () => {
                                     </div>
                                 ) : (
                                     <>
-                                        {/* FIX: Update form inputs to use consolidated state. */}
                                         <div>
-                                            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name</label>
+                                            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name*</label>
                                             <input type="text" id="companyName" name="companyName" value={newClient.companyName} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
                                         <div>
-                                            <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Person</label>
+                                            <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Person*</label>
                                             <input type="text" id="contactPerson" name="contactPerson" value={newClient.contactPerson} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
                                          <div>
-                                            <label htmlFor="contactTel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tel</label>
+                                            <label htmlFor="contactTel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tel*</label>
                                             <input type="tel" id="contactTel" name="contactTel" value={newClient.contactTel} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" required />
                                         </div>
-                                         <div>
-                                            <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (Optional)</label>
-                                            <input type="email" id="contactEmail" name="contactEmail" value={newClient.contactEmail} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="vatNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">VAT Number (Optional)</label>
-                                            <input type="text" id="vatNumber" name="vatNumber" value={newClient.vatNumber} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
-                                        </div>
-                                        <div>
-                                            <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address (Optional)</label>
-                                            <textarea id="address" name="address" value={newClient.address} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" rows={3}></textarea>
+                                        
+                                        <AnimatePresence>
+                                            {showMoreDetails && (
+                                                <MotionDiv 
+                                                    initial={{ opacity: 0, height: 0 }} 
+                                                    animate={{ opacity: 1, height: 'auto' }} 
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="space-y-4 overflow-hidden"
+                                                >
+                                                     <div>
+                                                        <label htmlFor="contactEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (Optional)</label>
+                                                        <input type="email" id="contactEmail" name="contactEmail" value={newClient.contactEmail} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="vatNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">VAT Number (Optional)</label>
+                                                        <input type="text" id="vatNumber" name="vatNumber" value={newClient.vatNumber} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" />
+                                                    </div>
+                                                    <div>
+                                                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address (Optional)</label>
+                                                        <textarea id="address" name="address" value={newClient.address} onChange={handleNewClientChange} className="mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4" rows={3}></textarea>
+                                                    </div>
+                                                </MotionDiv>
+                                            )}
+                                        </AnimatePresence>
+
+                                        <div className="pt-2">
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowMoreDetails(prev => !prev)}
+                                                className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                                            >
+                                                {showMoreDetails ? (
+                                                    <><ChevronUpIcon className="w-4 h-4" /> Show Less Details</>
+                                                ) : (
+                                                    <><PlusIcon className="w-4 h-4" /> Add More Details</>
+                                                )}
+                                            </button>
                                         </div>
                                     </>
                                 )}
@@ -158,7 +174,6 @@ const ClientDetailsModal: React.FC = () => {
                     </div>
 
                     <footer className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-2xl border-t border-gray-200 dark:border-gray-700">
-                        {/* FIX: Use the correct function from context. */}
                         <button onClick={closeQuoteStartModal} type="button" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">Cancel</button>
                         <button onClick={handleSubmit} type="button" className="btn btn-primary" disabled={isSubmitDisabled}>Start Stock Pick</button>
                     </footer>

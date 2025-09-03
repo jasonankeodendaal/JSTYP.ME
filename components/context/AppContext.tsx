@@ -13,9 +13,12 @@ import {
     categories as initialCategories,
     clients as initialClients,
     quotes as initialQuotes,
-    viewCounts as initialViewCounts
+    viewCounts as initialViewCounts,
+    // FIX: Import initial activity logs data.
+    activityLogs as initialActivityLogs
 } from '../../data/mockData.ts';
-import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts } from '../../types.ts';
+// FIX: Import ActivityLog type.
+import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
 
 
@@ -96,6 +99,8 @@ interface AppContextType {
   clients: Client[];
   quotes: Quote[];
   viewCounts: ViewCounts;
+  // FIX: Add activityLogs to context type.
+  activityLogs: ActivityLog[];
   login: (userId: string, pin: string) => AdminUser | null;
   logout: () => void;
   addBrand: (brand: Brand) => void;
@@ -135,9 +140,15 @@ interface AppContextType {
   restoreCategory: (categoryId: string) => void;
   permanentlyDeleteCategory: (categoryId: string) => void;
   addClient: (client: Client) => string;
+  // FIX: Add missing client management functions to the context type.
+  updateClient: (client: Client) => void;
+  deleteClient: (clientId: string) => void;
+  restoreClient: (clientId: string) => void;
+  permanentlyDeleteClient: (clientId: string) => void;
   addQuote: (quote: Quote) => void;
   updateQuote: (quote: Quote) => void;
   toggleQuoteStatus: (quoteId: string) => void;
+  deleteQuote: (quoteId: string) => void;
   updateSettings: (newSettings: Partial<Settings>) => void;
   restoreBackup: (data: Partial<BackupData>) => void;
   isScreensaverActive: boolean;
@@ -212,10 +223,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [clients, setClients] = useState<Client[]>(initialClients);
     const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
     const [viewCounts, setViewCounts] = useState<ViewCounts>(initialViewCounts);
+    // FIX: Add activityLogs state.
+    const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialActivityLogs);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(() => {
-        const savedUser = sessionStorage.getItem('kiosk-user');
+        const savedUser = localStorage.getItem('kiosk-user');
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
@@ -272,10 +285,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             localStorage.setItem('kioskId', trimmedId);
         }
     };
+    
+    // --- ACTIVITY LOG ---
+    const addActivityLog = useCallback((
+        logData: Omit<ActivityLog, 'id' | 'timestamp' | 'userId' | 'kioskId'>,
+        userOverride: AdminUser | null = null
+    ) => {
+        const userForLog = userOverride || loggedInUser;
+        const newLog: ActivityLog = {
+            id: `log_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            timestamp: Date.now(),
+            userId: userForLog ? userForLog.id : 'kiosk_user',
+            kioskId: kioskId,
+            ...logData,
+        };
+        setActivityLogs(prev => [newLog, ...prev]);
+    }, [loggedInUser, kioskId]);
 
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => deepMerge(prev, newSettings));
-    }, []);
+        addActivityLog({ actionType: 'UPDATE', entityType: 'Settings', details: 'Updated system settings.' });
+    }, [addActivityLog]);
 
     const restoreBackup = useCallback((data: Partial<BackupData>) => {
         if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
@@ -290,43 +320,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (data.clients) setClients(data.clients);
         if (data.quotes) setQuotes(data.quotes);
         if (data.viewCounts) setViewCounts(data.viewCounts);
-    }, []);
+        // FIX: Restore activity logs from backup.
+        if (data.activityLogs) setActivityLogs(data.activityLogs);
+        addActivityLog({ actionType: 'RESTORE', entityType: 'System', details: 'Restored data from a backup file.' });
+    }, [addActivityLog]);
     
     // --- GENERIC CRUD ---
-    const createCrudOperations = <T extends { id: string }>(
-        setter: React.Dispatch<React.SetStateAction<T[]>>
+    const createCrudOperations = <T extends { id: string, name?: string, title?: string, companyName?: string, modelName?: string }>(
+        setter: React.Dispatch<React.SetStateAction<T[]>>,
+        entityType: ActivityLog['entityType']
     ) => ({
-        add: (item: T) => setter(prev => [...prev, item]),
-        update: (updatedItem: T) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item)),
-        softDelete: (id: string) => setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: true } : item)),
-        restore: (id: string) => setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: false } : item)),
-        hardDelete: (id: string) => setter(prev => prev.filter(item => item.id !== id)),
+        add: (item: T) => {
+            setter(prev => [...prev, item]);
+            const name = item.name || item.title || item.companyName || item.modelName || 'N/A';
+            addActivityLog({ actionType: 'CREATE', entityType, entityId: item.id, details: `Created ${entityType.toLowerCase()}: "${name}"` });
+        },
+        update: (updatedItem: T) => {
+            setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+            const name = updatedItem.name || updatedItem.title || updatedItem.companyName || updatedItem.modelName || 'N/A';
+            addActivityLog({ actionType: 'UPDATE', entityType, entityId: updatedItem.id, details: `Updated ${entityType.toLowerCase()}: "${name}"` });
+        },
+        softDelete: (id: string, name?: string) => {
+            setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: true } : item));
+            addActivityLog({ actionType: 'DELETE', entityType, entityId: id, details: `Moved ${entityType.toLowerCase()} to trash: "${name || id}"` });
+        },
+        restore: (id: string, name?: string) => {
+            setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: false } : item));
+            addActivityLog({ actionType: 'RESTORE', entityType, entityId: id, details: `Restored ${entityType.toLowerCase()} from trash: "${name || id}"` });
+        },
+        hardDelete: (id: string, name?: string) => {
+            setter(prev => prev.filter(item => item.id !== id));
+            addActivityLog({ actionType: 'HARD_DELETE', entityType, entityId: id, details: `Permanently deleted ${entityType.toLowerCase()}: "${name || id}"` });
+        },
     });
 
-    const brandOps = createCrudOperations(setBrands);
-    const productOps = createCrudOperations(setProducts);
-    const catalogueOps = createCrudOperations(setCatalogues);
-    const pamphletOps = createCrudOperations(setPamphlets);
-    const adOps = createCrudOperations(setScreensaverAds);
-    const userOps = createCrudOperations(setAdminUsers);
-    const tvOps = createCrudOperations(setTvContent);
-    const categoryOps = createCrudOperations(setCategories);
-    const clientOps = createCrudOperations(setClients);
-    const quoteOps = createCrudOperations(setQuotes);
+    const brandOps = createCrudOperations(setBrands, 'Brand');
+    const productOps = createCrudOperations(setProducts, 'Product');
+    const catalogueOps = createCrudOperations(setCatalogues, 'Catalogue');
+    const pamphletOps = createCrudOperations(setPamphlets, 'Pamphlet');
+    const adOps = createCrudOperations(setScreensaverAds, 'ScreensaverAd');
+    const userOps = createCrudOperations(setAdminUsers, 'AdminUser');
+    const tvOps = createCrudOperations(setTvContent, 'TvContent');
+    const categoryOps = createCrudOperations(setCategories, 'Category');
+    const clientOps = createCrudOperations(setClients, 'Client');
+    const quoteOps = createCrudOperations(setQuotes, 'Quote');
     
     // --- AUTH ---
     const login = (userId: string, pin: string) => {
         const user = adminUsers.find(u => u.id === userId && u.pin === pin);
         if (user) {
             setLoggedInUser(user);
-            sessionStorage.setItem('kiosk-user', JSON.stringify(user));
+            localStorage.setItem('kiosk-user', JSON.stringify(user));
+            addActivityLog({ actionType: 'LOGIN', entityType: 'AdminUser', entityId: user.id, details: `User "${user.firstName}" logged in.` }, user);
             return user;
         }
         return null;
     };
     const logout = () => {
+        const userToLogOut = loggedInUser;
+        if (userToLogOut) {
+            addActivityLog({ actionType: 'LOGOUT', entityType: 'AdminUser', entityId: userToLogOut.id, details: `User "${userToLogOut.firstName}" logged out.` });
+        }
         setLoggedInUser(null);
-        sessionStorage.removeItem('kiosk-user');
+        localStorage.removeItem('kiosk-user');
     };
 
     // --- MODALS ---
@@ -358,18 +414,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setSyncStatus('syncing');
             const fileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
             const writable = await fileHandle.createWritable();
-            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts };
+            // FIX: Add activityLogs to backup data.
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             await writable.write(JSON.stringify(backupData, null, 2));
             await writable.close();
             updateSettings({ lastUpdated: Date.now() });
             setSyncStatus('synced');
+            addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Synced data with Local Folder.` });
             return true;
         } catch (error) {
             console.error("Failed to save database to local folder:", error);
             setSyncStatus('error');
             return false;
         }
-    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, updateSettings]);
+    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, updateSettings, addActivityLog]);
 
     const loadDatabaseFromLocal = useCallback(async (): Promise<boolean> => {
         if (!directoryHandle) return false;
@@ -381,20 +439,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const data: BackupData = JSON.parse(text);
             restoreBackup(data);
             setSyncStatus('synced');
+             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Loaded data from Local Folder.` });
             return true;
         } catch (error) {
             console.error("Failed to load database from local folder:", error);
             setSyncStatus('error');
             return false;
         }
-    }, [directoryHandle, restoreBackup]);
+    }, [directoryHandle, restoreBackup, addActivityLog]);
     
     const pushToCloud = useCallback(async (): Promise<boolean> => {
         const url = settings.customApiUrl;
         if (storageProvider !== 'customApi' || !url) return false;
         try {
             setSyncStatus('syncing');
-            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts };
+            // FIX: Add activityLogs to backup data.
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -406,13 +466,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (!response.ok) throw new Error(`Server responded with ${response.status}`);
             updateSettings({ lastUpdated: Date.now() });
             setSyncStatus('synced');
+            addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Pushed data to Custom API.` });
             return true;
         } catch (error) {
             console.error("Failed to push to cloud:", error);
             setSyncStatus('error');
             return false;
         }
-    }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, updateSettings]);
+    }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, updateSettings, addActivityLog]);
 
     const pullFromCloud = useCallback(async (): Promise<boolean> => {
         const isCustomApi = storageProvider === 'customApi' && settings.customApiUrl;
@@ -430,13 +491,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const data: BackupData = await response.json();
             restoreBackup(data);
             setSyncStatus('synced');
+            addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Pulled data from ${isCustomApi ? 'Custom API' : 'Shared URL'}.` });
             return true;
         } catch (error) {
             console.error("Failed to pull from cloud:", error);
             setSyncStatus('error');
             return false;
         }
-    }, [storageProvider, settings, restoreBackup]);
+    }, [storageProvider, settings, restoreBackup, addActivityLog]);
     
     const connectToLocalProvider = useCallback(async () => {
         try {
@@ -667,6 +729,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 clients: { setter: setClients, initial: initialClients },
                 quotes: { setter: setQuotes, initial: initialQuotes },
                 viewCounts: { setter: setViewCounts, initial: initialViewCounts },
+                // FIX: Load activity logs from IndexedDB.
+                activityLogs: { setter: setActivityLogs, initial: initialActivityLogs },
             };
 
             for (const [key, config] of Object.entries(dataMap)) {
@@ -712,7 +776,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     useEffect(() => {
         if (!isDataLoaded) return;
         setSyncStatus(prev => (prev === 'synced' || prev === 'idle') ? 'pending' : prev);
-    }, [isDataLoaded, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts]);
+        // FIX: Add activityLogs to dependency array to track changes.
+    }, [isDataLoaded, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs]);
 
     useEffect(() => {
         if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') return;
@@ -745,19 +810,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setIsSetupComplete(true);
             localStorage.setItem('kioskSetupComplete', 'true');
         },
-        settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, quotes, viewCounts,
+        // FIX: Add activityLogs to context value.
+        settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, quotes, viewCounts, activityLogs,
         login, logout,
-        addBrand: brandOps.add, updateBrand: brandOps.update, deleteBrand: brandOps.softDelete, restoreBrand: brandOps.restore, permanentlyDeleteBrand: brandOps.hardDelete,
-        addProduct: productOps.add, updateProduct: productOps.update, deleteProduct: productOps.softDelete, restoreProduct: productOps.restore, permanentlyDeleteProduct: productOps.hardDelete,
-        addCatalogue: catalogueOps.add, updateCatalogue: catalogueOps.update, deleteCatalogue: catalogueOps.softDelete, restoreCatalogue: catalogueOps.restore, permanentlyDeleteCatalogue: catalogueOps.hardDelete,
-        addPamphlet: pamphletOps.add, updatePamphlet: pamphletOps.update, deletePamphlet: pamphletOps.softDelete, restorePamphlet: pamphletOps.restore, permanentlyDeletePamphlet: pamphletOps.hardDelete,
-        addAd: adOps.add, updateAd: adOps.update, deleteAd: adOps.hardDelete,
-        addAdminUser: userOps.add, updateAdminUser: userOps.update, deleteAdminUser: userOps.hardDelete,
-        addTvContent: tvOps.add, updateTvContent: tvOps.update, deleteTvContent: tvOps.softDelete, restoreTvContent: tvOps.restore, permanentlyDeleteTvContent: tvOps.hardDelete,
-        addCategory: categoryOps.add, updateCategory: categoryOps.update, deleteCategory: categoryOps.softDelete, restoreCategory: categoryOps.restore, permanentlyDeleteCategory: categoryOps.hardDelete,
+        addBrand: brandOps.add, updateBrand: brandOps.update, 
+        deleteBrand: (id) => brandOps.softDelete(id, brands.find(i=>i.id===id)?.name), 
+        restoreBrand: (id) => brandOps.restore(id, brands.find(i=>i.id===id)?.name), 
+        permanentlyDeleteBrand: (id) => brandOps.hardDelete(id, brands.find(i=>i.id===id)?.name),
+        addProduct: productOps.add, updateProduct: productOps.update, 
+        deleteProduct: (id) => productOps.softDelete(id, products.find(i=>i.id===id)?.name), 
+        restoreProduct: (id) => productOps.restore(id, products.find(i=>i.id===id)?.name), 
+        permanentlyDeleteProduct: (id) => productOps.hardDelete(id, products.find(i=>i.id===id)?.name),
+        addCatalogue: catalogueOps.add, updateCatalogue: catalogueOps.update, 
+        deleteCatalogue: (id) => catalogueOps.softDelete(id, catalogues.find(i=>i.id===id)?.title), 
+        restoreCatalogue: (id) => catalogueOps.restore(id, catalogues.find(i=>i.id===id)?.title), 
+        permanentlyDeleteCatalogue: (id) => catalogueOps.hardDelete(id, catalogues.find(i=>i.id===id)?.title),
+        addPamphlet: pamphletOps.add, updatePamphlet: pamphletOps.update, 
+        deletePamphlet: (id) => pamphletOps.softDelete(id, pamphlets.find(i=>i.id===id)?.title), 
+        restorePamphlet: (id) => pamphletOps.restore(id, pamphlets.find(i=>i.id===id)?.title), 
+        permanentlyDeletePamphlet: (id) => pamphletOps.hardDelete(id, pamphlets.find(i=>i.id===id)?.title),
+        addAd: adOps.add, updateAd: adOps.update, 
+        deleteAd: (id) => adOps.hardDelete(id, screensaverAds.find(i=>i.id===id)?.title),
+        addAdminUser: userOps.add, updateAdminUser: userOps.update, 
+        deleteAdminUser: (id) => userOps.hardDelete(id, adminUsers.find(i=>i.id===id)?.firstName),
+        addTvContent: tvOps.add, updateTvContent: tvOps.update, 
+        deleteTvContent: (id) => tvOps.softDelete(id, tvContent.find(i=>i.id===id)?.modelName), 
+        restoreTvContent: (id) => tvOps.restore(id, tvContent.find(i=>i.id===id)?.modelName), 
+        permanentlyDeleteTvContent: (id) => tvOps.hardDelete(id, tvContent.find(i=>i.id===id)?.modelName),
+        addCategory: categoryOps.add, updateCategory: categoryOps.update, 
+        deleteCategory: (id) => categoryOps.softDelete(id, categories.find(i=>i.id===id)?.name), 
+        restoreCategory: (id) => categoryOps.restore(id, categories.find(i=>i.id===id)?.name), 
+        permanentlyDeleteCategory: (id) => categoryOps.hardDelete(id, categories.find(i=>i.id===id)?.name),
         addClient: (client: Client) => { clientOps.add(client); return client.id; },
-        addQuote: quoteOps.add, updateQuote: quoteOps.update,
-        toggleQuoteStatus: (quoteId: string) => setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: q.status === 'pending' ? 'quoted' : 'pending'} : q)),
+        updateClient: clientOps.update,
+        deleteClient: (id) => clientOps.softDelete(id, clients.find(i=>i.id===id)?.companyName), 
+        restoreClient: (id) => clientOps.restore(id, clients.find(i=>i.id===id)?.companyName), 
+        permanentlyDeleteClient: (id) => clientOps.hardDelete(id, clients.find(i=>i.id===id)?.companyName),
+        addQuote: quoteOps.add, 
+        updateQuote: quoteOps.update,
+        toggleQuoteStatus: (quoteId: string) => {
+            const quote = quotes.find(q=>q.id === quoteId);
+            if (quote) {
+                const newStatus = quote.status === 'pending' ? 'quoted' : 'pending';
+                const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
+                setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: newStatus} : q));
+                addActivityLog({ actionType: 'UPDATE', entityType: 'Quote', entityId: quoteId, details: `Set quote for ${clientName} to "${newStatus}"` });
+            }
+        },
+        deleteQuote: (quoteId: string) => {
+            const quote = quotes.find(q=>q.id === quoteId);
+            if(quote) {
+                 const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
+                 setQuotes(prev => prev.filter(q => q.id !== quoteId));
+                 addActivityLog({ actionType: 'HARD_DELETE', entityType: 'Quote', entityId: quoteId, details: `Deleted quote for "${clientName}"` });
+            }
+        },
         updateSettings, restoreBackup,
         isScreensaverActive, isScreensaverEnabled, startScreensaver, exitScreensaver, toggleScreensaver,
         deferredPrompt, triggerInstallPrompt: () => deferredPrompt?.prompt(),

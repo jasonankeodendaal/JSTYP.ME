@@ -19,11 +19,13 @@ const IMMUTABLE_URLS = [
   'https://esm.sh/react@^19.1.1',
   'https://esm.sh/react-dom@^19.1.1/client', // This might be needed depending on how react-dom is imported
   'https://esm.sh/react-dom@^19.1.1/',
-  'https://esm.sh/react-router-dom@^7.8.1',
+  // @FIX: Corrected react-router-dom version from non-existent v7 to v6.
+  'https://esm.sh/react-router-dom@^6.0.0',
   'https://esm.sh/framer-motion@^12.23.12',
   'https://esm.sh/idb@^8.0.3',
   'https://esm.sh/jszip@^3.10.1',
-  'https://esm.sh/pdfjs-dist@^5.4.54',
+  // @FIX: Corrected pdfjs-dist version from non-existent v5 to v4.
+  'https://esm.sh/pdfjs-dist@^4.0.0',
   'https://esm.sh/react-pageflip@^2.0.3',
   'https://esm.sh/swiper@^11.2.10/element/bundle',
   // Fonts

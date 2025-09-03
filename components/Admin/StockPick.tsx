@@ -9,7 +9,7 @@ import LocalMedia from '../LocalMedia.tsx';
 const MotionDiv = motion.div as any;
 
 const StockPick: React.FC = () => {
-    const { brands, categories, products, clients, loggedInUser, addQuote } = useAppContext();
+    const { brands, categories, products, clients, loggedInUser, addQuote, kioskId } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
     const { clientId } = location.state || {};
@@ -72,7 +72,7 @@ const StockPick: React.FC = () => {
         return (
             <div className="text-center p-8">
                 <p>No client selected.</p>
-                <Link to="/admin" className="text-indigo-500 hover:underline mt-2 inline-block">Return to Dashboard</Link>
+                <Link to="/" className="text-indigo-500 hover:underline mt-2 inline-block">Return Home</Link>
             </div>
         );
     }
@@ -80,13 +80,10 @@ const StockPick: React.FC = () => {
     const handleQuantityChange = (productId: string, quantityStr: string) => {
         const quantity = parseInt(quantityStr, 10);
         if (isNaN(quantity) || quantity < 0) {
-            // When user clears the input, quantityStr is "" and parseInt is NaN.
-            // This correctly removes the item from selection.
             const newItems = { ...selectedItems };
             delete newItems[productId];
             setSelectedItems(newItems);
         } else {
-            // This handles 0 and any positive integer.
             setSelectedItems(prev => ({ ...prev, [productId]: quantity }));
         }
     };
@@ -112,17 +109,19 @@ const StockPick: React.FC = () => {
         const newQuote: Quote = {
             id: `quote_${Date.now()}`,
             clientId,
-            adminId: loggedInUser!.id,
+            adminId: loggedInUser ? loggedInUser.id : 'kiosk_user',
             createdAt: Date.now(),
             status: 'pending',
             items: Object.entries(selectedItems).map(([productId, quantity]) => ({ productId, quantity })),
+            kioskId: kioskId,
         };
         addQuote(newQuote);
         alert("Quote saved successfully!");
-        navigate("/admin");
+        navigate(loggedInUser ? "/admin" : "/");
     };
 
     const selectedItemCount = Object.keys(selectedItems).length;
+    const backPath = loggedInUser ? "/admin" : "/";
 
     return (
         <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900 flex flex-col">
@@ -130,14 +129,14 @@ const StockPick: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
                         <button 
-                            onClick={() => navigate(-1)} 
+                            onClick={() => navigate(backPath)} 
                             className="p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Go back"
                         >
                             <ChevronLeftIcon className="w-6 h-6 text-gray-700 dark:text-gray-200" />
                         </button>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 section-heading">Create Stock Pick</h1>
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 section-heading">Create Quote</h1>
                             <p className="text-sm text-gray-600 dark:text-gray-400">For: {client.companyName}</p>
                         </div>
                     </div>

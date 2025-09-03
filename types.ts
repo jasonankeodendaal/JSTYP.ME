@@ -109,6 +109,18 @@ export interface KioskProfile {
   name: string; // The user-friendly, editable name
 }
 
+export interface CreatorProfile {
+  enabled: boolean;
+  name: string;
+  title: string;
+  imageUrl: string;
+  phone: string;
+  email: string;
+  website: string;
+  websiteText: string;
+  whatsapp: string;
+}
+
 export interface Settings {
   logoUrl: string;
   sharedUrl?: string;
@@ -148,7 +160,7 @@ export interface Settings {
     width: 'standard' | 'wide';
   };
   pageTransitions: {
-    effect: 'none' | 'fade' | 'slide';
+    effect: 'none' | 'fade';
   };
   kiosk: {
     idleRedirectTimeout: number; // in seconds, 0 to disable
@@ -169,6 +181,7 @@ export interface Settings {
     boxBackgroundColor: string;
     textColor: string;
   };
+  creatorProfile: CreatorProfile;
   lastUpdated?: number; // Timestamp for sync checking
 }
 
@@ -199,6 +212,7 @@ export interface AdminUserPermissions {
   canManageSystem: boolean; // Covers Storage, Backup/Restore, Trash
   canManageTvContent: boolean;
   canViewAnalytics: boolean;
+  canManageQuotesAndClients: boolean;
 }
 
 export interface AdminUser {
@@ -240,13 +254,24 @@ export interface Quote {
     productId: string;
     quantity: number;
   }[];
+  kioskId: string;
 }
 
-// FIX: Export ViewCounts type to be used in AppContext and other components.
 export type ViewCounts = Record<string, {
   brands: Record<string, number>;
   products: Record<string, number>;
 }>;
+
+export interface ActivityLog {
+  id: string;
+  timestamp: number;
+  userId: string; // 'kiosk_user' or AdminUser.id
+  kioskId: string;
+  actionType: 'CREATE' | 'UPDATE' | 'DELETE' | 'RESTORE' | 'HARD_DELETE' | 'SYNC' | 'LOGIN' | 'LOGOUT' | 'VIEW';
+  entityType: 'Brand' | 'Product' | 'Catalogue' | 'Pamphlet' | 'ScreensaverAd' | 'AdminUser' | 'TvContent' | 'Category' | 'Client' | 'Quote' | 'Settings' | 'System';
+  entityId?: string;
+  details: string;
+}
 
 export interface BackupData {
   brands: Brand[];
@@ -260,6 +285,6 @@ export interface BackupData {
   categories?: Category[];
   clients?: Client[];
   quotes?: Quote[];
-  // FIX: Use the exported ViewCounts type.
   viewCounts?: ViewCounts;
+  activityLogs?: ActivityLog[];
 }

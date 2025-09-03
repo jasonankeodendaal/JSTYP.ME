@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useParams, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Catalogue } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
+// @FIX: Corrected pdfjs-dist version in worker URL from non-existent v5 to v4.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const selectStyle = inputStyle;
@@ -202,21 +205,21 @@ const CatalogueEdit: React.FC = () => {
                 </div>
 
                 {/* Form Content */}
-                <div className="grid grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     {/* Left Column - Main Details */}
-                    <div className="col-span-2 space-y-6">
+                    <div className="col-span-1 lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Catalogue Information</h3>
-                            <div className="mt-6 grid grid-cols-6 gap-y-6 gap-x-4">
-                                <div className="col-span-4">
+                            <div className="mt-6 grid grid-cols-1 sm:grid-cols-6 gap-y-6 gap-x-4">
+                                <div className="col-span-1 sm:col-span-4">
                                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                                     <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                <div className="col-span-2">
+                                <div className="col-span-1 sm:col-span-2">
                                     <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
                                     <input type="number" name="year" id="year" value={formData.year} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                <div className="col-span-6">
+                                <div className="col-span-1 sm:col-span-6">
                                     <label htmlFor="brandId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Associated Brand (Optional)</label>
                                     <select name="brandId" id="brandId" value={formData.brandId || ''} onChange={handleInputChange} className={selectStyle}>
                                         <option value="">None</option>
@@ -227,7 +230,7 @@ const CatalogueEdit: React.FC = () => {
                         </div>
                     </div>
                      {/* Right Column - Assets */}
-                     <div className="space-y-6">
+                     <div className="col-span-1 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Catalogue Assets</h3>
                             <div className="mt-4 space-y-6">

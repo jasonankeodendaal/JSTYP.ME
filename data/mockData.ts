@@ -1,4 +1,4 @@
-import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Quote } from '../types';
+import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Quote, ViewCounts, ActivityLog } from '../types';
 
 export const adminUsers: AdminUser[] = [
   {
@@ -17,6 +17,7 @@ export const adminUsers: AdminUser[] = [
       canManageSystem: true,
       canManageTvContent: true,
       canViewAnalytics: true,
+      canManageQuotesAndClients: true,
     }
   },
   {
@@ -35,6 +36,7 @@ export const adminUsers: AdminUser[] = [
       canManageSystem: false,
       canManageTvContent: false,
       canViewAnalytics: false,
+      canManageQuotesAndClients: false,
     }
   }
 ];
@@ -280,7 +282,20 @@ export const settings: Settings = {
       backgroundColor: "#111827",
       boxBackgroundColor: "linear-gradient(to bottom right, #38bdf8, #3b82f6)",
       textColor: "#ffffff"
+    },
+    creatorProfile: {
+      enabled: true,
+      name: "Jason Odendaal",
+      title: "Founder & Lead Developer",
+      imageUrl: "https://iili.io/FGWJCtj.jpg",
+      phone: "+27695989427",
+      email: "jason@jstyp.me",
+      website: "https://jstyp.me",
+      websiteText: "JSTYP.me - Your Solution to Digital Problems",
+      whatsapp: "27695989427"
     }
 };
 
-export const viewCounts = {};
+export const viewCounts: ViewCounts = {};
+
+export const activityLogs: ActivityLog[] = [];

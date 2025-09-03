@@ -108,18 +108,10 @@ const Screensaver: React.FC = () => {
 
     useEffect(() => {
         const handleActivity = () => {
-            // This will be called on any general user activity to dismiss the screensaver.
             exitScreensaver();
         };
-
-        // A click is handled by the `handleClick` function to allow for navigation.
-        // Other activities should just dismiss the screensaver.
         const events: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'touchstart'];
-        
-        // Use `{ once: true }` so the listener is automatically removed after firing once.
         events.forEach(event => window.addEventListener(event, handleActivity, { once: true }));
-
-        // Cleanup function for when the component unmounts before any activity occurs.
         return () => {
             events.forEach(event => window.removeEventListener(event, handleActivity));
         };
@@ -131,22 +123,20 @@ const Screensaver: React.FC = () => {
             mediaUrl: string;
         };
 
-        const productItems: MediaSource[] = [];
-        products
+        const productItems: MediaSource[] = products
             .filter(p => !p.isDiscontinued && !p.isDeleted)
-            .forEach(product => {
+            .flatMap(product => {
                 const brand = brands.find(b => b.id === product.brandId);
                 const itemBase = {
                     title: product.name,
                     brandName: brand?.name,
                     link: { type: 'product' as const, id: product.id }
                 };
-                product.images.forEach(imageUrl => {
-                    productItems.push({ ...itemBase, mediaType: 'image', mediaUrl: imageUrl });
-                });
+                const items: MediaSource[] = product.images.map(imageUrl => ({ ...itemBase, mediaType: 'image' as const, mediaUrl: imageUrl }));
                 if (product.video) {
-                    productItems.push({ ...itemBase, mediaType: 'video', mediaUrl: product.video });
+                    items.push({ ...itemBase, mediaType: 'video' as const, mediaUrl: product.video });
                 }
+                return items;
             });
 
         const today = new Date();
@@ -176,16 +166,13 @@ const Screensaver: React.FC = () => {
             };
         });
 
-        // Shuffle media items
         for (let i = mediaItems.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [mediaItems[i], mediaItems[j]] = [mediaItems[j], mediaItems[i]];
         }
         
         const promptSlide: PlaylistItem = { type: 'touch-prompt', url: 'prompt', title: settings.screensaverTouchPromptText };
-        if (mediaItems.length === 0) {
-            return [promptSlide];
-        }
+        if (mediaItems.length === 0) return [promptSlide];
 
         const finalPlaylist: PlaylistItem[] = [];
         const itemsPerPrompt = 3;
@@ -197,7 +184,6 @@ const Screensaver: React.FC = () => {
             }
         });
 
-        // If no prompt was added because there are too few items, add one anyway.
         if (mediaItems.length > 0 && mediaItems.length < itemsPerPrompt) {
             finalPlaylist.push(promptSlide);
         }
@@ -219,13 +205,13 @@ const Screensaver: React.FC = () => {
     useEffect(() => {
         if (currentItem?.type === 'image' || currentItem?.type === 'touch-prompt') {
             const duration = currentItem.type === 'touch-prompt'
-                ? 6000 // 6 seconds for prompt
+                ? 6000
                 : settings.screensaverImageDuration * 1000;
             const timer = window.setTimeout(goToNextItem, duration);
             return () => clearTimeout(timer);
         }
     }, [currentItem, goToNextItem, settings.screensaverImageDuration]);
-
+    
     const videoRefCallback = useCallback((node: HTMLVideoElement | null) => {
         if (videoNodeRef.current) {
             videoNodeRef.current.removeEventListener('ended', goToNextItem);
@@ -243,22 +229,18 @@ const Screensaver: React.FC = () => {
             videoElement.addEventListener('error', goToNextItem);
 
             const tryPlay = async () => {
-                if (!videoElement.isConnected) return;
                 try {
                     const volume = typeof localVolume === 'number' && isFinite(localVolume) ? Math.max(0, Math.min(1, localVolume)) : 0.75;
                     videoElement.volume = volume;
                     videoElement.muted = volume === 0;
                     await videoElement.play();
-                } catch (error: any) {
-                    if (error.name === 'AbortError') return;
+                } catch (error) {
                     console.warn("Could not play video with sound, retrying muted.", error);
-                    if (!videoElement.isConnected) return;
                     videoElement.muted = true;
                     try {
                         await videoElement.play();
-                    } catch (finalError: any) {
-                        if (finalError.name === 'AbortError') return;
-                        console.error("Fatal: Video could not be played even when muted. Skipping to next item.", finalError);
+                    } catch (finalError) {
+                        console.error("Video could not be played. Skipping.", finalError);
                         goToNextItem();
                     }
                 }
@@ -319,7 +301,6 @@ const Screensaver: React.FC = () => {
             aria-label="Exit screensaver"
         >
             <Preloader item={nextItem} />
-             {/* Blurred Background Layer */}
             <AnimatePresence>
                 <MotionDiv
                     key={`bg-${currentItem.url}`}
@@ -354,7 +335,7 @@ const Screensaver: React.FC = () => {
                      {currentItem.type === 'image' ? (
                         <MotionDiv
                             className="w-full h-full overflow-hidden"
-                            key={`kb-${currentItem.url}`} // a different key to make it re-render
+                            key={`kb-${currentItem.url}`}
                             animate={kbVariant}
                             transition={{ duration: settings.screensaverImageDuration + 2, ease: 'linear' }}
                         >
@@ -381,7 +362,6 @@ const Screensaver: React.FC = () => {
                 </MotionDiv>
             </AnimatePresence>
             
-            {/* Overlay with text and branding */}
             <div className="absolute inset-0 flex flex-col justify-end p-10 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none">
                 {currentItem.type !== 'touch-prompt' && (
                     <>
@@ -401,7 +381,6 @@ const Screensaver: React.FC = () => {
                 )}
             </div>
             
-            {/* Watermarks */}
             <div className="absolute bottom-10 right-10 pointer-events-none">
                  <LocalMedia src={settings.logoUrl} alt="Company Logo" type="image" className="h-10 opacity-50" />
             </div>

@@ -23,6 +23,7 @@ const getInitialFormData = (): AdminUser => ({
         canManageSystem: false,
         canManageTvContent: false,
         canViewAnalytics: false,
+        canManageQuotesAndClients: false,
     },
 });
 
@@ -191,71 +192,94 @@ const AdminUserEdit: React.FC = () => {
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {canEditPermissions ? 'Select the sections this user can access.' : 'Permissions can only be changed by the Main Admin.'}
                         </p>
-                        <div className="mt-6 space-y-5">
-                            <PermissionCheckbox
-                                id="perm-brands"
-                                label="Manage Brands & Products"
-                                description="Can add, edit, and delete brands and products."
-                                checked={editableUser.permissions.canManageBrandsAndProducts}
-                                onChange={e => handlePermissionChange('canManageBrandsAndProducts', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-catalogues"
-                                label="Manage Catalogues"
-                                description="Can add, edit, and delete catalogues."
-                                checked={editableUser.permissions.canManageCatalogues}
-                                onChange={e => handlePermissionChange('canManageCatalogues', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-pamphlets"
-                                label="Manage Pamphlets"
-                                description="Can add, edit, and delete pamphlets."
-                                checked={editableUser.permissions.canManagePamphlets}
-                                onChange={e => handlePermissionChange('canManagePamphlets', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-screensaver"
-                                label="Manage Screensaver"
-                                description="Can add, edit, and delete screensaver ads."
-                                checked={editableUser.permissions.canManageScreensaver}
-                                onChange={e => handlePermissionChange('canManageScreensaver', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-tv"
-                                label="Manage TV Content"
-                                description="Can add, edit, and delete TV display content."
-                                checked={editableUser.permissions.canManageTvContent}
-                                onChange={e => handlePermissionChange('canManageTvContent', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-settings"
-                                label="Manage Settings"
-                                description="Can change kiosk settings like themes and layout."
-                                checked={editableUser.permissions.canManageSettings}
-                                onChange={e => handlePermissionChange('canManageSettings', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-system"
-                                label="Manage System"
-                                description="Can access Storage, Backup/Restore, and Trash."
-                                checked={editableUser.permissions.canManageSystem}
-                                onChange={e => handlePermissionChange('canManageSystem', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
-                            <PermissionCheckbox
-                                id="perm-analytics"
-                                label="View Analytics"
-                                description="Can view kiosk analytics and usage data."
-                                checked={editableUser.permissions.canViewAnalytics}
-                                onChange={e => handlePermissionChange('canViewAnalytics', e.target.checked)}
-                                disabled={!canEditPermissions}
-                            />
+                        <div className="mt-6 space-y-6">
+                            <div>
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">Content Management</h4>
+                                <div className="space-y-4">
+                                    <PermissionCheckbox
+                                        id="perm-brands"
+                                        label="Manage Brands & Products"
+                                        description="Can add, edit, and delete brands and products."
+                                        checked={editableUser.permissions.canManageBrandsAndProducts}
+                                        onChange={e => handlePermissionChange('canManageBrandsAndProducts', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-quotes-clients"
+                                        label="Manage Quotes & Clients"
+                                        description="Can create quotes and manage the client list."
+                                        checked={editableUser.permissions.canManageQuotesAndClients}
+                                        onChange={e => handlePermissionChange('canManageQuotesAndClients', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-catalogues"
+                                        label="Manage Catalogues"
+                                        description="Can add, edit, and delete catalogues."
+                                        checked={editableUser.permissions.canManageCatalogues}
+                                        onChange={e => handlePermissionChange('canManageCatalogues', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-pamphlets"
+                                        label="Manage Pamphlets"
+                                        description="Can add, edit, and delete pamphlets."
+                                        checked={editableUser.permissions.canManagePamphlets}
+                                        onChange={e => handlePermissionChange('canManagePamphlets', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                </div>
+                            </div>
+                             <div>
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">Kiosk & Appearance</h4>
+                                <div className="space-y-4">
+                                    <PermissionCheckbox
+                                        id="perm-screensaver"
+                                        label="Manage Screensaver"
+                                        description="Can add, edit, and delete screensaver ads."
+                                        checked={editableUser.permissions.canManageScreensaver}
+                                        onChange={e => handlePermissionChange('canManageScreensaver', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-tv"
+                                        label="Manage TV Content"
+                                        description="Can add, edit, and delete TV display content."
+                                        checked={editableUser.permissions.canManageTvContent}
+                                        onChange={e => handlePermissionChange('canManageTvContent', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-settings"
+                                        label="Manage Settings"
+                                        description="Can change kiosk appearance and behavior settings."
+                                        checked={editableUser.permissions.canManageSettings}
+                                        onChange={e => handlePermissionChange('canManageSettings', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                </div>
+                            </div>
+                             <div>
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">System & Admin</h4>
+                                <div className="space-y-4">
+                                    <PermissionCheckbox
+                                        id="perm-system"
+                                        label="Manage System"
+                                        description="Can access Storage, Backup/Restore, and Trash."
+                                        checked={editableUser.permissions.canManageSystem}
+                                        onChange={e => handlePermissionChange('canManageSystem', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                    <PermissionCheckbox
+                                        id="perm-analytics"
+                                        label="View Analytics"
+                                        description="Can view kiosk analytics and usage data."
+                                        checked={editableUser.permissions.canViewAnalytics}
+                                        onChange={e => handlePermissionChange('canViewAnalytics', e.target.checked)}
+                                        disabled={!canEditPermissions}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useParams, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Pamphlet } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
+// @FIX: Corrected pdfjs-dist version in worker URL from non-existent v5 to v4.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -45,7 +48,6 @@ const PamphletEdit: React.FC = () => {
         }
     }, [pamphletId, pamphlets, isEditing]);
 
-    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -126,7 +128,7 @@ const PamphletEdit: React.FC = () => {
             setConversionProgress(`Error: ${err instanceof Error ? err.message : 'Failed to convert PDF'}`);
         } finally {
             setIsConverting(false);
-            if (e.target) e.target.value = '';
+            if (e.target) e.target.value = ''; // Reset file input
             setTimeout(() => setConversionProgress(''), 5000);
         }
     };
@@ -137,33 +139,34 @@ const PamphletEdit: React.FC = () => {
             setFormData(prev => ({ ...prev, type: 'image', imageUrls: newImageUrls }));
         }
     };
-
+    
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         const imagesAreSet = formData.type === 'image' && formData.imageUrls.length > 0;
-
-        if(!formData.title || !formData.imageUrl || !imagesAreSet || !formData.startDate || !formData.endDate) {
-            alert("Please fill out all fields, upload a cover image, and provide at least one page image.");
+        if (!formData.title || !formData.imageUrl || !formData.startDate || !formData.endDate || !imagesAreSet) {
+            alert('Please fill out Title, Start/End Dates, upload a cover image, and provide at least one page image.');
             return;
         }
+
         setSaving(true);
         if (isEditing) {
             updatePamphlet(formData);
-            setTimeout(() => {
-                setSaving(false);
-                setSaved(true);
-                setTimeout(() => setSaved(false), 2000);
-            }, 300);
         } else {
             addPamphlet(formData);
-            setTimeout(() => {
-                setSaving(false);
-                navigate(`/admin/pamphlet/edit/${formData.id}`, { replace: true });
-            }, 300);
         }
+        
+        setTimeout(() => {
+            setSaving(false);
+            if (isEditing) {
+                setSaved(true);
+                setTimeout(() => setSaved(false), 2000);
+            } else {
+                navigate(`/admin/pamphlet/edit/${formData.id}`, { replace: true });
+            }
+        }, 300);
     };
 
-     const pageContent = (
+    const pageContent = (
         !canManage ? (
             <div className="text-center py-10">
                 <h2 className="text-2xl font-bold section-heading">Access Denied</h2>
@@ -199,43 +202,40 @@ const PamphletEdit: React.FC = () => {
                 </div>
 
                 {/* Form Content */}
-                <div className="grid grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     {/* Left Column - Main Details */}
-                    <div className="col-span-2 space-y-6">
+                    <div className="col-span-1 lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Information</h3>
-                            <div className="mt-6 grid grid-cols-6 gap-y-6 gap-x-4">
-                                <div className="col-span-6">
+                            <div className="mt-6 grid grid-cols-1 sm:grid-cols-6 gap-y-6 gap-x-4">
+                                <div className="col-span-1 sm:col-span-6">
                                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                                     <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                
-                                <div className="col-span-3">
+                                <div className="col-span-1 sm:col-span-3">
                                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
                                     <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-
-                                <div className="col-span-3">
+                                <div className="col-span-1 sm:col-span-3">
                                     <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
                                     <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Column - Assets */}
-                    <div className="space-y-6">
+                     {/* Right Column - Assets */}
+                     <div className="col-span-1 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Pamphlet Assets</h3>
                             <div className="mt-4 space-y-6">
                                 <div>
                                     <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cover Image</span>
                                     <div className="h-48 w-auto aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
-                                        <LocalMedia src={formData.imageUrl} alt="Pamphlet preview" type="image" className="rounded-xl object-cover h-full w-full"/>
+                                        <LocalMedia src={formData.imageUrl} alt="Cover preview" type="image" className="rounded-xl object-cover h-full w-full"/>
                                     </div>
                                     <label htmlFor="image-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                         <UploadIcon className="h-4 w-4"/>
-                                        <span>{formData.imageUrl ? 'Change Image' : 'Upload Image'}</span>
+                                        <span>{formData.imageUrl ? 'Change Cover' : 'Upload Cover'}</span>
                                     </label>
                                     <input id="image-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
                                 </div>
@@ -244,8 +244,8 @@ const PamphletEdit: React.FC = () => {
                                     <div className="mt-2 space-y-3">
                                         <div className="grid grid-cols-3 gap-2">
                                             {formData.type === 'image' && formData.imageUrls.map((img, index) => (
-                                                <div key={index} className="relative group aspect-square">
-                                                    <LocalMedia src={img} type="image" alt={`Page ${index+1}`} className="rounded-md object-cover w-full h-full" />
+                                                <div key={index} className="relative group aspect-[3/4]">
+                                                    <LocalMedia src={img} alt={`Page ${index+1}`} type="image" className="rounded-md object-cover w-full h-full" />
                                                     <button type="button" onClick={() => removeDocumentImage(index)} className="absolute top-1 right-1 p-1 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete image">
                                                         <TrashIcon className="w-3 h-3"/>
                                                     </button>

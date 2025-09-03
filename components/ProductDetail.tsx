@@ -1,5 +1,7 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useParams, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, ExternalLinkIcon, CheckIcon, ShieldCheckIcon, ChevronDownIcon, PhotoIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 import LocalMedia from './LocalMedia.tsx';

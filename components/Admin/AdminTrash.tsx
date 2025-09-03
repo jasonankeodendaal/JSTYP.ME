@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import { RestoreIcon, TrashIcon, TvIcon } from '../Icons.tsx';
-import type { Brand, Product, Catalogue, Pamphlet, TvContent } from '../../types.ts';
+import type { Brand, Product, Catalogue, Pamphlet, TvContent, Client } from '../../types.ts';
 import { Link } from 'react-router-dom';
 import LocalMedia from '../LocalMedia.tsx';
 
@@ -47,6 +47,7 @@ const AdminTrash: React.FC = () => {
         catalogues,
         pamphlets,
         tvContent,
+        clients,
         restoreBrand,
         permanentlyDeleteBrand,
         restoreProduct,
@@ -57,6 +58,8 @@ const AdminTrash: React.FC = () => {
         permanentlyDeletePamphlet,
         restoreTvContent,
         permanentlyDeleteTvContent,
+        restoreClient,
+        permanentlyDeleteClient,
         showConfirmation,
         loggedInUser
     } = useAppContext();
@@ -68,6 +71,7 @@ const AdminTrash: React.FC = () => {
     const deletedCatalogues = catalogues.filter(c => c.isDeleted);
     const deletedPamphlets = pamphlets.filter(p => p.isDeleted);
     const deletedTvContent = tvContent.filter(tc => tc.isDeleted);
+    const deletedClients = clients.filter(c => c.isDeleted);
 
     if (!canManage) {
         return (
@@ -126,12 +130,21 @@ const AdminTrash: React.FC = () => {
         showConfirmation(`Are you sure you want to PERMANENTLY DELETE the TV content for "${content.modelName}"? This cannot be undone.`, () => permanentlyDeleteTvContent(content.id));
     };
     
+    const handleRestoreClient = (client: Client) => {
+        showConfirmation(`Are you sure you want to restore the client "${client.companyName}"?`, () => restoreClient(client.id));
+    };
+    
+    const handleDeleteClient = (client: Client) => {
+        showConfirmation(`Are you sure you want to PERMANENTLY DELETE the client "${client.companyName}"? This cannot be undone.`, () => permanentlyDeleteClient(client.id));
+    };
+    
     const allDeletedItems = [
         ...deletedBrands,
         ...individuallyDeletedProducts,
         ...deletedCatalogues,
         ...deletedPamphlets,
-        ...deletedTvContent
+        ...deletedTvContent,
+        ...deletedClients
     ];
 
     const TrashSection: React.FC<{ title: string; children: React.ReactNode; }> = ({ title, children }) => (
@@ -156,6 +169,18 @@ const AdminTrash: React.FC = () => {
                 </div>
             ) : (
                 <div className="space-y-8">
+                    {deletedClients.length > 0 && (
+                        <TrashSection title="Clients">
+                            {deletedClients.map(client => (
+                                <TrashItemRow 
+                                    key={client.id}
+                                    item={{ id: client.id, name: client.companyName, type: 'Client', subtext: client.contactPerson }}
+                                    onRestore={() => handleRestoreClient(client)}
+                                    onDelete={() => handleDeleteClient(client)}
+                                />
+                            ))}
+                        </TrashSection>
+                    )}
                     {deletedBrands.length > 0 && (
                         <TrashSection title="Brands">
                             {deletedBrands.map(brand => (

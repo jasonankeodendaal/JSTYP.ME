@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import { useParams, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import type { Product } from '../types.ts';
 import ProductCard from './ProductCard.tsx';
 import { SearchIcon, ChevronLeftIcon } from './Icons.tsx';
