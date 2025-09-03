@@ -458,7 +458,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </header>
             
-            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto pb-40">
+            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto pb-48">
                 <div className="w-full max-w-6xl mx-auto">
                     {renderSecondaryNav()}
                     <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl">

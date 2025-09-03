@@ -268,7 +268,7 @@ const AppContent: React.FC = () => {
                 <MotionMain
                     key={location.pathname}
                     {...motionProps}
-                    className="flex-grow w-full px-4 sm:px-6 lg:px-8 pt-8 pb-32"
+                    className="flex-grow w-full px-4 sm:px-6 lg:px-8 pt-8 pb-40"
                 >
                 <Routes>
                     <Route path="/" element={<Home />} />
