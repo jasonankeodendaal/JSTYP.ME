@@ -113,7 +113,9 @@ export interface CreatorProfile {
   enabled: boolean;
   name: string;
   title: string;
-  imageUrl: string;
+  imageUrl: string; // Avatar in popup
+  logoUrlLight?: string;
+  logoUrlDark?: string;
   phone: string;
   email: string;
   website: string;

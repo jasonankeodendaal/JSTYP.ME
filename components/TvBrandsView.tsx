@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
@@ -8,6 +9,23 @@ import LocalMedia from './LocalMedia';
 const TvBrandsView: React.FC = () => {
     const { brands } = useAppContext();
     const navigate = useNavigate();
+    const [backLabel, setBackLabel] = useState('Back');
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Home');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/', { replace: true }); // Fallback to home page
+        }
+    };
 
     const tvBrands = useMemo(() => {
         return brands.filter(brand => brand.isTvBrand && !brand.isDeleted);
@@ -16,9 +34,9 @@ const TvBrandsView: React.FC = () => {
     return (
         <div className="space-y-8">
             <div>
-                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+                <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back
+                    {backLabel}
                 </button>
                 <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Shop TVs by Brand</h1>
             </div>

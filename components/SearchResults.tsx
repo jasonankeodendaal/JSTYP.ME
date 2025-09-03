@@ -1,6 +1,7 @@
 
 
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import ProductCard from './ProductCard';
@@ -13,6 +14,23 @@ const SearchResults: React.FC = () => {
     const { products } = useAppContext();
     const query = useMemo(() => searchParams.get('q') || '', [searchParams]);
     const navigate = useNavigate();
+    const [backLabel, setBackLabel] = useState('Back');
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Home');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/', { replace: true }); // Fallback to home page
+        }
+    };
 
     const filteredProducts = useMemo(() => {
         if (!query) return [];
@@ -29,9 +47,9 @@ const SearchResults: React.FC = () => {
     return (
         <div className="space-y-8">
             <div>
-                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-400 hover:text-gray-100 mb-4">
+                <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-400 hover:text-gray-100 mb-4">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back
+                    {backLabel}
                 </button>
                 <h1 className="text-4xl font-bold tracking-tight text-gray-100">
                     Search Results

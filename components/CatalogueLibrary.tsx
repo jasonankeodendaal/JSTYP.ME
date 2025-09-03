@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -35,6 +36,23 @@ const CatalogueCard: React.FC<{ catalogue: Catalogue; onOpen: (catalogue: Catalo
 const CatalogueLibrary: React.FC = () => {
     const { catalogues, openDocument } = useAppContext();
     const navigate = useNavigate();
+    const [backLabel, setBackLabel] = useState('Back');
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Home');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/', { replace: true }); // Fallback to home page
+        }
+    };
 
     const groupedCatalogues = useMemo(() => {
         const groups: { [year: number]: Catalogue[] } = {};
@@ -63,9 +81,9 @@ const CatalogueLibrary: React.FC = () => {
     return (
         <div className="space-y-10">
             <div>
-                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+                <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back
+                    {backLabel}
                 </button>
                 <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Our Catalogues</h1>
                 <p className="mt-2 text-lg text-gray-700 dark:text-gray-300">Browse through our collection of catalogues, past and present.</p>

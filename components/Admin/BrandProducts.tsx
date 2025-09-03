@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useCallback } from 'react';
+
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -133,6 +134,7 @@ const AdminBrandProducts: React.FC = () => {
     const { brandId } = useParams<{ brandId: string }>();
     const navigate = useNavigate();
     const { brands, products, deleteProduct, updateProduct, showConfirmation, loggedInUser } = useAppContext();
+    const [backLabel, setBackLabel] = useState('Back');
     
     const brand = useMemo(() => brands.find((b: Brand) => b.id === brandId), [brandId, brands]);
     
@@ -145,6 +147,22 @@ const AdminBrandProducts: React.FC = () => {
     }, [brandId, products]);
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Dashboard');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/admin', { replace: true }); // Fallback to admin dashboard
+        }
+    };
     
     const pageContent = (
         <>
@@ -228,9 +246,9 @@ const AdminBrandProducts: React.FC = () => {
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
-                        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                             <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                            Back
+                            {backLabel}
                         </button>
                         <div className="md:flex md:items-center md:justify-between">
                             <div className="flex items-center gap-4">

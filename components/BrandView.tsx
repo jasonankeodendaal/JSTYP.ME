@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate } from 'react-router';
@@ -14,6 +15,23 @@ const BrandView: React.FC = () => {
   const { brands, products, categories, trackBrandView } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const [backLabel, setBackLabel] = useState('Back');
+
+  useEffect(() => {
+    if (window.history.state?.idx > 0) {
+      setBackLabel('Back');
+    } else {
+      setBackLabel('Back to Home');
+    }
+  }, []);
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+        navigate(-1);
+    } else {
+        navigate('/', { replace: true }); // Fallback to home page
+    }
+  };
 
   useEffect(() => {
     if (brandId) {
@@ -65,9 +83,9 @@ const BrandView: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+        <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
           <ChevronLeftIcon className="h-5 w-5 mr-1" />
-          Back
+          {backLabel}
         </button>
         <div className="flex items-center gap-6">
             <div className="h-28 w-28 flex items-center justify-center">

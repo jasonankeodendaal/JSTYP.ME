@@ -288,6 +288,8 @@ export const settings: Settings = {
       name: "Jason Odendaal",
       title: "Founder & Lead Developer",
       imageUrl: "https://iili.io/FGWJCtj.jpg",
+      logoUrlLight: "https://jstyp.me/wp-content/uploads/2024/07/JSTYP.me-logo-black-red-black-1.png",
+      logoUrlDark: "https://jstyp.me/wp-content/uploads/2024/07/JSTYP.me-logo-white-red-black-1.png",
       phone: "+27695989427",
       email: "jason@jstyp.me",
       website: "https://jstyp.me",

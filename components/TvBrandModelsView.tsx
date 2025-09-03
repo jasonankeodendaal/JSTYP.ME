@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
@@ -9,8 +10,25 @@ const TvBrandModelsView: React.FC = () => {
     const { brandId } = useParams<{ brandId: string }>();
     const { brands, tvContent, playTvContent } = useAppContext();
     const navigate = useNavigate();
+    const [backLabel, setBackLabel] = useState('Back');
 
     const brand = useMemo(() => brands.find(b => b.id === brandId), [brandId, brands]);
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to TV Brands');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/tvs', { replace: true }); // Fallback to TV brands overview
+        }
+    };
 
     const brandTvModels = useMemo(() => {
         return tvContent.filter(content => content.brandId === brandId && !content.isDeleted);
@@ -28,9 +46,9 @@ const TvBrandModelsView: React.FC = () => {
     return (
         <div className="space-y-8">
             <div>
-                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+                <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back
+                    {backLabel}
                 </button>
                 <div className="flex items-center gap-6">
                     <div className="h-28 w-28 flex items-center justify-center">

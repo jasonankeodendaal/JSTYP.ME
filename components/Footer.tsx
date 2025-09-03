@@ -178,9 +178,10 @@ const Footer: React.FC = () => {
                         className="group transition-all duration-300 ease-in-out hover:scale-110 hover:-translate-y-1"
                         aria-label="Show creator details"
                     >
-                         <img 
-                            src="https://jstyp.me/wp-content/uploads/2024/07/JSTYP.me-logo-white-red-black-1.png" 
+                         <LocalMedia
+                            src={theme === 'light' ? (creatorProfile.logoUrlLight || creatorProfile.logoUrlDark || '') : (creatorProfile.logoUrlDark || creatorProfile.logoUrlLight || '')}
                             alt="JSTYP.me Logo" 
+                            type="image"
                             className="h-10 w-auto jstyp-logo transition-all duration-300 group-hover:drop-shadow-[0_5px_15px_rgba(255,255,255,0.2)]"
                         />
                     </button>

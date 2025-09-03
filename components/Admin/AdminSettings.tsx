@@ -181,7 +181,6 @@ const AdminSettings: React.FC = () => {
         <div>
             <form onSubmit={handleSave} className="space-y-8">
                 <BrandingAndIdentitySection formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
-                {/* FIX: Corrected variable name from onFileChange to handleFileChange */}
                 <ThemeAndAppearanceSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                 <CreatorProfileSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                 <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
@@ -324,12 +323,26 @@ const CreatorProfileSection: React.FC<{formData: Settings, onNestedChange: any, 
                     </label>
                 </div>
             </div>
-            <ImageUpload 
-                label="Profile Image"
+             <ImageUpload 
+                label="Avatar Image (for popup)"
                 value={creator.imageUrl}
                 onTextChange={(e) => onNestedChange('creatorProfile.imageUrl', e.target.value)}
                 onFileChange={(e) => onFileChange(e, 'creatorProfile.imageUrl')}
                 onRemove={() => onNestedChange('creatorProfile.imageUrl', '')}
+            />
+            <ImageUpload 
+                label="Footer Logo (Dark Theme)"
+                value={creator.logoUrlDark || ''}
+                onTextChange={(e) => onNestedChange('creatorProfile.logoUrlDark', e.target.value)}
+                onFileChange={(e) => onFileChange(e, 'creatorProfile.logoUrlDark')}
+                onRemove={() => onNestedChange('creatorProfile.logoUrlDark', '')}
+            />
+            <ImageUpload 
+                label="Footer Logo (Light Theme)"
+                value={creator.logoUrlLight || ''}
+                onTextChange={(e) => onNestedChange('creatorProfile.logoUrlLight', e.target.value)}
+                onFileChange={(e) => onFileChange(e, 'creatorProfile.logoUrlLight')}
+                onRemove={() => onNestedChange('creatorProfile.logoUrlLight', '')}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label className={labelStyle}>Name</label><input type="text" value={creator.name} onChange={e => onNestedChange('creatorProfile.name', e.target.value)} className={inputStyle} /></div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { ScreensaverAd, AdLink } from '../../types.ts';
@@ -28,8 +29,25 @@ const AdEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [linkType, setLinkType] = useState('none');
     const [linkTarget, setLinkTarget] = useState('');
+    const [backLabel, setBackLabel] = useState('Back');
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageScreensaver;
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Dashboard');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/admin', { replace: true }); // Fallback to admin dashboard
+        }
+    };
 
     useEffect(() => {
         if (!isEditing) {
@@ -135,9 +153,9 @@ const AdEdit: React.FC = () => {
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
-                    <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                    <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                         <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                        Back
+                        {backLabel}
                     </button>
                     <div className="md:flex md:items-center md:justify-between">
                         <div className="flex-1 min-w-0">

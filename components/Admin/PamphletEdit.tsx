@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate } from 'react-router';
@@ -34,8 +35,25 @@ const PamphletEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isConverting, setIsConverting] = useState(false);
     const [conversionProgress, setConversionProgress] = useState('');
+    const [backLabel, setBackLabel] = useState('Back');
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManagePamphlets;
+
+    useEffect(() => {
+        if (window.history.state?.idx > 0) {
+            setBackLabel('Back');
+        } else {
+            setBackLabel('Back to Dashboard');
+        }
+    }, []);
+
+    const handleBack = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1);
+        } else {
+            navigate('/admin', { replace: true }); // Fallback to admin dashboard
+        }
+    };
 
     useEffect(() => {
         if (isEditing && pamphletId) {
@@ -177,9 +195,9 @@ const PamphletEdit: React.FC = () => {
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
-                    <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                    <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                         <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                        Back
+                        {backLabel}
                     </button>
                     <div className="md:flex md:items-center md:justify-between">
                         <div className="flex-1 min-w-0">

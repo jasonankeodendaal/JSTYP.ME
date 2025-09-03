@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate } from 'react-router';
@@ -17,6 +18,26 @@ const ProductDetail: React.FC = () => {
 
   const product = useMemo(() => products.find(p => p.id === productId), [productId, products]);
   const brand = useMemo(() => brands.find(b => b.id === product?.brandId), [product, brands]);
+  const [backLabel, setBackLabel] = useState('Back');
+
+  useEffect(() => {
+    if (window.history.state?.idx > 0) {
+      setBackLabel('Back');
+    } else if (product && brand) {
+      setBackLabel(`Back to ${brand.name}`);
+    } else {
+      setBackLabel('Back to Home');
+    }
+  }, [product, brand]);
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+        navigate(-1);
+    } else {
+        // Fallback to the product's brand page if available, otherwise to home.
+        navigate(product ? `/brand/${product.brandId}` : '/', { replace: true });
+    }
+  };
 
   useEffect(() => {
     if (productId) {
@@ -46,9 +67,9 @@ const ProductDetail: React.FC = () => {
     <>
       {enlargedImageState && <ImageEnlargeModal imageUrls={enlargedImageState.imageUrls} initialIndex={enlargedImageState.initialIndex} onClose={() => setEnlargedImageState(null)} />}
       <div className="space-y-8">
-        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+        <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
             <ChevronLeftIcon className="h-5 w-5 mr-1" />
-            Back
+            {backLabel}
         </button>
         <div className="grid grid-cols-2 gap-x-12 gap-y-8">
           {/* Left Column: Media */}
