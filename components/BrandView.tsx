@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import type { Product } from '../types.ts';
 import ProductCard from './ProductCard.tsx';
 import { SearchIcon, ChevronLeftIcon } from './Icons.tsx';
@@ -11,6 +11,7 @@ const BrandView: React.FC = () => {
   const { brandId } = useParams<{ brandId: string }>();
   const { brands, products, categories, trackBrandView } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (brandId) {
@@ -62,10 +63,10 @@ const BrandView: React.FC = () => {
   return (
     <div className="space-y-8">
       <div>
-        <Link to="/" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
           <ChevronLeftIcon className="h-5 w-5 mr-1" />
-          Back to Home
-        </Link>
+          Back
+        </button>
         <div className="flex items-center gap-6">
             <div className="h-28 w-28 flex items-center justify-center">
                 <LocalMedia 

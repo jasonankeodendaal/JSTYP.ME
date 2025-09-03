@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon } from './Icons.tsx';
 import type { Catalogue } from '../types.ts';
@@ -32,6 +32,7 @@ const CatalogueCard: React.FC<{ catalogue: Catalogue; onOpen: (catalogue: Catalo
 
 const CatalogueLibrary: React.FC = () => {
     const { catalogues, openDocument } = useAppContext();
+    const navigate = useNavigate();
 
     const groupedCatalogues = useMemo(() => {
         const groups: { [year: number]: Catalogue[] } = {};
@@ -60,10 +61,10 @@ const CatalogueLibrary: React.FC = () => {
     return (
         <div className="space-y-10">
             <div>
-                <Link to="/" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back to Home
-                </Link>
+                    Back
+                </button>
                 <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Our Catalogues</h1>
                 <p className="mt-2 text-lg text-gray-700 dark:text-gray-300">Browse through our collection of catalogues, past and present.</p>
             </div>

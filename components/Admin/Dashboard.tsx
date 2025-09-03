@@ -5,7 +5,7 @@ import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, DocumentArrowRightIcon, TvIcon, ChartPieIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';

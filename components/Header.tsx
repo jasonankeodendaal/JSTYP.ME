@@ -80,10 +80,11 @@ const Header: React.FC = () => {
   const headerStyle: React.CSSProperties = {
     backgroundColor: headerSettings?.effect === 'glassmorphism' ? 'transparent' : headerSettings?.backgroundColor,
     color: theme === 'light' ? 'var(--main-text)' : headerSettings?.textColor,
-    fontFamily: headerSettings?.typography?.fontFamily ?? 'inherit',
-    fontWeight: headerSettings?.typography?.fontWeight ?? 'inherit',
-    fontStyle: headerSettings?.typography?.fontStyle ?? 'inherit',
-    textDecoration: headerSettings?.typography?.textDecoration ?? 'inherit',
+    // FIX: Typography is now managed globally. Use settings.typography.headings for the header.
+    fontFamily: settings.typography?.headings?.fontFamily ?? 'inherit',
+    fontWeight: settings.typography?.headings?.fontWeight ?? 'inherit',
+    fontStyle: settings.typography?.headings?.fontStyle ?? 'inherit',
+    textDecoration: settings.typography?.headings?.textDecoration ?? 'inherit',
     position: 'relative',
   };
 

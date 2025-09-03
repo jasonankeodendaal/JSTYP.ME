@@ -166,6 +166,19 @@ const AppContent: React.FC = () => {
   useIdleRedirect();
   useAdminIdleLogout();
   useScreensaverManager();
+
+  // ADDED: Effect to disable context menu based on settings.
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+        if (settings.kiosk.disableContextMenu) {
+            e.preventDefault();
+        }
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => {
+        document.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [settings.kiosk.disableContextMenu]);
   
   const pageTransitionVariants = {
     none: {

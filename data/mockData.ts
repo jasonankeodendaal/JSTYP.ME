@@ -166,10 +166,11 @@ export const tvContent: TvContent[] = [
 
 const defaultLight: ThemeColors = {
   appBg: "#f3f4f6",
-  appBgImage: "none",
+  appBgImage: "",
   mainBg: "#ffffff",
   mainText: "#1f2937",
   mainShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 5px 10px -5px rgba(0, 0, 0, 0.04)",
+  mainBorder: "1px solid #e5e7eb",
   primary: "#4f46e5",
   primaryButton: {
     background: "#4f46e5",
@@ -189,6 +190,7 @@ const defaultDark: ThemeColors = {
   mainBg: "#1f2937",
   mainText: "#e5e7eb",
   mainShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.03)",
+  mainBorder: "1px solid rgba(255, 255, 255, 0.08)",
   primary: "#818cf8",
   primaryButton: {
     background: "#4f46e5",
@@ -202,12 +204,11 @@ const defaultDark: ThemeColors = {
   }
 };
 
-const defaultBodyFont: FontStyleSettings = { fontFamily: "Inter", fontWeight: "400", fontStyle: "normal", textDecoration: "none" };
-const defaultHeadingsFont: FontStyleSettings = { fontFamily: "Montserrat", fontWeight: "800", fontStyle: "normal", textDecoration: "none" };
-const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWeight: "600", fontStyle: "normal", textDecoration: "none" };
+const defaultBodyFont: FontStyleSettings = { fontFamily: "Inter", fontWeight: "400", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
+const defaultHeadingsFont: FontStyleSettings = { fontFamily: "Montserrat", fontWeight: "800", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
+const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWeight: "600", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
 
 export const settings: Settings = {
-    // FIX: The logoUrl had syntax errors (unmatched quotes, misplaced comma) causing a cascade of parsing errors. Replaced with a correctly formatted SVG data URI.
     logoUrl: "data:image/svg+xml,%3csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='50' cy='50' r='48' fill='%23FFFFFF' stroke='%23E5E7EB' stroke-width='4' /%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat, sans-serif' font-size='16' font-weight='800' fill='%23475569'%3eLogo%3c/text%3e%3c/svg%3e",
     sharedUrl: "",
     customApiUrl: "",
@@ -218,10 +219,12 @@ export const settings: Settings = {
     videoVolume: 0.75,
     backgroundMusicUrl: "",
     backgroundMusicVolume: 0.5,
+    touchSoundUrl: "",
     screensaverImageDuration: 8,
     screensaverTransitionEffect: 'gentle-drift',
     screensaverTouchPromptText: "Touch to Explore",
     typography: {
+        googleFontUrl: "",
         body: defaultBodyFont,
         headings: defaultHeadingsFont,
         itemTitles: defaultItemTitlesFont
@@ -232,7 +235,6 @@ export const settings: Settings = {
         backgroundImageUrl: "",
         backgroundImageOpacity: 0.5,
         effect: "glassmorphism",
-        typography: defaultHeadingsFont
     },
     footer: {
         backgroundColor: "transparent",
@@ -240,11 +242,10 @@ export const settings: Settings = {
         backgroundImageUrl: "",
         backgroundImageOpacity: 0.5,
         effect: "glassmorphism",
-        typography: defaultBodyFont
     },
     pamphletPlaceholder: {
         text: "No Active Promotions",
-        font: { fontFamily: 'Playfair Display', fontWeight: '900', fontStyle: 'italic', textDecoration: 'none' },
+        font: { fontFamily: 'Playfair Display', fontWeight: '900', fontStyle: 'italic', textDecoration: 'none', letterSpacing: 'normal', textTransform: 'none' },
         color1: "#a78bfa",
         color2: "#f472b6"
     },
@@ -261,6 +262,8 @@ export const settings: Settings = {
     kiosk: {
         idleRedirectTimeout: 90,
         profiles: [],
+        disableContextMenu: false,
+        pinProtectScreensaver: false,
     },
     navigation: {
         links: [

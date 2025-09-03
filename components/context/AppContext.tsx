@@ -15,7 +15,7 @@ import {
     quotes as initialQuotes,
     viewCounts as initialViewCounts
 } from '../../data/mockData.ts';
-import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, ThemeColors, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts } from '../../types.ts';
+import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
 
 
@@ -39,18 +39,6 @@ function deepMerge<T extends object>(target: T, source: Partial<T>): T {
     });
     return output;
 }
-
-const loadFont = (fontName: string) => {
-    if (!fontName) return;
-    const fontId = `google-font-${fontName.replace(/\s+/g, '-')}`;
-    if (!document.getElementById(fontId)) {
-      const link = document.createElement('link');
-      link.id = fontId;
-      link.rel = 'stylesheet';
-      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, '+')}:wght@300;400;500;600;700;800;900&display=swap`;
-      document.head.appendChild(link);
-    }
-};
 
 const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -195,6 +183,9 @@ interface AppContextType {
   toggleTheme: () => void;
   localVolume: number;
   setLocalVolume: (volume: number) => void;
+  kioskId: string;
+  // FIX: Add setKioskId to the context type to allow main admin to change it.
+  setKioskId: (newId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -262,7 +253,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return 'dark'; // Default theme
     });
     const [localVolume, setLocalVolume] = useState(settings.videoVolume);
-    const [kioskId, setKioskId] = useState('');
+
+    // FIX: Add state setter for kioskId.
+    const [kioskId, setKioskIdState] = useState<string>(() => {
+        let id = localStorage.getItem('kioskId');
+        if (!id) {
+            id = `kiosk_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+            localStorage.setItem('kioskId', id);
+        }
+        return id;
+    });
+
+    // FIX: Create a function to safely update kioskId state and localStorage.
+    const setKioskId = (newId: string) => {
+        const trimmedId = newId.trim();
+        if (trimmedId) {
+            setKioskIdState(trimmedId);
+            localStorage.setItem('kioskId', trimmedId);
+        }
+    };
 
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => deepMerge(prev, newSettings));
@@ -285,9 +294,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // --- GENERIC CRUD ---
     const createCrudOperations = <T extends { id: string }>(
-        state: T[],
-        setter: React.Dispatch<React.SetStateAction<T[]>>,
-        itemName: string
+        setter: React.Dispatch<React.SetStateAction<T[]>>
     ) => ({
         add: (item: T) => setter(prev => [...prev, item]),
         update: (updatedItem: T) => setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item)),
@@ -296,16 +303,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         hardDelete: (id: string) => setter(prev => prev.filter(item => item.id !== id)),
     });
 
-    const brandOps = createCrudOperations(brands, setBrands, 'brand');
-    const productOps = createCrudOperations(products, setProducts, 'product');
-    const catalogueOps = createCrudOperations(catalogues, setCatalogues, 'catalogue');
-    const pamphletOps = createCrudOperations(pamphlets, setPamphlets, 'pamphlet');
-    const adOps = createCrudOperations(screensaverAds, setScreensaverAds, 'ad');
-    const userOps = createCrudOperations(adminUsers, setAdminUsers, 'user');
-    const tvOps = createCrudOperations(tvContent, setTvContent, 'tvContent');
-    const categoryOps = createCrudOperations(categories, setCategories, 'category');
-    const clientOps = createCrudOperations(clients, setClients, 'client');
-    const quoteOps = createCrudOperations(quotes, setQuotes, 'quote');
+    const brandOps = createCrudOperations(setBrands);
+    const productOps = createCrudOperations(setProducts);
+    const catalogueOps = createCrudOperations(setCatalogues);
+    const pamphletOps = createCrudOperations(setPamphlets);
+    const adOps = createCrudOperations(setScreensaverAds);
+    const userOps = createCrudOperations(setAdminUsers);
+    const tvOps = createCrudOperations(setTvContent);
+    const categoryOps = createCrudOperations(setCategories);
+    const clientOps = createCrudOperations(setClients);
+    const quoteOps = createCrudOperations(setQuotes);
     
     // --- AUTH ---
     const login = (userId: string, pin: string) => {
@@ -606,6 +613,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     // --- APP LIFECYCLE & AUTO-SYNC ---
 
+    // FIX: Implement analytics tracking functions
+    const trackBrandView = useCallback((brandId: string) => {
+        setViewCounts(prev => {
+            const newCounts = JSON.parse(JSON.stringify(prev));
+            if (!newCounts[kioskId]) {
+                newCounts[kioskId] = { brands: {}, products: {} };
+            }
+            if (!newCounts[kioskId].brands) {
+                newCounts[kioskId].brands = {};
+            }
+            newCounts[kioskId].brands[brandId] = (newCounts[kioskId].brands[brandId] || 0) + 1;
+            return newCounts;
+        });
+    }, [kioskId]);
+
+    const trackProductView = useCallback((productId: string) => {
+        setViewCounts(prev => {
+            const newCounts = JSON.parse(JSON.stringify(prev));
+            if (!newCounts[kioskId]) {
+                newCounts[kioskId] = { brands: {}, products: {} };
+            }
+            if (!newCounts[kioskId].products) {
+                newCounts[kioskId].products = {};
+            }
+            newCounts[kioskId].products[productId] = (newCounts[kioskId].products[productId] || 0) + 1;
+            return newCounts;
+        });
+    }, [kioskId]);
+
+    useEffect(() => {
+        const handler = (e: BeforeInstallPromptEvent) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
+
     useEffect(() => {
         const loadAndConnect = async () => {
              interface DataMapValue { setter: (value: any) => void; initial: any; merge?: boolean; }
@@ -738,10 +783,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         saveFileToStorage, getFileUrl, syncStatus,
         saveDatabaseToLocal, loadDatabaseFromLocal, pushToCloud, pullFromCloud,
         testAndConnectProvider,
-        trackBrandView: () => {}, trackProductView: () => {},
+        trackBrandView, trackProductView,
         lastUpdated: settings.lastUpdated,
         theme, toggleTheme: () => setTheme(t => (t === 'light' ? 'dark' : 'light')),
         localVolume, setLocalVolume: (vol: number) => { setLocalVolume(vol); idbSet('localVolume', vol); },
+        kioskId,
+        setKioskId,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

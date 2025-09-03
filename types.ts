@@ -60,6 +60,9 @@ export interface FontStyleSettings {
   fontWeight: '300' | '400' | '500' | '600' | '700' | '800' | '900';
   fontStyle: 'normal' | 'italic';
   textDecoration: 'none' | 'underline';
+  // ADDED: New typography controls for more power.
+  letterSpacing: string; // e.g., 'normal', '0.1em'
+  textTransform: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
 }
 
 export interface CustomElementSettings {
@@ -68,15 +71,19 @@ export interface CustomElementSettings {
   backgroundImageUrl: string;
   backgroundImageOpacity: number; // 0 to 1
   effect: 'none' | 'glassmorphism' | '3d-shadow';
-  typography: FontStyleSettings;
+  // REMOVED: Typography is now managed globally, not per-element.
+  // typography: FontStyleSettings;
 }
 
 export interface ThemeColors {
   appBg: string;
+  // ADDED: App background image URL for enhanced branding.
   appBgImage: string;
   mainBg: string;
   mainText: string;
+  // ADDED: Controls for main container shadow and border.
   mainShadow: string;
+  mainBorder: string;
   primary: string;
   primaryButton: {
     background: string;
@@ -113,10 +120,14 @@ export interface Settings {
   videoVolume: number; // 0 to 1
   backgroundMusicUrl: string;
   backgroundMusicVolume: number; // 0 to 1
+  // ADDED: Touch sound for improved user feedback.
+  touchSoundUrl: string;
   screensaverImageDuration: number; // in seconds
   screensaverTransitionEffect: 'fade' | 'slide' | 'scale' | 'slide-fade' | 'gentle-drift' | 'reveal-blur';
   screensaverTouchPromptText: string;
   typography: {
+    // ADDED: Field for dynamic Google Fonts URL.
+    googleFontUrl: string;
     body: FontStyleSettings;
     headings: FontStyleSettings;
     itemTitles: FontStyleSettings;
@@ -142,6 +153,9 @@ export interface Settings {
   kiosk: {
     idleRedirectTimeout: number; // in seconds, 0 to disable
     profiles?: KioskProfile[];
+    // ADDED: Powerful kiosk mode settings for security.
+    disableContextMenu: boolean;
+    pinProtectScreensaver: boolean;
   };
   navigation: {
     links: NavLink[];

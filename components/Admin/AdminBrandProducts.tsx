@@ -227,10 +227,10 @@ const AdminBrandProducts: React.FC = () => {
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
-                        <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                             <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                            Back to Dashboard
-                        </Link>
+                            Back
+                        </button>
                         <div className="md:flex md:items-center md:justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="h-16 w-16 flex items-center justify-center">

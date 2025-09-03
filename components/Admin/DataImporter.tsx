@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { useAppContext } from '../context/AppContext.tsx';
-import type { Brand, Product } from '../../types';
+import type { Product } from '../../types';
 import { UploadIcon, ChevronRightIcon, PlusIcon } from '../Icons';
 
 // Worker setup for pdfjs
@@ -188,7 +188,7 @@ const DataImporter: React.FC = () => {
             brandId: brands[0]?.id || '',
             description: page.texts.join('\n\n'),
         });
-        const allPageImages = page.images.reduce((acc, img, index) => ({ ...acc, [`${page.pageNum}-${index}`]: true }), {});
+        const allPageImages = page.images.reduce((acc, _, index) => ({ ...acc, [`${page.pageNum}-${index}`]: true }), {});
         setSelectedImages(allPageImages);
     };
 

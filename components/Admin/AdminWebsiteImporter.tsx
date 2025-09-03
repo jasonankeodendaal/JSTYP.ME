@@ -98,6 +98,9 @@ const AdminWebsiteImporter: React.FC = () => {
                 }
             });
 
+            if (!response.text) {
+                throw new Error("The AI model returned an empty response.");
+            }
             const parsedData = JSON.parse(response.text.trim());
             if (!parsedData.brand || !parsedData.products) throw new Error("AI did not return the expected data structure.");
             

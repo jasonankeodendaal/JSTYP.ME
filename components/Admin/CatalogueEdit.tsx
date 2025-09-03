@@ -177,10 +177,10 @@ const CatalogueEdit: React.FC = () => {
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
-                    <Link to="/admin" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                    <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                         <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                        Back to Dashboard
-                    </Link>
+                        Back
+                    </button>
                     <div className="md:flex md:items-center md:justify-between">
                         <div className="flex-1 min-w-0">
                             <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate">

@@ -1,7 +1,5 @@
-
-
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon } from './Icons';
@@ -9,6 +7,7 @@ import LocalMedia from './LocalMedia';
 
 const TvBrandsView: React.FC = () => {
     const { brands } = useAppContext();
+    const navigate = useNavigate();
 
     const tvBrands = useMemo(() => {
         return brands.filter(brand => brand.isTvBrand && !brand.isDeleted);
@@ -17,10 +16,10 @@ const TvBrandsView: React.FC = () => {
     return (
         <div className="space-y-8">
             <div>
-                <Link to="/" className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
+                <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 text-base">
                     <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                    Back to Home
-                </Link>
+                    Back
+                </button>
                 <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Shop TVs by Brand</h1>
             </div>
             {tvBrands.length > 0 ? (

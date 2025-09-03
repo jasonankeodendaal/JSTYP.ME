@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ExternalLinkIcon, CheckIcon, ShieldCheckIcon, ChevronDownIcon, PhotoIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 import LocalMedia from './LocalMedia.tsx';
@@ -9,6 +9,7 @@ const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const { products, brands, localVolume, openDocument, trackProductView } = useAppContext();
   const [enlargedImageState, setEnlargedImageState] = useState<{ imageUrls: string[], initialIndex: number } | null>(null);
+  const navigate = useNavigate();
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -43,10 +44,10 @@ const ProductDetail: React.FC = () => {
     <>
       {enlargedImageState && <ImageEnlargeModal imageUrls={enlargedImageState.imageUrls} initialIndex={enlargedImageState.initialIndex} onClose={() => setEnlargedImageState(null)} />}
       <div className="space-y-8">
-        <Link to={brand ? `/brand/${brand.id}` : '/'} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
             <ChevronLeftIcon className="h-5 w-5 mr-1" />
-            Back to {brand ? brand.name : 'Products'}
-        </Link>
+            Back
+        </button>
         <div className="grid grid-cols-2 gap-x-12 gap-y-8">
           {/* Left Column: Media */}
           <div className="space-y-6">

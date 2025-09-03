@@ -130,7 +130,7 @@ const StockPick: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
                         <button 
-                            onClick={() => navigate('/admin')} 
+                            onClick={() => navigate(-1)} 
                             className="p-2 -ml-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Go back"
                         >

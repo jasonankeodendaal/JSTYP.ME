@@ -23,6 +23,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="./index.css" />
     <!-- Font link will be dynamically added by React -->
+    <link id="google-fonts-link" rel="stylesheet" href="">
     <style>
       :root {
         /* Light Theme Defaults (overridden by JS) */
@@ -30,9 +31,8 @@
         --app-bg-image: none;
         --main-bg: #ffffff;
         --main-text: #1f2937;
-        /* UPDATED: Stronger default shadow for light mode */
         --main-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 5px 10px -5px rgba(0, 0, 0, 0.05);
-        --main-border-color: #e5e7eb; /* gray-200 */
+        --main-border: 1px solid #e5e7eb; /* gray-200 */
         
         --primary-color: #4f46e5;
         
@@ -66,7 +66,7 @@
         --main-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55), 
                        inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
                        0 0 0 1px rgba(255, 255, 255, 0.03);
-        --main-border-color: rgba(255, 255, 255, 0.08);
+        --main-border: 1px solid rgba(255, 255, 255, 0.08);
 
         --primary-color: #818cf8;
         
@@ -99,6 +99,8 @@
         font-weight: var(--body-font-weight, 400);
         font-style: var(--body-font-style, normal);
         text-decoration: var(--body-font-decoration, none);
+        letter-spacing: var(--body-letter-spacing, normal);
+        text-transform: var(--body-text-transform, none);
         overflow-wrap: break-word;
         overflow-x: hidden;
       }
@@ -107,14 +109,12 @@
         background-color: var(--main-bg);
         box-shadow: var(--main-shadow);
         min-height: 100vh;
-        /* Add a transparent border to prevent layout shift */
-        border: 1px solid transparent; 
+        border: var(--main-border);
       }
 
       /* --- START: Light Mode Readability & Depth Enhancements --- */
-
       html:not(.dark) .main-content-container {
-        border-color: var(--main-border-color);
+        /* --main-border already handles this */
       }
       
       /* Stronger, more defined shadows for cards in light mode */
@@ -142,6 +142,8 @@
       html:not(.dark) input[type='url'],
       html:not(.dark) input[type='number'],
       html:not(.dark) input[type='date'],
+      html:not(.dark) input[type='email'],
+      html:not(.dark) input[type='tel'],
       html:not(.dark) select,
       html:not(.dark) textarea {
           border-color: #d1d5db; /* gray-300 */
@@ -193,6 +195,8 @@
         font-weight: var(--headings-font-weight, 800);
         font-style: var(--headings-font-style, normal);
         text-decoration: var(--headings-font-decoration, none);
+        letter-spacing: var(--headings-letter-spacing, normal);
+        text-transform: var(--headings-text-transform, none);
       }
       
       .item-title {
@@ -200,6 +204,8 @@
         font-weight: var(--item-titles-font-weight, 600);
         font-style: var(--item-titles-font-style, normal);
         text-decoration: var(--item-titles-font-decoration, none);
+        letter-spacing: var(--item-titles-letter-spacing, normal);
+        text-transform: var(--item-titles-text-transform, none);
       }
       
       .effect-glassmorphism {
@@ -265,23 +271,23 @@
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
       }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.1.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
-    "react/": "https://esm.sh/react@^19.1.1/",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.8.1",
-    "swiper/": "https://esm.sh/swiper@^11.2.10/",
-    "framer-motion": "https://esm.sh/framer-motion@^12.23.12",
-    "pdfjs-dist": "https://esm.sh/pdfjs-dist@^5.4.54",
-    "jszip": "https://esm.sh/jszip@^3.10.1",
-    "idb": "https://esm.sh/idb@^8.0.3",
-    "react-pageflip": "https://esm.sh/react-pageflip@^2.0.3",
-    "vite": "https://esm.sh/vite@^7.1.3",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.0.1",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.2",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.8.2",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "jszip": "https://aistudiocdn.com/jszip@^3.10.1",
+    "vite": "https://aistudiocdn.com/vite@^7.1.4",
+    "idb": "https://aistudiocdn.com/idb@^8.0.3",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.12",
+    "swiper/": "https://aistudiocdn.com/swiper@^11.2.10/",
+    "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^5.4.149",
     "@capacitor/cli": "https://aistudiocdn.com/@capacitor/cli@^7.4.3",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0"
+    "react-pageflip": "https://aistudiocdn.com/react-pageflip@^2.0.3"
   }
 }
 </script>
