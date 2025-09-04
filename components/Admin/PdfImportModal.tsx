@@ -1,11 +1,11 @@
 import React, { useState, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
+import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 
 // FIX: Use the legacy worker script to avoid module loading issues in sandboxed environments.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 interface ConvertedPage {
     pageNumber: number;
