@@ -6,7 +6,6 @@ import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
-const checkboxStyle = "h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 disabled:opacity-50";
 
 const getInitialFormData = (): AdminUser => ({
     id: `au_${Date.now()}_${Math.random().toString(16).slice(2)}`,
@@ -37,24 +36,30 @@ const PermissionCheckbox: React.FC<{
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     disabled: boolean;
 }> = ({ id, label, description, checked, onChange, disabled }) => (
-    <div className="relative flex items-start">
-        <div className="flex h-5 items-center">
-            <input
-                id={id}
-                type="checkbox"
-                className={checkboxStyle}
-                checked={checked}
-                onChange={onChange}
-                disabled={disabled}
-            />
-        </div>
-        <div className="ml-3 text-sm">
+    <div className="flex items-center justify-between py-2">
+        <div className="flex-grow pr-4">
             <label htmlFor={id} className={`font-medium text-gray-700 dark:text-gray-300 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                 {label}
             </label>
-            <p className={`text-gray-500 dark:text-gray-400 ${disabled ? 'opacity-50' : ''}`}>
+            <p className={`text-sm text-gray-500 dark:text-gray-400 ${disabled ? 'opacity-50' : ''}`}>
                 {description}
             </p>
+        </div>
+        <div className="flex-shrink-0">
+             <label htmlFor={id} className={`flex items-center ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                <div className="relative">
+                    <input
+                        type="checkbox"
+                        id={id}
+                        className="sr-only peer"
+                        checked={checked}
+                        onChange={onChange}
+                        disabled={disabled}
+                    />
+                    <div className="block w-14 h-8 rounded-full transition-colors bg-gray-300 dark:bg-gray-600 peer-checked:bg-indigo-500 peer-disabled:opacity-50"></div>
+                    <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6 peer-disabled:opacity-75"></div>
+                </div>
+            </label>
         </div>
     </div>
 );
@@ -186,11 +191,11 @@ const AdminUserEdit: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-8 items-start">
-                    <div className="col-span-2 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">User Details</h3>
-                            <div className="mt-6 grid grid-cols-2 gap-6">
+                            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="col-span-1">
                                     <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Name</label>
                                     <input type="text" name="firstName" id="firstName" value={editableUser.firstName} onChange={handleInputChange} className={inputStyle} required />
@@ -233,10 +238,10 @@ const AdminUserEdit: React.FC = () => {
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             {canEditPermissions ? 'Select the sections this user can access.' : 'Permissions can only be changed by the Main Admin.'}
                         </p>
-                        <div className="mt-6 space-y-6">
+                        <div className="mt-4 divide-y divide-gray-200 dark:divide-gray-700">
                             <div>
-                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">Content Management</h4>
-                                <div className="space-y-4">
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 pt-4 pb-2">Content Management</h4>
+                                <div className="space-y-1">
                                     <PermissionCheckbox
                                         id="perm-brands"
                                         label="Manage Brands & Products"
@@ -272,8 +277,8 @@ const AdminUserEdit: React.FC = () => {
                                 </div>
                             </div>
                              <div>
-                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">Kiosk & Appearance</h4>
-                                <div className="space-y-4">
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 pt-4 pb-2">Kiosk & Appearance</h4>
+                                <div className="space-y-1">
                                     <PermissionCheckbox
                                         id="perm-screensaver"
                                         label="Manage Screensaver"
@@ -301,8 +306,8 @@ const AdminUserEdit: React.FC = () => {
                                 </div>
                             </div>
                              <div>
-                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-600 pb-2 mb-3">System & Admin</h4>
-                                <div className="space-y-4">
+                                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 pt-4 pb-2">System & Admin</h4>
+                                <div className="space-y-1">
                                     <PermissionCheckbox
                                         id="perm-system"
                                         label="Manage System"

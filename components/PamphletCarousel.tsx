@@ -60,7 +60,7 @@ const PamphletDisplay: React.FC = () => {
                             className={`group block text-left w-[180px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'}`}
                             aria-label={`View ${pamphlet.title}`}
                         >
-                            <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-square ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
+                            <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-[3/4] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
                                 <LocalMedia
                                     src={pamphlet.imageUrl}
                                     alt={pamphlet.title}
