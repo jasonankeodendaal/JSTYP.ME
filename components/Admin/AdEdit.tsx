@@ -71,7 +71,8 @@ const AdEdit: React.FC = () => {
     }, [adId, isEditing, screensaverAds, navigate]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
     
     const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

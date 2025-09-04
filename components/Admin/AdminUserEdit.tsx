@@ -98,7 +98,8 @@ const AdminUserEdit: React.FC = () => {
     }, [userId, adminUsers, isEditing]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditableUser({ ...editableUser, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setEditableUser(prev => ({ ...prev, [name]: value }));
     };
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

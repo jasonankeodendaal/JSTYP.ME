@@ -61,8 +61,8 @@ const ProductEdit: React.FC = () => {
     }, [categories, formData?.brandId]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        if (!formData) return;
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => (prev ? { ...prev, [name]: value } : null));
         markDirty();
     };
 

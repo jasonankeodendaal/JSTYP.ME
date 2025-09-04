@@ -258,7 +258,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Storage and Sync state
     const [storageProvider, setStorageProvider] = useState<StorageProvider>('none');
     const [directoryHandle, setDirectoryHandle] = useState<FileSystemDirectoryHandle | null>(null);
-    const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+    const [syncStatus, setSyncStatusState] = useState<SyncStatus>('idle');
+    const [initialSyncStatus, setInitialSyncStatus] = useState<SyncStatus | null>(null);
     const isSyncingRef = useRef(false);
 
     // PWA Install Prompt state
@@ -291,6 +292,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setKioskIdState(trimmedId);
             localStorage.setItem('kioskId', trimmedId);
         }
+    };
+    
+    const setSyncStatus = (status: SyncStatus) => {
+        setSyncStatusState(status);
+        idbSet('syncStatus', status).catch(err => console.error("Failed to save sync status to IDB", err));
     };
 
     // --- MODERN SYNC LOGIC ---
@@ -554,16 +560,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const saveDatabaseToLocal = useCallback(async (): Promise<boolean> => {
         if (!directoryHandle) return false;
         isSyncingRef.current = true;
+        setSyncStatus('syncing');
         try {
-            setSyncStatus('syncing');
             const fileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
             const writable = await fileHandle.createWritable();
             const updatedSettings = { ...settings, lastUpdated: Date.now() };
             const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             await writable.write(JSON.stringify(backupData, null, 2));
             await writable.close();
+            
             setSettings(updatedSettings);
-            idbSet('settings', updatedSettings);
+            await idbSet('settings', updatedSettings);
+
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Synced data with Local Folder.` });
             setSyncStatus('synced');
             return true;
@@ -578,8 +586,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const loadDatabaseFromLocal = useCallback(async (): Promise<boolean> => {
         if (!directoryHandle) return false;
+        setSyncStatus('syncing');
         try {
-            setSyncStatus('syncing');
             const fileHandle = await directoryHandle.getFileHandle('database.json');
             const file = await fileHandle.getFile();
             const text = await file.text();
@@ -599,8 +607,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const url = settings.customApiUrl;
         if (storageProvider !== 'customApi' || !url) return false;
         isSyncingRef.current = true;
+        setSyncStatus('syncing');
         try {
-            setSyncStatus('syncing');
             const updatedSettings = { ...settings, lastUpdated: Date.now() };
             const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             const response = await fetch(url, {
@@ -612,8 +620,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 body: JSON.stringify(backupData),
             });
             if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+            
             setSettings(updatedSettings);
-            idbSet('settings', updatedSettings);
+            await idbSet('settings', updatedSettings);
+
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Pushed data to Custom API.` });
             setSyncStatus('synced');
             return true;
@@ -632,9 +642,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!isCustomApi && !isSharedUrl) return false;
         
         const url = isCustomApi ? settings.customApiUrl : settings.sharedUrl!;
-
+        setSyncStatus('syncing');
         try {
-            setSyncStatus('syncing');
             const response = await fetch(url, {
                 headers: isCustomApi ? { 'x-api-key': settings.customApiKey } : {},
             });
@@ -866,6 +875,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
+    const performSync = useCallback(() => {
+        if (storageProvider === 'local') {
+            saveDatabaseToLocal();
+        } else if (storageProvider === 'customApi') {
+            pushToCloud();
+        }
+    }, [storageProvider, saveDatabaseToLocal, pushToCloud]);
+    
     useEffect(() => {
         const loadAndConnect = async () => {
              interface DataMapValue { setter: (value: any) => void; initial: any; merge?: boolean; }
@@ -896,6 +913,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     }
                 }
             }
+            
+            const storedSyncStatus = await idbGet<SyncStatus>('syncStatus');
+            if (storedSyncStatus) {
+                setSyncStatusState(storedSyncStatus);
+                setInitialSyncStatus(storedSyncStatus);
+            } else {
+                setInitialSyncStatus('idle');
+            }
 
             const provider = await idbGet<StorageProvider>('storageProvider');
             if (provider === 'local') {
@@ -911,28 +936,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     }
                 }
             } else if (provider === 'customApi' || provider === 'sharedUrl') {
-                const loadedSettings = await idbGet<Settings>('settings');
-                const isAutoSyncEnabled = loadedSettings?.sync?.autoSyncEnabled ?? settings.sync.autoSyncEnabled;
                 setStorageProvider(provider);
-                if (isAutoSyncEnabled) {
-                    console.log("Auto-pull triggered on load.");
-                    pullFromCloud();
-                }
             }
             setIsDataLoaded(true);
         };
         loadAndConnect();
-    }, [pullFromCloud, settings.sync.autoSyncEnabled]);
+    }, []);
+    
+    useEffect(() => {
+        if (isDataLoaded && initialSyncStatus === 'pending' && storageProvider !== 'none' && settings.sync.autoSyncEnabled) {
+            console.log("Pending sync detected on app load. Triggering sync now.");
+            performSync();
+        }
+    }, [isDataLoaded, initialSyncStatus, storageProvider, settings.sync.autoSyncEnabled, performSync]);
 
     const debounceTimerRef = useRef<number | null>(null);
-
-    const performSync = useCallback(() => {
-        if (storageProvider === 'local') {
-            saveDatabaseToLocal();
-        } else if (storageProvider === 'customApi') {
-            pushToCloud();
-        }
-    }, [storageProvider, saveDatabaseToLocal, pushToCloud]);
 
     useEffect(() => {
         if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') {
