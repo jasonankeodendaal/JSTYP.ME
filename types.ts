@@ -225,6 +225,7 @@ export interface AdminUser {
   pin: string;
   isMainAdmin: boolean;
   permissions: AdminUserPermissions;
+  imageUrl?: string;
 }
 
 export interface TvContent {
@@ -290,3 +291,20 @@ export interface BackupData {
   viewCounts?: ViewCounts;
   activityLogs?: ActivityLog[];
 }
+
+// Types for Remote Control feature
+export interface KioskSession {
+  id: string;
+  name?: string;
+  currentPath: string;
+  loggedInUser: string | null;
+  isScreensaverActive: boolean;
+  lastHeartbeat: number;
+}
+
+export type RemoteCommand = 
+  | { type: 'navigate'; path: string }
+  | { type: 'refresh' }
+  | { type: 'logout' }
+  | { type: 'startScreensaver' }
+  | { type: 'stopScreensaver' };

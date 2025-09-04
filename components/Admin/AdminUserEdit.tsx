@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { AdminUser, AdminUserPermissions } from '../../types.ts';
-import { ChevronLeftIcon, SaveIcon } from '../Icons.tsx';
+import { ChevronLeftIcon, SaveIcon, UploadIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
+import LocalMedia from '../LocalMedia.tsx';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const checkboxStyle = "h-4 w-4 rounded border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:ring-offset-gray-800 disabled:opacity-50";
@@ -26,6 +26,7 @@ const getInitialFormData = (): AdminUser => ({
         canViewAnalytics: false,
         canManageQuotesAndClients: false,
     },
+    imageUrl: '',
 });
 
 const PermissionCheckbox: React.FC<{
@@ -62,7 +63,7 @@ const AdminUserEdit: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const navigate = useNavigate();
     const location = useLocation();
-    const { adminUsers, addAdminUser, updateAdminUser, loggedInUser } = useAppContext();
+    const { adminUsers, addAdminUser, updateAdminUser, loggedInUser, saveFileToStorage } = useAppContext();
 
     const isEditing = Boolean(userId);
     const [editableUser, setEditableUser] = useState<AdminUser>(getInitialFormData());
@@ -76,7 +77,7 @@ const AdminUserEdit: React.FC = () => {
         if (canGoBack) {
             navigate(-1);
         } else {
-            navigate('/admin', { replace: true }); // Fallback to admin dashboard
+            navigate('/admin');
         }
     };
 
@@ -91,9 +92,19 @@ const AdminUserEdit: React.FC = () => {
         }
     }, [userId, adminUsers, isEditing]);
 
-    // FIX: Hoisted event handlers and `canEditPermissions` to be declared before they are used in the JSX.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditableUser({ ...editableUser, [e.target.name]: e.target.value });
+    };
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            try {
+                const fileName = await saveFileToStorage(e.target.files[0]);
+                setEditableUser(prev => ({ ...prev, imageUrl: fileName }));
+            } catch (error) {
+                alert(error instanceof Error ? error.message : "Failed to save image.");
+            }
+        }
     };
     
     const handlePermissionChange = (permission: keyof AdminUserPermissions, value: boolean) => {
@@ -195,6 +206,23 @@ const AdminUserEdit: React.FC = () => {
                                 <div className="col-span-1">
                                     <label htmlFor="pin" className="block text-sm font-medium text-gray-700 dark:text-gray-300">4-Digit PIN</label>
                                     <input type="password" name="pin" id="pin" value={editableUser.pin} onChange={handleInputChange} className={inputStyle} required maxLength={4} pattern="[0-9]{4}" title="PIN must be 4 digits" />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Profile Picture (Optional)</label>
+                                    <div className="mt-2 flex items-center gap-4">
+                                        <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                            {editableUser.imageUrl ? (
+                                                <LocalMedia src={editableUser.imageUrl} alt="Profile" type="image" className="h-16 w-16 rounded-full object-cover" />
+                                            ) : (
+                                                 <span className="text-2xl font-bold text-gray-400">{editableUser.firstName.charAt(0)}{editableUser.lastName.charAt(0)}</span>
+                                            )}
+                                        </div>
+                                        <label htmlFor="image-upload" className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                            <UploadIcon className="h-4 w-4" />
+                                            <span>{editableUser.imageUrl ? 'Change' : 'Upload'}</span>
+                                        </label>
+                                        <input id="image-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

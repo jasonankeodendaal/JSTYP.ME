@@ -1,11 +1,8 @@
-
-
-
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
 import { PlusIcon, PencilIcon, TrashIcon } from '../Icons.tsx';
+import LocalMedia from '../LocalMedia.tsx';
 
 const AdminUserManagement: React.FC = () => {
     const { adminUsers, deleteAdminUser, loggedInUser, showConfirmation } = useAppContext();
@@ -32,7 +29,7 @@ const AdminUserManagement: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contact Tel</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
                             <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
@@ -41,7 +38,22 @@ const AdminUserManagement: React.FC = () => {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {adminUsers.map(user => (
                             <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{user.firstName} {user.lastName}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex-shrink-0 h-10 w-10">
+                                            {user.imageUrl ? (
+                                                <LocalMedia src={user.imageUrl} alt={`${user.firstName} ${user.lastName}`} type="image" className="h-10 w-10 rounded-full object-cover" />
+                                            ) : (
+                                                <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                                    <span className="font-bold text-gray-600 dark:text-gray-300">{user.firstName.charAt(0)}{user.lastName.charAt(0)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            {user.firstName} {user.lastName}
+                                        </div>
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{user.tel}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     {user.isMainAdmin ? 

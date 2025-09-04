@@ -15,19 +15,17 @@ const IMMUTABLE_URLS = [
   'https://cdn.jsdelivr.net/npm/marked/marked.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  // esm.sh dependencies from importmap
-  'https://esm.sh/react@^19.1.1',
-  'https://esm.sh/react-dom@^19.1.1/client', // This might be needed depending on how react-dom is imported
-  'https://esm.sh/react-dom@^19.1.1/',
-  // @FIX: Corrected react-router-dom version from non-existent v7 to v6.
-  'https://esm.sh/react-router-dom@^6.0.0',
-  'https://esm.sh/framer-motion@^12.23.12',
-  'https://esm.sh/idb@^8.0.3',
-  'https://esm.sh/jszip@^3.10.1',
-  // @FIX: Corrected pdfjs-dist version from non-existent v5 to v4.
-  'https://esm.sh/pdfjs-dist@^4.0.0',
-  'https://esm.sh/react-pageflip@^2.0.3',
-  'https://esm.sh/swiper@^11.2.10/element/bundle',
+  // aistudiocdn dependencies from importmap
+  'https://aistudiocdn.com/react@^19.1.1',
+  'https://aistudiocdn.com/react-dom@^19.1.1/client',
+  'https://aistudiocdn.com/react-dom@^19.1.1/',
+  'https://aistudiocdn.com/react-router-dom@^7.8.2',
+  'https://aistudiocdn.com/framer-motion@^12.23.12',
+  'https://aistudiocdn.com/idb@^8.0.3',
+  'https://aistudiocdn.com/jszip@^3.10.1',
+  'https://aistudiocdn.com/pdfjs-dist@^4.4.178',
+  'https://aistudiocdn.com/react-pageflip@^2.0.3',
+  'https://aistudiocdn.com/swiper@^11.2.10/element/bundle',
   // Fonts
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap',
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap',

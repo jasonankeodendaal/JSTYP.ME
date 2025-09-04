@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-// FIX: Replaced missing ArrowUpIcon and ArrowDownIcon with existing ChevronUpIcon and ChevronDownIcon.
-import { SaveIcon, UploadIcon, LinkIcon, ServerStackIcon, EyeIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon } from '../Icons.tsx';
+import { SaveIcon, UploadIcon, LinkIcon, ServerStackIcon, EyeIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
 import LocalMedia from '../LocalMedia.tsx';
 import { Link } from 'react-router-dom';
 import FormSection from './FormSection.tsx';
+import KioskPreview from './KioskPreview.tsx';
+import { AnimatePresence, motion } from 'framer-motion';
 
 // --- FORM SUB-COMPONENTS ---
 const inputStyle = "block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2 px-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 sm:text-sm";
@@ -125,6 +126,7 @@ const AdminSettings: React.FC = () => {
     const [formData, setFormData] = useState<Settings>(settings);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSettings;
 
@@ -178,24 +180,81 @@ const AdminSettings: React.FC = () => {
     }
 
     return (
-        <div>
-            <form onSubmit={handleSave} className="space-y-8">
-                <BrandingAndIdentitySection formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
-                <ThemeAndAppearanceSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                <CreatorProfileSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                <TypographySection formData={formData} onNestedChange={handleNestedChange} />
-                <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
-                <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+        <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                {/* Left Column: Form Controls */}
+                <div className="lg:col-span-2">
+                    <form onSubmit={handleSave} className="space-y-8">
+                        <BrandingAndIdentitySection formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
+                        <ThemeAndAppearanceSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <CreatorProfileSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <TypographySection formData={formData} onNestedChange={handleNestedChange} />
+                        <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
+                        <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
 
-                 <div className="pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                    <button type="submit" className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`} disabled={saving || saved}>
-                        <SaveIcon className="h-4 w-4" />
-                        {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save All Settings')}
-                    </button>
+                        <div className="pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                            <button type="submit" className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`} disabled={saving || saved}>
+                                <SaveIcon className="h-4 w-4" />
+                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save All Settings')}
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
-        </div>
+
+                {/* Right Column: Live Preview (Desktop Only) */}
+                <div className="hidden lg:block lg:col-span-1 sticky top-24">
+                    <div className="flex items-center gap-2 mb-4 text-gray-600 dark:text-gray-400">
+                        <ComputerDesktopIcon className="w-5 h-5"/>
+                        <h3 className="text-lg font-semibold section-heading">Live Preview</h3>
+                    </div>
+                    <KioskPreview settings={formData} />
+                </div>
+            </div>
+
+            {/* Mobile Preview FAB */}
+            <button
+              type="button"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="lg:hidden fixed bottom-20 right-6 z-40 btn btn-primary !rounded-full !p-3 shadow-lg flex items-center gap-2 animate-bounce"
+              aria-label="Show Live Preview"
+            >
+              <ComputerDesktopIcon className="w-6 h-6" />
+              <span>Preview</span>
+            </button>
+    
+            {/* Mobile Preview Modal */}
+            <AnimatePresence>
+                {isPreviewModalOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col p-4"
+                        onClick={() => setIsPreviewModalOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+                            className="w-full h-full bg-transparent flex flex-col overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <header className="flex-shrink-0 flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-t-2xl border-b border-gray-200 dark:border-gray-700">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 section-heading ml-2">Live Preview</h3>
+                                <button onClick={() => setIsPreviewModalOpen(false)} className="p-2 rounded-full text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700" aria-label="Close preview">
+                                    <XIcon className="h-5 w-5" />
+                                </button>
+                            </header>
+                            <div className="flex-grow overflow-y-auto bg-gray-200 dark:bg-gray-900 rounded-b-2xl">
+                               <KioskPreview settings={formData} />
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
     );
 };
 
@@ -393,11 +452,10 @@ const NavigationSection: React.FC<{navLinks: NavLink[], onNavLinksChange: (links
     return (
         <FormSection title="Header Navigation" description="Manage the links that appear in the main header.">
             <div className="space-y-3">{navLinks.map((link, index) => (<div key={link.id} className="grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 dark:bg-gray-900/40 rounded-lg">
-                {/* FIX: Replaced missing icons with available ChevronUpIcon and ChevronDownIcon. */}
-                <div className="col-span-1 flex flex-col"><button type="button" onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 disabled:opacity-30"><ChevronUpIcon /></button><button type="button" onClick={() => handleMove(index, 'down')} disabled={index === navLinks.length - 1} className="p-1 disabled:opacity-30"><ChevronDownIcon /></button></div>
-                <div className="col-span-4"><input type="text" value={link.label} onChange={e => handleUpdate(index, 'label', e.target.value)} className={inputStyle} /></div><div className="col-span-5"><input type="text" value={link.path} onChange={e => handleUpdate(index, 'path', e.target.value)} className={inputStyle} /></div><div className="col-span-1 text-center"><input type="checkbox" checked={link.enabled} onChange={e => handleUpdate(index, 'enabled', e.target.checked)} className="h-5 w-5 rounded" /></div><div className="col-span-1 text-right"><button type="button" onClick={() => handleDelete(link.id)} className="p-2 text-red-500"><TrashIcon /></button></div></div>))}</div>
+                <div className="col-span-1 flex flex-col"><button type="button" onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 disabled:opacity-30"><ChevronUpIcon className="w-4 h-4" /></button><button type="button" onClick={() => handleMove(index, 'down')} disabled={index === navLinks.length - 1} className="p-1 disabled:opacity-30"><ChevronDownIcon className="w-4 h-4"/></button></div>
+                <div className="col-span-4"><input type="text" value={link.label} onChange={e => handleUpdate(index, 'label', e.target.value)} className={inputStyle} /></div><div className="col-span-5"><input type="text" value={link.path} onChange={e => handleUpdate(index, 'path', e.target.value)} className={inputStyle} /></div><div className="col-span-1 text-center"><input type="checkbox" checked={link.enabled} onChange={e => handleUpdate(index, 'enabled', e.target.checked)} className="h-5 w-5 rounded" /></div><div className="col-span-1 text-right"><button type="button" onClick={() => handleDelete(link.id)} className="p-2 text-red-500"><TrashIcon className="w-4 h-4" /></button></div></div>))}</div>
             <div className="grid grid-cols-12 gap-2 items-center p-2 border-t mt-4 pt-4">
-                <div className="col-span-1"></div><div className="col-span-4"><input type="text" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} placeholder="New Label" className={inputStyle} /></div><div className="col-span-5"><input type="text" value={newLink.path} onChange={e => setNewLink({...newLink, path: e.target.value})} placeholder="/new-path" className={inputStyle} /></div><div className="col-span-2 text-right"><button type="button" onClick={handleAdd} className="btn btn-primary"><PlusIcon /> Add</button></div>
+                <div className="col-span-1"></div><div className="col-span-4"><input type="text" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} placeholder="New Label" className={inputStyle} /></div><div className="col-span-5"><input type="text" value={newLink.path} onChange={e => setNewLink({...newLink, path: e.target.value})} placeholder="/new-path" className={inputStyle} /></div><div className="col-span-2 text-right"><button type="button" onClick={handleAdd} className="btn btn-primary"><PlusIcon className="w-4 h-4" /> Add</button></div>
             </div>
         </FormSection>
     );

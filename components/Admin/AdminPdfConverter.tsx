@@ -4,7 +4,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { UploadIcon, ArrowDownTrayIcon } from '../Icons';
 
 // Set up the PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@5.4.54/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
 
 interface ConvertedPage {
     pageNumber: number;

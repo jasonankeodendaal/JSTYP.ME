@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon } from '../Icons.tsx';
+// FIX: Import missing ComputerDesktopIcon.
+// ADDED: Import DocumentArrowRightIcon for the new PDF Converter tab.
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ClockIcon, ComputerDesktopIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -15,9 +18,13 @@ import AdminTrash from './AdminTrash.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
 import AdminClientManagement from './AdminClientManagement.tsx';
 import AdminActivityLog from './AdminActivityLog.tsx';
+import AdminOverview from './AdminOverview.tsx';
+import AdminRemoteControl from './AdminRemoteControl.tsx';
+import AdminPdfConverter from './AdminPdfConverter.tsx';
 
 type FooterTab = 'content' | 'system' | 'admin';
-type SubTab = 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog';
+// ADDED: 'pdfConverter' sub-tab to make the tool accessible.
+type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'pdfConverter';
 
 // Keep old type name `Tab` for minimal changes inside the render function
 type Tab = SubTab;
@@ -98,10 +105,15 @@ const AdminContentCard: React.FC<{
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>('content');
-    const [activeSubTab, setActiveSubTab] = useState<SubTab>('brands');
+    const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
+    const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
     const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal } = useAppContext();
+
+    useEffect(() => {
+        sessionStorage.setItem('adminFooterTab', activeFooterTab);
+        sessionStorage.setItem('adminSubTab', activeSubTab);
+    }, [activeFooterTab, activeSubTab]);
 
     const handleLogout = () => {
         logout();
@@ -148,7 +160,7 @@ const AdminDashboard: React.FC = () => {
         setActiveFooterTab(tab);
         if (tab === 'content') setActiveSubTab('brands');
         if (tab === 'system') setActiveSubTab('storage');
-        if (tab === 'admin') setActiveSubTab('analytics');
+        if (tab === 'admin') setActiveSubTab('overview');
     };
     
     const ContentGrid: React.FC<{ title: string; items: (Catalogue[] | Pamphlet[]); type: 'catalogue' | 'pamphlet'; onDelete: (id: string, title: string) => void; allBrands?: Brand[], canEdit: boolean }> = ({ title, items, type, onDelete, allBrands, canEdit }) => {
@@ -206,6 +218,10 @@ const AdminDashboard: React.FC = () => {
         );
 
         switch (activeSubTab) {
+            case 'overview':
+                return <AdminOverview setActiveSubTab={setActiveSubTab} />;
+            case 'remoteControl':
+                return <AdminRemoteControl />;
             case 'brands':
                 const visibleBrands = brands.filter(b => !b.isDeleted);
                  return (
@@ -447,6 +463,8 @@ const AdminDashboard: React.FC = () => {
                 return <AdminAnalytics />;
             case 'activityLog':
                 return <AdminActivityLog />;
+            case 'pdfConverter':
+                return <AdminPdfConverter />;
             default: return null;
         }
     }
@@ -469,12 +487,14 @@ const AdminDashboard: React.FC = () => {
             { id: 'storage' as SubTab, label: 'Storage', icon: <ServerStackIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'backup' as SubTab, label: backupTabLabel, icon: <RestoreIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'settings' as SubTab, label: 'Appearance & Settings', icon: <PencilIcon className="h-4 w-4"/>, perm: canManageSettings },
+            { id: 'pdfConverter' as SubTab, label: 'PDF Converter', icon: <DocumentArrowRightIcon className="h-4 w-4"/>, perm: canManageSystem },
         ];
 
         const adminTabs = [
+            { id: 'overview' as SubTab, label: 'Overview', icon: <HomeIcon className="h-4 w-4" />, perm: true },
             { id: 'analytics' as SubTab, label: 'Analytics', icon: <ChartPieIcon className="h-4 w-4"/>, perm: canViewAnalytics },
+            { id: 'remoteControl' as SubTab, label: 'Remote Control', icon: <ComputerDesktopIcon className="h-4 w-4" />, perm: loggedInUser?.isMainAdmin },
             { id: 'users' as SubTab, label: 'Users', icon: <UsersIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
-            { id: 'activityLog' as SubTab, label: 'Activity Log', icon: <EyeIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
         ];
 
         let tabsToShow: { id: SubTab, label: string, icon: React.ReactNode, perm?: boolean }[] = [];

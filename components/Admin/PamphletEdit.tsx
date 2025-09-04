@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
@@ -10,8 +8,7 @@ import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIco
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
-// @FIX: Corrected pdfjs-dist version in worker URL from non-existent v5 to v4.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://esm.sh/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 

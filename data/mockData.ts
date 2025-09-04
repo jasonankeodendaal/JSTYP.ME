@@ -18,7 +18,8 @@ export const adminUsers: AdminUser[] = [
       canManageTvContent: true,
       canViewAnalytics: true,
       canManageQuotesAndClients: true,
-    }
+    },
+    imageUrl: ""
   },
   {
     id: "au_1234",
@@ -37,7 +38,8 @@ export const adminUsers: AdminUser[] = [
       canManageTvContent: false,
       canViewAnalytics: false,
       canManageQuotesAndClients: false,
-    }
+    },
+    imageUrl: ""
   }
 ];
 

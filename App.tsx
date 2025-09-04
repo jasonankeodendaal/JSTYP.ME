@@ -41,6 +41,7 @@ import TvBrandModelsView from './components/TvBrandModelsView.tsx';
 import TvContentEdit from './components/Admin/TvContentEdit.tsx';
 import StockPick from './components/Admin/StockPick.tsx';
 import PrintOrderView from './components/Admin/PrintOrderView.tsx';
+import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
 
 
 // Register Swiper custom elements
@@ -206,6 +207,7 @@ const AppContent: React.FC = () => {
            <Routes>
                <Route path="/login" element={<AdminLogin />} />
                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+               <Route path="/admin/remote-control" element={<ProtectedRoute mainAdminOnly><AdminRemoteControl /></ProtectedRoute>} />
                <Route path="/admin/stock-pick" element={<ProtectedRoute><StockPick /></ProtectedRoute>} />
                <Route path="/admin/brand/new" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
                <Route path="/admin/brand/edit/:brandId" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />

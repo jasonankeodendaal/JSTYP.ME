@@ -18,7 +18,8 @@ import {
     activityLogs as initialActivityLogs
 } from '../../data/mockData.ts';
 // FIX: Import ActivityLog type.
-import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog } from '../../types.ts';
+// FIX: Add KioskSession and RemoteCommand types for remote control feature.
+import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog, KioskSession, RemoteCommand } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
 
 
@@ -197,6 +198,9 @@ interface AppContextType {
   kioskId: string;
   // FIX: Add setKioskId to the context type to allow main admin to change it.
   setKioskId: (newId: string) => void;
+  // FIX: Add kioskSessions and sendRemoteCommand for the remote control feature.
+  kioskSessions: KioskSession[];
+  sendRemoteCommand: (kioskId: string, command: RemoteCommand) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -225,6 +229,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [viewCounts, setViewCounts] = useState<ViewCounts>(initialViewCounts);
     // FIX: Add activityLogs state.
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialActivityLogs);
+    // FIX: Add state for remote control sessions.
+    const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(() => {
@@ -366,6 +372,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const quoteOps = createCrudOperations(setQuotes, 'Quote');
     
     // --- AUTH ---
+    const logout = useCallback(() => {
+        const userToLogOut = loggedInUser;
+        if (userToLogOut) {
+            addActivityLog({ actionType: 'LOGOUT', entityType: 'AdminUser', entityId: userToLogOut.id, details: `User "${userToLogOut.firstName}" logged out.` });
+        }
+        setLoggedInUser(null);
+        localStorage.removeItem('kiosk-user');
+    }, [addActivityLog, loggedInUser]);
+
     const login = (userId: string, pin: string) => {
         const user = adminUsers.find(u => u.id === userId && u.pin === pin);
         if (user) {
@@ -375,14 +390,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             return user;
         }
         return null;
-    };
-    const logout = () => {
-        const userToLogOut = loggedInUser;
-        if (userToLogOut) {
-            addActivityLog({ actionType: 'LOGOUT', entityType: 'AdminUser', entityId: userToLogOut.id, details: `User "${userToLogOut.firstName}" logged out.` });
-        }
-        setLoggedInUser(null);
-        localStorage.removeItem('kiosk-user');
     };
 
     // --- MODALS ---
@@ -402,9 +409,90 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const stopTvContent = () => setActiveTvContent(null);
 
     // --- SCREENSAVER ---
-    const startScreensaver = () => setIsScreensaverActive(true);
+    const startScreensaver = useCallback(() => setIsScreensaverActive(true), []);
     const exitScreensaver = useCallback(() => setIsScreensaverActive(false), []);
     const toggleScreensaver = () => setIsScreensaverEnabled(prev => !prev);
+    
+    // --- REMOTE CONTROL ---
+    const remoteControlChannel = useRef<BroadcastChannel | null>(null);
+    const kioskInstanceId = useRef(kioskId);
+    useEffect(() => { kioskInstanceId.current = kioskId; }, [kioskId]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.BroadcastChannel) {
+            console.warn("BroadcastChannel API not supported. Remote control features will be disabled.");
+            return;
+        }
+
+        const channel = new BroadcastChannel('kiosk_remote_control');
+        remoteControlChannel.current = channel;
+
+        const handleMessage = (event: MessageEvent) => {
+            const { type, payload, from } = event.data;
+            if (from === kioskInstanceId.current) return; // Ignore self messages
+
+            if (type === 'heartbeat') {
+                setKioskSessions(prev => {
+                    const existingIndex = prev.findIndex(s => s.id === payload.id);
+                    if (existingIndex > -1) {
+                        const newSessions = [...prev];
+                        newSessions[existingIndex] = payload;
+                        return newSessions;
+                    }
+                    return [...prev, payload];
+                });
+            } else if (type === 'request_heartbeat') {
+                channel.postMessage({ type: 'heartbeat', from: kioskInstanceId.current, payload: {
+                    id: kioskInstanceId.current,
+                    currentPath: window.location.hash.substring(1) || '/',
+                    loggedInUser: loggedInUser ? `${loggedInUser.firstName} ${loggedInUser.lastName}`.trim() : null,
+                    isScreensaverActive,
+                    lastHeartbeat: Date.now()
+                }});
+            } else if (type === 'command' && payload.kioskId === kioskInstanceId.current) {
+                const { command } = payload;
+                switch (command.type) {
+                    case 'navigate': window.location.hash = command.path; break;
+                    case 'refresh': window.location.reload(); break;
+                    case 'logout': if (loggedInUser) logout(); break;
+                    case 'startScreensaver': if (!isScreensaverActive) startScreensaver(); break;
+                    case 'stopScreensaver': if (isScreensaverActive) exitScreensaver(); break;
+                }
+            }
+        };
+
+        channel.addEventListener('message', handleMessage);
+
+        const heartbeatInterval = setInterval(() => {
+            channel.postMessage({ type: 'heartbeat', from: kioskInstanceId.current, payload: {
+                id: kioskInstanceId.current,
+                currentPath: window.location.hash.substring(1) || '/',
+                loggedInUser: loggedInUser ? `${loggedInUser.firstName} ${loggedInUser.lastName}`.trim() : null,
+                isScreensaverActive,
+                lastHeartbeat: Date.now()
+            }});
+            // Prune sessions older than 15 seconds
+            setKioskSessions(prev => prev.filter(s => (Date.now() - s.lastHeartbeat) < 15000));
+        }, 5000);
+
+        channel.postMessage({ type: 'request_heartbeat', from: kioskInstanceId.current }); // Request initial state
+
+        return () => {
+            channel.removeEventListener('message', handleMessage);
+            channel.close();
+            clearInterval(heartbeatInterval);
+        };
+    }, [loggedInUser, isScreensaverActive, logout, startScreensaver, exitScreensaver]);
+
+    const sendRemoteCommand = useCallback((targetKioskId: string, command: RemoteCommand) => {
+        if (remoteControlChannel.current) {
+            remoteControlChannel.current.postMessage({
+                type: 'command',
+                from: kioskInstanceId.current,
+                payload: { kioskId: targetKioskId, command }
+            });
+        }
+    }, []);
     
     // --- SYNC & STORAGE ---
 
@@ -894,6 +982,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localVolume, setLocalVolume: (vol: number) => { setLocalVolume(vol); idbSet('localVolume', vol); },
         kioskId,
         setKioskId,
+        // FIX: Add remote control state and functions to context value.
+        kioskSessions,
+        sendRemoteCommand,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
