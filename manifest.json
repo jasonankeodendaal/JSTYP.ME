@@ -7,17 +7,77 @@
       "src": "https://i.imgur.com/J4gA19c.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "https://i.imgur.com/J4gA19c.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
   "start_url": ".",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
   "theme_color": "#111827",
-  "background_color": "#f9fafb"
+  "background_color": "#f9fafb",
+  "orientation": "portrait-primary",
+  "dir": "ltr",
+  "lang": "en-US",
+  "categories": [
+    "business",
+    "shopping",
+    "productivity"
+  ],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "shortcuts": [
+    {
+      "name": "View Catalogues",
+      "short_name": "Catalogues",
+      "description": "Browse all available catalogues",
+      "url": "/#/catalogues",
+      "icons": [{ "src": "https://i.imgur.com/J4gA19c.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View TV Brands",
+      "short_name": "TVs",
+      "description": "See TV display content",
+      "url": "/#/tvs",
+      "icons": [{ "src": "https://i.imgur.com/J4gA19c.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://i.imgur.com/gK1qL6g.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Catalogue Home Screen"
+    },
+    {
+      "src": "https://i.imgur.com/8Q9o9fV.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Product Details Page"
+    },
+    {
+      "src": "https://i.imgur.com/A6mN1nB.png",
+      "sizes": "414x896",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Catalogue View"
+    },
+    {
+      "src": "https://i.imgur.com/tL7mG9B.png",
+      "sizes": "414x896",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Product Listing"
+    }
+  ]
 }

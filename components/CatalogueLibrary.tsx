@@ -18,7 +18,7 @@ const CatalogueCard: React.FC<{ catalogue: Catalogue; onOpen: (catalogue: Catalo
             className={`group block text-left w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'}`}
             aria-label={`View ${catalogue.title}`}
         >
-            <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-square ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
+            <div className={`relative bg-black overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5 aspect-[3/4] ${settings.cardStyle?.cornerRadius ?? 'rounded-2xl'} ${settings.cardStyle?.shadow ?? 'shadow-xl'}`}>
                 <LocalMedia
                     src={catalogue.thumbnailUrl}
                     alt={catalogue.title}

@@ -25,7 +25,7 @@ const ImageEnlargeModal: React.FC<ImageEnlargeModalProps> = ({ imageUrls, initia
     
     return (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-fade-in"
+          className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-[60] p-4 animate-fade-in"
           onClick={onClose}
           aria-modal="true"
           role="dialog"
