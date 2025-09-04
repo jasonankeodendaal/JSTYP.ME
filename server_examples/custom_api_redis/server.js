@@ -40,11 +40,12 @@ app.use(bodyParser.json({ limit: '50mb' })); // Increase limit for potentially l
 
 // API Key Authentication Middleware
 const authenticateKey = (req, res, next) => {
-    const providedKey = req.header('x-api-key');
-    if (!providedKey || providedKey !== apiKey) {
-        return res.status(401).send('Unauthorized: Invalid API Key');
+    const keyFromHeader = req.header('x-api-key');
+    const keyFromQuery = req.query.apiKey;
+    if (keyFromHeader === apiKey || keyFromQuery === apiKey) {
+        return next();
     }
-    next();
+    return res.status(401).send('Unauthorized: Invalid API Key');
 };
 
 // Initialize Redis Client

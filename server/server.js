@@ -57,10 +57,12 @@ const upload = multer({ storage });
 
 // API Key Auth Middleware
 const authenticateKey = (req, res, next) => {
-    if (req.header('x-api-key') !== apiKey) {
-        return res.status(401).json({ error: 'Unauthorized: Invalid API Key' });
+    const keyFromHeader = req.header('x-api-key');
+    const keyFromQuery = req.query.apiKey;
+    if (keyFromHeader === apiKey || keyFromQuery === apiKey) {
+        return next();
     }
-    next();
+    return res.status(401).json({ error: 'Unauthorized: Invalid API Key' });
 };
 
 // Apply auth to all data-mutating or sensitive endpoints

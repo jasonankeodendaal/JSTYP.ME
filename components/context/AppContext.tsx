@@ -292,6 +292,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             localStorage.setItem('kioskId', trimmedId);
         }
     };
+
+    // --- MODERN SYNC LOGIC ---
+    const markAsDirty = useCallback(() => {
+        if (isSyncingRef.current) return;
+        if (isDataLoaded) {
+            setSyncStatus('pending');
+        }
+    }, [isDataLoaded]);
     
     // --- ACTIVITY LOG ---
     const addActivityLog = useCallback((
@@ -307,12 +315,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ...logData,
         };
         setActivityLogs(prev => [newLog, ...prev]);
-    }, [loggedInUser, kioskId]);
+        markAsDirty();
+    }, [loggedInUser, kioskId, markAsDirty]);
 
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
         setSettings(prev => deepMerge(prev, newSettings));
         addActivityLog({ actionType: 'UPDATE', entityType: 'Settings', details: 'Updated system settings.' });
-    }, [addActivityLog]);
+        markAsDirty();
+    }, [addActivityLog, markAsDirty]);
 
     const restoreBackup = useCallback((data: Partial<BackupData>) => {
         if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
@@ -330,7 +340,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // FIX: Restore activity logs from backup.
         if (data.activityLogs) setActivityLogs(data.activityLogs);
         addActivityLog({ actionType: 'RESTORE', entityType: 'System', details: 'Restored data from a backup file.' });
-    }, [addActivityLog]);
+        markAsDirty();
+    }, [addActivityLog, markAsDirty]);
     
     // --- GENERIC CRUD ---
     const createCrudOperations = <T extends { id: string, name?: string, title?: string, companyName?: string, modelName?: string }>(
@@ -341,23 +352,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setter(prev => [...prev, item]);
             const name = item.name || item.title || item.companyName || item.modelName || 'N/A';
             addActivityLog({ actionType: 'CREATE', entityType, entityId: item.id, details: `Created ${entityType.toLowerCase()}: "${name}"` });
+            markAsDirty();
         },
         update: (updatedItem: T) => {
             setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
             const name = updatedItem.name || updatedItem.title || updatedItem.companyName || updatedItem.modelName || 'N/A';
             addActivityLog({ actionType: 'UPDATE', entityType, entityId: updatedItem.id, details: `Updated ${entityType.toLowerCase()}: "${name}"` });
+            markAsDirty();
         },
         softDelete: (id: string, name?: string) => {
             setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: true } : item));
             addActivityLog({ actionType: 'DELETE', entityType, entityId: id, details: `Moved ${entityType.toLowerCase()} to trash: "${name || id}"` });
+            markAsDirty();
         },
         restore: (id: string, name?: string) => {
             setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: false } : item));
             addActivityLog({ actionType: 'RESTORE', entityType, entityId: id, details: `Restored ${entityType.toLowerCase()} from trash: "${name || id}"` });
+            markAsDirty();
         },
         hardDelete: (id: string, name?: string) => {
             setter(prev => prev.filter(item => item.id !== id));
             addActivityLog({ actionType: 'HARD_DELETE', entityType, entityId: id, details: `Permanently deleted ${entityType.toLowerCase()}: "${name || id}"` });
+            markAsDirty();
         },
     });
 
@@ -516,7 +532,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setSyncStatus('error');
             return false;
         } finally {
-            setTimeout(() => { isSyncingRef.current = false; }, 100);
+            isSyncingRef.current = false;
         }
     }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
@@ -564,7 +580,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setSyncStatus('error');
             return false;
         } finally {
-            setTimeout(() => { isSyncingRef.current = false; }, 100);
+            isSyncingRef.current = false;
         }
     }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
@@ -767,8 +783,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [storageProvider, directoryHandle, settings]);
     
     // --- APP LIFECYCLE & AUTO-SYNC ---
-
-    // FIX: Implement analytics tracking functions
     const trackBrandView = useCallback((brandId: string) => {
         setViewCounts(prev => {
             const newCounts = JSON.parse(JSON.stringify(prev));
@@ -781,7 +795,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             newCounts[kioskId].brands[brandId] = (newCounts[kioskId].brands[brandId] || 0) + 1;
             return newCounts;
         });
-    }, [kioskId]);
+        markAsDirty();
+    }, [kioskId, markAsDirty]);
 
     const trackProductView = useCallback((productId: string) => {
         setViewCounts(prev => {
@@ -795,7 +810,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             newCounts[kioskId].products[productId] = (newCounts[kioskId].products[productId] || 0) + 1;
             return newCounts;
         });
-    }, [kioskId]);
+        markAsDirty();
+    }, [kioskId, markAsDirty]);
 
     useEffect(() => {
         const handler = (e: BeforeInstallPromptEvent) => {
@@ -866,24 +882,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const debounceTimerRef = useRef<number | null>(null);
 
-    useEffect(() => {
-        if (!isDataLoaded || isSyncingRef.current) return;
-        setSyncStatus(prev => (prev === 'synced' || prev === 'idle') ? 'pending' : prev);
-    }, [isDataLoaded, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs]);
+    const performSync = useCallback(() => {
+        if (storageProvider === 'local') {
+            saveDatabaseToLocal();
+        } else if (storageProvider === 'customApi') {
+            pushToCloud();
+        }
+    }, [storageProvider, saveDatabaseToLocal, pushToCloud]);
 
     useEffect(() => {
-        if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') return;
+        if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') {
+            return;
+        }
 
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
         debounceTimerRef.current = window.setTimeout(() => {
-            console.log("Auto-sync triggered.");
-            if (storageProvider === 'local') saveDatabaseToLocal();
-            else if (storageProvider === 'customApi') pushToCloud();
+            console.log("Auto-sync triggered by debounce.");
+            performSync();
         }, 2000);
 
         return () => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); };
-    }, [syncStatus, settings.sync.autoSyncEnabled, storageProvider, isDataLoaded, saveDatabaseToLocal, pushToCloud]);
+    }, [syncStatus, settings.sync.autoSyncEnabled, storageProvider, isDataLoaded, performSync]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden' && syncStatus === 'pending' && settings.sync.autoSyncEnabled && storageProvider !== 'none') {
+                if (debounceTimerRef.current) {
+                    clearTimeout(debounceTimerRef.current);
+                }
+                console.log("Auto-sync triggered by page becoming hidden.");
+                performSync();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [syncStatus, settings.sync.autoSyncEnabled, storageProvider, performSync]);
 
     useEffect(() => {
         const root = document.documentElement;
@@ -947,6 +981,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
                 setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: newStatus} : q));
                 addActivityLog({ actionType: 'UPDATE', entityType: 'Quote', entityId: quoteId, details: `Set quote for ${clientName} to "${newStatus}"` });
+                markAsDirty();
             }
         },
         deleteQuote: (quoteId: string) => {
@@ -955,6 +990,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                  const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
                  setQuotes(prev => prev.filter(q => q.id !== quoteId));
                  addActivityLog({ actionType: 'HARD_DELETE', entityType: 'Quote', entityId: quoteId, details: `Deleted quote for "${clientName}"` });
+                 markAsDirty();
             }
         },
         updateSettings, restoreBackup,
