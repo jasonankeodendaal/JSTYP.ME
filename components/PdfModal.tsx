@@ -1,9 +1,7 @@
-
-
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, Squares2X2Icon, EnterFullScreenIcon, ExitFullScreenIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon } from './Icons.tsx';
-import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 import { usePanZoom } from './usePanZoom.tsx';
 
 interface PdfModalProps {

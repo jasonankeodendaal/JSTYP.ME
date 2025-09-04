@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import { CircleStackIcon, CubeIcon, UsersIcon, ClockIcon, SignalIcon, ChartBarIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
-import type { ActivityLog } from '../../types';
 
 interface AdminOverviewProps {
     setActiveSubTab: (tab: 'brands' | 'analytics' | 'activityLog' | 'remoteControl' | 'clients' | 'users') => void;

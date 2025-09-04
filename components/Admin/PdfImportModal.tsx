@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 
 interface ConvertedPage {
     pageNumber: number;

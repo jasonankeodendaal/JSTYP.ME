@@ -26,7 +26,7 @@ const ClientEditModal: React.FC<ClientEditModalProps> = ({ client, onClose }) =>
         }
     );
     const [showMoreDetails, setShowMoreDetails] = useState(
-        isEditing && (!!client.vatNumber || !!client.address)
+        isEditing && (!!client?.vatNumber || !!client?.address)
     );
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

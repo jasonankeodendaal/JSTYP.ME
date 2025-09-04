@@ -1,5 +1,6 @@
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+
+import { useState, useRef, useCallback } from 'react';
 
 const MIN_SCALE = 0.8;
 const MAX_SCALE = 8;

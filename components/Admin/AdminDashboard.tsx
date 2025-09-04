@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate, Link } from 'react-router-dom';
-import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
+import type { Brand, Catalogue, Pamphlet, TvContent } from '../../types.ts';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
 // FIX: Import missing ComputerDesktopIcon.
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ClockIcon, ComputerDesktopIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -145,7 +145,7 @@ const AdminDashboard: React.FC = () => {
         );
     };
 
-    const handleDeleteQuote = (quote: Quote) => {
+    const handleDeleteQuote = (quote: any) => {
         const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown Client';
         showConfirmation(
             `Are you sure you want to delete the quote for "${clientName}"? This action cannot be undone.`,
@@ -216,7 +216,7 @@ const AdminDashboard: React.FC = () => {
 
         switch (activeSubTab) {
             case 'overview':
-                return <AdminOverview setActiveSubTab={setActiveSubTab} />;
+                return <AdminOverview setActiveSubTab={setActiveSubTab as any} />;
             case 'remoteControl':
                 return <AdminRemoteControl />;
             case 'brands':

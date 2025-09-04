@@ -21,6 +21,7 @@
     "swiper": "^11.2.10"
   },
   "devDependencies": {
+    "@capacitor/android": "^6.0.0",
     "@capacitor/cli": "^6.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

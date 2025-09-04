@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { SaveIcon, UploadIcon, LinkIcon, ServerStackIcon, EyeIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon } from '../Icons.tsx';
+import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
 import LocalMedia from '../LocalMedia.tsx';
 import { Link } from 'react-router-dom';
@@ -191,7 +191,7 @@ const AdminSettings: React.FC = () => {
                         <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                         <TypographySection formData={formData} onNestedChange={handleNestedChange} />
                         <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
-                        <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} />
 
                         <div className="pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-end">
                             <button type="submit" className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`} disabled={saving || saved}>
@@ -461,7 +461,7 @@ const NavigationSection: React.FC<{navLinks: NavLink[], onNavLinksChange: (links
     );
 };
 
-const KioskBehaviorSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => (
+const KioskBehaviorSection: React.FC<{formData: Settings, onNestedChange: any}> = ({formData, onNestedChange}) => (
     <FormSection title="Kiosk Behavior" description="Settings for unattended public use, including screensaver and audio.">
         <div className="grid grid-cols-2 gap-6"><div className="col-span-2"><label className={labelStyle}>Idle Redirect Timeout (seconds)</label><input type="number" value={formData.kiosk.idleRedirectTimeout} onChange={e => onNestedChange('kiosk.idleRedirectTimeout', parseInt(e.target.value, 10))} className={inputStyle} /><p className="mt-1 text-xs text-gray-500">Redirects to home page after inactivity. Set to 0 to disable.</p></div><div><label className={labelStyle}>Screensaver Delay (seconds)</label><input type="number" value={formData.screensaverDelay} onChange={e => onNestedChange('screensaverDelay', parseInt(e.target.value, 10))} className={inputStyle} /></div><div><label className={labelStyle}>Screensaver Image Duration (seconds)</label><input type="number" value={formData.screensaverImageDuration} onChange={e => onNestedChange('screensaverImageDuration', parseInt(e.target.value, 10))} className={inputStyle} /></div></div>
     </FormSection>
