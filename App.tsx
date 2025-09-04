@@ -9,7 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 // New imports for screensaver and global state
 import { AppProvider, useAppContext } from './components/context/AppContext.tsx';
 import Screensaver from './components/Screensaver.tsx';
-import ImageBookletModal from './components/ImageBookletModal.tsx'; // Import new booklet modal
+// FIX: Changed import to be a named import as ImageBookletModal is not a default export.
+import { ImageBookletModal } from './components/ImageBookletModal.tsx'; // Import new booklet modal
 import PdfModal from './components/PdfModal.tsx'; // Import new PDF modal
 import ConfirmationModal from './components/ConfirmationModal.tsx';
 import TvContentPlayer from './components/TvContentPlayer.tsx';

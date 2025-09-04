@@ -259,6 +259,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [storageProvider, setStorageProvider] = useState<StorageProvider>('none');
     const [directoryHandle, setDirectoryHandle] = useState<FileSystemDirectoryHandle | null>(null);
     const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+    const isSyncingRef = useRef(false);
 
     // PWA Install Prompt state
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -498,24 +499,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const saveDatabaseToLocal = useCallback(async (): Promise<boolean> => {
         if (!directoryHandle) return false;
+        isSyncingRef.current = true;
         try {
             setSyncStatus('syncing');
             const fileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
             const writable = await fileHandle.createWritable();
-            // FIX: Add activityLogs to backup data.
             const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             await writable.write(JSON.stringify(backupData, null, 2));
             await writable.close();
-            updateSettings({ lastUpdated: Date.now() });
-            setSyncStatus('synced');
+            setSettings(prev => ({ ...prev, lastUpdated: Date.now() }));
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Synced data with Local Folder.` });
+            setSyncStatus('synced');
             return true;
         } catch (error) {
             console.error("Failed to save database to local folder:", error);
             setSyncStatus('error');
             return false;
+        } finally {
+            setTimeout(() => { isSyncingRef.current = false; }, 100);
         }
-    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, updateSettings, addActivityLog]);
+    }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
     const loadDatabaseFromLocal = useCallback(async (): Promise<boolean> => {
         if (!directoryHandle) return false;
@@ -539,9 +542,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const pushToCloud = useCallback(async (): Promise<boolean> => {
         const url = settings.customApiUrl;
         if (storageProvider !== 'customApi' || !url) return false;
+        isSyncingRef.current = true;
         try {
             setSyncStatus('syncing');
-            // FIX: Add activityLogs to backup data.
             const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             const response = await fetch(url, {
                 method: 'POST',
@@ -552,16 +555,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 body: JSON.stringify(backupData),
             });
             if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-            updateSettings({ lastUpdated: Date.now() });
-            setSyncStatus('synced');
+            setSettings(prev => ({ ...prev, lastUpdated: Date.now() }));
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Pushed data to Custom API.` });
+            setSyncStatus('synced');
             return true;
         } catch (error) {
             console.error("Failed to push to cloud:", error);
             setSyncStatus('error');
             return false;
+        } finally {
+            setTimeout(() => { isSyncingRef.current = false; }, 100);
         }
-    }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, updateSettings, addActivityLog]);
+    }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
     const pullFromCloud = useCallback(async (): Promise<boolean> => {
         const isCustomApi = storageProvider === 'customApi' && settings.customApiUrl;
@@ -862,9 +867,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const debounceTimerRef = useRef<number | null>(null);
 
     useEffect(() => {
-        if (!isDataLoaded) return;
+        if (!isDataLoaded || isSyncingRef.current) return;
         setSyncStatus(prev => (prev === 'synced' || prev === 'idle') ? 'pending' : prev);
-        // FIX: Add activityLogs to dependency array to track changes.
     }, [isDataLoaded, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs]);
 
     useEffect(() => {
