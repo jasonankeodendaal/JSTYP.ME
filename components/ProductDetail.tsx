@@ -1,7 +1,8 @@
 
+
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import { ChevronLeftIcon, ExternalLinkIcon, CheckIcon, ShieldCheckIcon, ChevronDownIcon, PhotoIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
@@ -13,25 +14,18 @@ const ProductDetail: React.FC = () => {
   const { products, brands, localVolume, openDocument, trackProductView } = useAppContext();
   const [enlargedImageState, setEnlargedImageState] = useState<{ imageUrls: string[], initialIndex: number } | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const product = useMemo(() => products.find(p => p.id === productId), [productId, products]);
   const brand = useMemo(() => brands.find(b => b.id === product?.brandId), [product, brands]);
-  const [backLabel, setBackLabel] = useState('Back');
-
-  useEffect(() => {
-    if (window.history.state?.idx > 0) {
-      setBackLabel('Back');
-    } else if (product && brand) {
-      setBackLabel(`Back to ${brand.name}`);
-    } else {
-      setBackLabel('Back to Home');
-    }
-  }, [product, brand]);
+  
+  const canGoBack = location.key !== 'default';
+  const backLabel = canGoBack ? 'Back' : (brand ? `Back to ${brand.name}` : 'Back to Home');
 
   const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
+    if (canGoBack) {
         navigate(-1);
     } else {
         // Fallback to the product's brand page if available, otherwise to home.

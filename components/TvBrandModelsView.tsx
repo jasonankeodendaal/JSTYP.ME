@@ -1,6 +1,7 @@
 
+
 import React, { useMemo, useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon, TvIcon } from './Icons';
@@ -10,20 +11,22 @@ const TvBrandModelsView: React.FC = () => {
     const { brandId } = useParams<{ brandId: string }>();
     const { brands, tvContent, playTvContent } = useAppContext();
     const navigate = useNavigate();
+    const location = useLocation();
     const [backLabel, setBackLabel] = useState('Back');
+    const canGoBack = location.key !== 'default';
 
     const brand = useMemo(() => brands.find(b => b.id === brandId), [brandId, brands]);
 
     useEffect(() => {
-        if (window.history.state?.idx > 0) {
+        if (canGoBack) {
             setBackLabel('Back');
         } else {
             setBackLabel('Back to TV Brands');
         }
-    }, []);
+    }, [canGoBack]);
 
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/tvs', { replace: true }); // Fallback to TV brands overview

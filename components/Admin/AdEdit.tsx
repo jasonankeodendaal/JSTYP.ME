@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { ScreensaverAd, AdLink } from '../../types.ts';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -21,6 +22,7 @@ const getInitialFormData = (): ScreensaverAd => ({
 const AdEdit: React.FC = () => {
     const { adId } = useParams<{ adId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { screensaverAds, addAd, updateAd, brands, products, catalogues, pamphlets, saveFileToStorage, loggedInUser } = useAppContext();
     const isEditing = Boolean(adId);
 
@@ -29,20 +31,14 @@ const AdEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [linkType, setLinkType] = useState('none');
     const [linkTarget, setLinkTarget] = useState('');
-    const [backLabel, setBackLabel] = useState('Back');
+    
+    const canGoBack = location.key !== 'default';
+    const backLabel = canGoBack ? 'Back' : 'Back to Dashboard';
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageScreensaver;
 
-    useEffect(() => {
-        if (window.history.state?.idx > 0) {
-            setBackLabel('Back');
-        } else {
-            setBackLabel('Back to Dashboard');
-        }
-    }, []);
-
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/admin', { replace: true }); // Fallback to admin dashboard

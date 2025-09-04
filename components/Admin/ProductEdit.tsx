@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Product, ProductDocument } from '../../types';
@@ -32,6 +32,7 @@ const getInitialFormData = (brandId: string): Product => ({
 const ProductEdit: React.FC = () => {
     const { productId, brandId } = useParams<{ productId: string, brandId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { products, brands, categories, addProduct, updateProduct, saveFileToStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(productId);
@@ -44,6 +45,17 @@ const ProductEdit: React.FC = () => {
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
     const brand = brands.find(b => b.id === formData?.brandId);
+    const canGoBack = location.key !== 'default';
+
+    const handleBack = () => {
+        if (canGoBack) {
+            navigate(-1);
+        } else if (formData?.brandId) {
+            navigate(`/admin/brand/${formData.brandId}`);
+        } else {
+            navigate('/admin');
+        }
+    };
 
     const markDirty = () => !isDirty && setIsDirty(true);
 
@@ -338,7 +350,7 @@ const ProductEdit: React.FC = () => {
                 <form onSubmit={handleSave} className="space-y-8">
                     {/* Header */}
                     <div>
-                        <button type="button" onClick={() => formData?.brandId ? navigate(`/admin/brand/${formData.brandId}`) : navigate('/admin')} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                             <ChevronLeftIcon className="h-5 w-5 mr-1" />
                             Back
                         </button>

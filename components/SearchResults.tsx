@@ -1,9 +1,10 @@
 
 
 
+
 import React, { useMemo, useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import { ChevronLeftIcon } from './Icons';
 // FIX: Correct import path for AppContext
@@ -14,18 +15,20 @@ const SearchResults: React.FC = () => {
     const { products } = useAppContext();
     const query = useMemo(() => searchParams.get('q') || '', [searchParams]);
     const navigate = useNavigate();
+    const location = useLocation();
     const [backLabel, setBackLabel] = useState('Back');
+    const canGoBack = location.key !== 'default';
 
     useEffect(() => {
-        if (window.history.state?.idx > 0) {
+        if (canGoBack) {
             setBackLabel('Back');
         } else {
             setBackLabel('Back to Home');
         }
-    }, []);
+    }, [canGoBack]);
 
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/', { replace: true }); // Fallback to home page

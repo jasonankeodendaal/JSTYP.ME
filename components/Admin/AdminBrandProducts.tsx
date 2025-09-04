@@ -1,8 +1,10 @@
+
+
 import React, { useMemo, useState, useCallback } from 'react';
+// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import type { Brand, Product } from '../../types';
 import { ChevronLeftIcon, PlusIcon, TrashIcon, PencilIcon, CubeIcon, EyeIcon, EyeOffIcon, ChevronDownIcon } from '../Icons';
-// FIX: Correct import path for AppContext
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
@@ -145,6 +147,11 @@ const AdminBrandProducts: React.FC = () => {
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
     
+    const handleBack = () => {
+        // A simplified back navigation that's more robust than relying on history length
+        navigate('/admin');
+    };
+    
     const pageContent = (
         <>
             <div className="text-center py-10">
@@ -227,9 +234,9 @@ const AdminBrandProducts: React.FC = () => {
                 <div className="space-y-8">
                     {/* Header */}
                     <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
-                        <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
+                        <button type="button" onClick={handleBack} className="inline-flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4">
                             <ChevronLeftIcon className="h-5 w-5 mr-1" />
-                            Back
+                            Back to Dashboard
                         </button>
                         <div className="md:flex md:items-center md:justify-between">
                             <div className="flex items-center gap-4">

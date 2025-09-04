@@ -1,7 +1,8 @@
 
+
 import React, { useMemo, useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon } from './Icons.tsx';
@@ -36,18 +37,13 @@ const CatalogueCard: React.FC<{ catalogue: Catalogue; onOpen: (catalogue: Catalo
 const CatalogueLibrary: React.FC = () => {
     const { catalogues, openDocument } = useAppContext();
     const navigate = useNavigate();
-    const [backLabel, setBackLabel] = useState('Back');
-
-    useEffect(() => {
-        if (window.history.state?.idx > 0) {
-            setBackLabel('Back');
-        } else {
-            setBackLabel('Back to Home');
-        }
-    }, []);
+    const location = useLocation();
+    
+    const canGoBack = location.key !== 'default';
+    const backLabel = canGoBack ? 'Back' : 'Back to Home';
 
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/', { replace: true }); // Fallback to home page

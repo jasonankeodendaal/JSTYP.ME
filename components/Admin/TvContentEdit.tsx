@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { TvContent } from '../../types';
-import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons';
+import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
@@ -19,27 +20,21 @@ const getInitialFormData = (): TvContent => ({
 const TvContentEdit: React.FC = () => {
     const { contentId } = useParams<{ contentId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { tvContent, addTvContent, updateTvContent, brands, saveFileToStorage, loggedInUser } = useAppContext();
     const isEditing = Boolean(contentId);
 
     const [formData, setFormData] = useState<TvContent>(getInitialFormData());
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [backLabel, setBackLabel] = useState('Back');
-
+    
+    const canGoBack = location.key !== 'default';
+    const backLabel = canGoBack ? 'Back' : 'Back to Dashboard';
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageTvContent;
     const availableBrands = brands.filter(b => !b.isDeleted);
 
-    useEffect(() => {
-        if (window.history.state?.idx > 0) {
-            setBackLabel('Back');
-        } else {
-            setBackLabel('Back to Dashboard');
-        }
-    }, []);
-
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/admin', { replace: true }); // Fallback to admin dashboard

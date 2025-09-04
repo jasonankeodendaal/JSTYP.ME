@@ -1,11 +1,12 @@
 
+
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Pamphlet } from '../../types';
-import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons';
+import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 
@@ -27,6 +28,7 @@ const getInitialFormData = (): Pamphlet => ({
 const PamphletEdit: React.FC = () => {
     const { pamphletId } = useParams<{ pamphletId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { pamphlets, addPamphlet, updatePamphlet, saveFileToStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(pamphletId);
@@ -35,20 +37,13 @@ const PamphletEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isConverting, setIsConverting] = useState(false);
     const [conversionProgress, setConversionProgress] = useState('');
-    const [backLabel, setBackLabel] = useState('Back');
-
+    
+    const canGoBack = location.key !== 'default';
+    const backLabel = canGoBack ? 'Back' : 'Back to Dashboard';
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManagePamphlets;
 
-    useEffect(() => {
-        if (window.history.state?.idx > 0) {
-            setBackLabel('Back');
-        } else {
-            setBackLabel('Back to Dashboard');
-        }
-    }, []);
-
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/admin', { replace: true }); // Fallback to admin dashboard

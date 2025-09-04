@@ -1,7 +1,8 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types.ts';
 import ProductCard from './ProductCard.tsx';
@@ -15,18 +16,13 @@ const BrandView: React.FC = () => {
   const { brands, products, categories, trackBrandView } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const [backLabel, setBackLabel] = useState('Back');
-
-  useEffect(() => {
-    if (window.history.state?.idx > 0) {
-      setBackLabel('Back');
-    } else {
-      setBackLabel('Back to Home');
-    }
-  }, []);
+  const location = useLocation();
+  
+  const canGoBack = location.key !== 'default';
+  const backLabel = canGoBack ? 'Back' : 'Back to Home';
 
   const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
+    if (canGoBack) {
         navigate(-1);
     } else {
         navigate('/', { replace: true }); // Fallback to home page

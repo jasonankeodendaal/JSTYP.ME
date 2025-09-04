@@ -1,7 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { Catalogue } from '../../types';
@@ -29,6 +30,7 @@ const getInitialFormData = (): Catalogue => ({
 const CatalogueEdit: React.FC = () => {
     const { catalogueId } = useParams<{ catalogueId: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { catalogues, brands, addCatalogue, updateCatalogue, saveFileToStorage, loggedInUser } = useAppContext();
 
     const isEditing = Boolean(catalogueId);
@@ -37,20 +39,13 @@ const CatalogueEdit: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isConverting, setIsConverting] = useState(false);
     const [conversionProgress, setConversionProgress] = useState('');
-    const [backLabel, setBackLabel] = useState('Back');
-
+    
+    const canGoBack = location.key !== 'default';
+    const backLabel = canGoBack ? 'Back' : 'Back to Dashboard';
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageCatalogues;
 
-    useEffect(() => {
-        if (window.history.state?.idx > 0) {
-            setBackLabel('Back');
-        } else {
-            setBackLabel('Back to Dashboard');
-        }
-    }, []);
-
     const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
+        if (canGoBack) {
             navigate(-1);
         } else {
             navigate('/admin', { replace: true }); // Fallback to admin dashboard
