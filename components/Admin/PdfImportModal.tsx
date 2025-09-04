@@ -1,11 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-
-// FIX: Use the legacy worker script to avoid module loading issues in sandboxed environments.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
 
 interface ConvertedPage {
     pageNumber: number;
@@ -19,6 +16,9 @@ interface PdfImportModalProps {
 }
 
 const MotionDiv = motion.div as any;
+
+// Set the worker source once for all PDF operations in this module.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete }) => {
     const { saveFileToStorage } = useAppContext();
@@ -58,9 +58,9 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         
         resetState();
         setFile(selectedFile);
+
         setIsProcessing(true);
         setProgress('Reading PDF...');
-
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
             const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -83,7 +83,6 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
                 setPages([...newPages]); // Update previews as they're generated
             }
             setProgress(`Found ${numPages} pages. Please select which pages to import.`);
-            
         } catch (err) {
             console.error(err);
             setError(err instanceof Error ? err.message : 'Could not process PDF.');

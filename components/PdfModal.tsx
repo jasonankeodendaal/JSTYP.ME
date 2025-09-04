@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
 import HTMLFlipBook from 'react-pageflip';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons.tsx';
-
-// FIX: Use the legacy worker script to avoid module loading issues in sandboxed environments.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+import * as pdfjsLib from 'https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.js';
 
 interface PdfModalProps {
     title: string;
     url: string;
     onClose: () => void;
 }
+
+// Set the worker source once for all PDF operations in this module.
+// The URL points to the CDN specified in the importmap.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const Page = React.forwardRef<HTMLDivElement, { children: React.ReactNode; number: number }>(({ children, number }, ref) => (
     <div className="flex items-center justify-center bg-white" ref={ref} data-density="hard">
@@ -32,6 +33,8 @@ const PdfModal: React.FC<PdfModalProps> = ({ title, url, onClose }) => {
 
     useEffect(() => {
         const renderPdfToImages = async () => {
+            setIsLoading(true);
+            setProgress('');
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
                 const pdf = await loadingTask.promise;
@@ -59,7 +62,10 @@ const PdfModal: React.FC<PdfModalProps> = ({ title, url, onClose }) => {
                 setIsLoading(false);
             }
         };
-        renderPdfToImages();
+
+        if (url) {
+            renderPdfToImages();
+        }
     }, [url]);
 
     const handleFlip = useCallback((e: any) => setCurrentPage(e.data), []);
