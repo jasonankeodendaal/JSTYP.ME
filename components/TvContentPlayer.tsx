@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // FIX: Correct import path for AppContext
@@ -54,22 +55,34 @@ const TvContentPlayer: React.FC<{ content: TvContent; onClose: () => void; }> = 
         videoNodeRef.current = node;
 
         if (videoNodeRef.current) {
-            const volume = typeof localVolume === 'number' && isFinite(localVolume) ? Math.max(0, Math.min(1, localVolume)) : 0.75;
-            videoNodeRef.current.volume = volume;
-            videoNodeRef.current.muted = volume === 0;
-            videoNodeRef.current.addEventListener('ended', goToNextItem);
-            videoNodeRef.current.addEventListener('error', goToNextItem);
-            videoNodeRef.current.play().catch(error => {
-                console.warn("Video autoplay failed, possibly due to browser policy:", error);
-                // Attempt to play muted if unmuted fails
-                if (videoNodeRef.current) {
-                    videoNodeRef.current.muted = true;
-                    videoNodeRef.current.play().catch(finalError => {
-                        console.error("Video could not be played even when muted. Skipping.", finalError);
-                        goToNextItem();
-                    });
+            const videoElement = videoNodeRef.current;
+            videoElement.addEventListener('ended', goToNextItem);
+            videoElement.addEventListener('error', goToNextItem);
+
+            const tryPlay = async () => {
+                try {
+                    const volume = typeof localVolume === 'number' && isFinite(localVolume) ? Math.max(0, Math.min(1, localVolume)) : 0.75;
+                    videoElement.volume = volume;
+                    videoElement.muted = volume === 0;
+                    await videoElement.play();
+                } catch (error) {
+                    if (error instanceof DOMException && error.name === 'AbortError') return;
+                    console.warn("Video autoplay failed, possibly due to browser policy:", error);
+                    
+                    if (videoElement) {
+                        videoElement.muted = true;
+                        try {
+                            await videoElement.play();
+                        } catch (finalError) {
+                            if (!(finalError instanceof DOMException && finalError.name === 'AbortError')) {
+                                console.error("Video could not be played even when muted. Skipping.", finalError);
+                                goToNextItem();
+                            }
+                        }
+                    }
                 }
-            });
+            };
+            tryPlay();
         }
     }, [goToNextItem, localVolume]);
 

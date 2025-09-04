@@ -235,13 +235,16 @@ const Screensaver: React.FC = () => {
                     videoElement.muted = volume === 0;
                     await videoElement.play();
                 } catch (error) {
+                    if (error instanceof DOMException && error.name === 'AbortError') return;
                     console.warn("Could not play video with sound, retrying muted.", error);
                     videoElement.muted = true;
                     try {
                         await videoElement.play();
                     } catch (finalError) {
-                        console.error("Video could not be played. Skipping.", finalError);
-                        goToNextItem();
+                        if (!(finalError instanceof DOMException && finalError.name === 'AbortError')) {
+                            console.error("Video could not be played. Skipping.", finalError);
+                            goToNextItem();
+                        }
                     }
                 }
             };

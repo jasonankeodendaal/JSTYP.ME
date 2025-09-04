@@ -314,79 +314,117 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             kioskId: kioskId,
             ...logData,
         };
-        setActivityLogs(prev => [newLog, ...prev]);
+        setActivityLogs(prev => {
+            const newState = [newLog, ...prev];
+            idbSet('activityLogs', newState);
+            return newState;
+        });
         markAsDirty();
     }, [loggedInUser, kioskId, markAsDirty]);
 
     const updateSettings = useCallback((newSettings: Partial<Settings>) => {
-        setSettings(prev => deepMerge(prev, newSettings));
+        const mergedSettings = deepMerge(settings, newSettings);
+        setSettings(mergedSettings);
+        idbSet('settings', mergedSettings);
         addActivityLog({ actionType: 'UPDATE', entityType: 'Settings', details: 'Updated system settings.' });
         markAsDirty();
-    }, [addActivityLog, markAsDirty]);
+    }, [settings, addActivityLog, markAsDirty]);
 
     const restoreBackup = useCallback((data: Partial<BackupData>) => {
-        if (data.settings) setSettings(deepMerge(initialSettings, data.settings));
-        if (data.brands) setBrands(data.brands);
-        if (data.products) setProducts(data.products);
-        if (data.catalogues) setCatalogues(data.catalogues);
-        if (data.pamphlets) setPamphlets(data.pamphlets);
-        if (data.screensaverAds) setScreensaverAds(data.screensaverAds);
-        if (data.adminUsers) setAdminUsers(data.adminUsers);
-        if (data.tvContent) setTvContent(data.tvContent);
-        if (data.categories) setCategories(data.categories);
-        if (data.clients) setClients(data.clients);
-        if (data.quotes) setQuotes(data.quotes);
-        if (data.viewCounts) setViewCounts(data.viewCounts);
-        // FIX: Restore activity logs from backup.
-        if (data.activityLogs) setActivityLogs(data.activityLogs);
+        const dataMap = {
+            settings: (val: Settings) => {
+                const merged = deepMerge(initialSettings, val);
+                setSettings(merged); idbSet('settings', merged);
+            },
+            brands: (val: Brand[]) => { setBrands(val); idbSet('brands', val); },
+            products: (val: Product[]) => { setProducts(val); idbSet('products', val); },
+            catalogues: (val: Catalogue[]) => { setCatalogues(val); idbSet('catalogues', val); },
+            pamphlets: (val: Pamphlet[]) => { setPamphlets(val); idbSet('pamphlets', val); },
+            screensaverAds: (val: ScreensaverAd[]) => { setScreensaverAds(val); idbSet('screensaverAds', val); },
+            adminUsers: (val: AdminUser[]) => { setAdminUsers(val); idbSet('adminUsers', val); },
+            tvContent: (val: TvContent[]) => { setTvContent(val); idbSet('tvContent', val); },
+            categories: (val: Category[]) => { setCategories(val); idbSet('categories', val); },
+            clients: (val: Client[]) => { setClients(val); idbSet('clients', val); },
+            quotes: (val: Quote[]) => { setQuotes(val); idbSet('quotes', val); },
+            viewCounts: (val: ViewCounts) => { setViewCounts(val); idbSet('viewCounts', val); },
+            activityLogs: (val: ActivityLog[]) => { setActivityLogs(val); idbSet('activityLogs', val); },
+        };
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (key in dataMap && value !== undefined) {
+                (dataMap[key as keyof BackupData] as any)(value);
+            }
+        });
+
         addActivityLog({ actionType: 'RESTORE', entityType: 'System', details: 'Restored data from a backup file.' });
         markAsDirty();
     }, [addActivityLog, markAsDirty]);
     
     // --- GENERIC CRUD ---
-    const createCrudOperations = <T extends { id: string, name?: string, title?: string, companyName?: string, modelName?: string }>(
+    const createCrudOperations = <T extends { id: string, name?: string, title?: string, companyName?: string, modelName?: string, isDeleted?: boolean }>(
         setter: React.Dispatch<React.SetStateAction<T[]>>,
-        entityType: ActivityLog['entityType']
+        entityType: ActivityLog['entityType'],
+        idbKey: string
     ) => ({
         add: (item: T) => {
-            setter(prev => [...prev, item]);
+            setter(prev => {
+                const newState = [...prev, item];
+                idbSet(idbKey, newState);
+                return newState;
+            });
             const name = item.name || item.title || item.companyName || item.modelName || 'N/A';
             addActivityLog({ actionType: 'CREATE', entityType, entityId: item.id, details: `Created ${entityType.toLowerCase()}: "${name}"` });
             markAsDirty();
         },
         update: (updatedItem: T) => {
-            setter(prev => prev.map(item => item.id === updatedItem.id ? updatedItem : item));
+            setter(prev => {
+                const newState = prev.map(item => item.id === updatedItem.id ? updatedItem : item);
+                idbSet(idbKey, newState);
+                return newState;
+            });
             const name = updatedItem.name || updatedItem.title || updatedItem.companyName || updatedItem.modelName || 'N/A';
             addActivityLog({ actionType: 'UPDATE', entityType, entityId: updatedItem.id, details: `Updated ${entityType.toLowerCase()}: "${name}"` });
             markAsDirty();
         },
         softDelete: (id: string, name?: string) => {
-            setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: true } : item));
+            setter(prev => {
+                const newState = prev.map(item => item.id === id ? { ...item, isDeleted: true } : item);
+                idbSet(idbKey, newState);
+                return newState;
+            });
             addActivityLog({ actionType: 'DELETE', entityType, entityId: id, details: `Moved ${entityType.toLowerCase()} to trash: "${name || id}"` });
             markAsDirty();
         },
         restore: (id: string, name?: string) => {
-            setter(prev => prev.map(item => item.id === id ? { ...item, isDeleted: false } : item));
+            setter(prev => {
+                const newState = prev.map(item => item.id === id ? { ...item, isDeleted: false } : item);
+                idbSet(idbKey, newState);
+                return newState;
+            });
             addActivityLog({ actionType: 'RESTORE', entityType, entityId: id, details: `Restored ${entityType.toLowerCase()} from trash: "${name || id}"` });
             markAsDirty();
         },
         hardDelete: (id: string, name?: string) => {
-            setter(prev => prev.filter(item => item.id !== id));
+            setter(prev => {
+                const newState = prev.filter(item => item.id !== id);
+                idbSet(idbKey, newState);
+                return newState;
+            });
             addActivityLog({ actionType: 'HARD_DELETE', entityType, entityId: id, details: `Permanently deleted ${entityType.toLowerCase()}: "${name || id}"` });
             markAsDirty();
         },
     });
 
-    const brandOps = createCrudOperations(setBrands, 'Brand');
-    const productOps = createCrudOperations(setProducts, 'Product');
-    const catalogueOps = createCrudOperations(setCatalogues, 'Catalogue');
-    const pamphletOps = createCrudOperations(setPamphlets, 'Pamphlet');
-    const adOps = createCrudOperations(setScreensaverAds, 'ScreensaverAd');
-    const userOps = createCrudOperations(setAdminUsers, 'AdminUser');
-    const tvOps = createCrudOperations(setTvContent, 'TvContent');
-    const categoryOps = createCrudOperations(setCategories, 'Category');
-    const clientOps = createCrudOperations(setClients, 'Client');
-    const quoteOps = createCrudOperations(setQuotes, 'Quote');
+    const brandOps = createCrudOperations(setBrands, 'Brand', 'brands');
+    const productOps = createCrudOperations(setProducts, 'Product', 'products');
+    const catalogueOps = createCrudOperations(setCatalogues, 'Catalogue', 'catalogues');
+    const pamphletOps = createCrudOperations(setPamphlets, 'Pamphlet', 'pamphlets');
+    const adOps = createCrudOperations(setScreensaverAds, 'ScreensaverAd', 'screensaverAds');
+    const userOps = createCrudOperations(setAdminUsers, 'AdminUser', 'adminUsers');
+    const tvOps = createCrudOperations(setTvContent, 'TvContent', 'tvContent');
+    const categoryOps = createCrudOperations(setCategories, 'Category', 'categories');
+    const clientOps = createCrudOperations(setClients, 'Client', 'clients');
+    const quoteOps = createCrudOperations(setQuotes, 'Quote', 'quotes');
     
     // --- AUTH ---
     const logout = useCallback(() => {
@@ -520,10 +558,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setSyncStatus('syncing');
             const fileHandle = await directoryHandle.getFileHandle('database.json', { create: true });
             const writable = await fileHandle.createWritable();
-            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
+            const updatedSettings = { ...settings, lastUpdated: Date.now() };
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             await writable.write(JSON.stringify(backupData, null, 2));
             await writable.close();
-            setSettings(prev => ({ ...prev, lastUpdated: Date.now() }));
+            setSettings(updatedSettings);
+            idbSet('settings', updatedSettings);
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Synced data with Local Folder.` });
             setSyncStatus('synced');
             return true;
@@ -561,7 +601,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isSyncingRef.current = true;
         try {
             setSyncStatus('syncing');
-            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
+            const updatedSettings = { ...settings, lastUpdated: Date.now() };
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -571,7 +612,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 body: JSON.stringify(backupData),
             });
             if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-            setSettings(prev => ({ ...prev, lastUpdated: Date.now() }));
+            setSettings(updatedSettings);
+            idbSet('settings', updatedSettings);
             addActivityLog({ actionType: 'SYNC', entityType: 'System', details: `Pushed data to Custom API.` });
             setSyncStatus('synced');
             return true;
@@ -793,6 +835,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 newCounts[kioskId].brands = {};
             }
             newCounts[kioskId].brands[brandId] = (newCounts[kioskId].brands[brandId] || 0) + 1;
+            idbSet('viewCounts', newCounts);
             return newCounts;
         });
         markAsDirty();
@@ -808,6 +851,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 newCounts[kioskId].products = {};
             }
             newCounts[kioskId].products[productId] = (newCounts[kioskId].products[productId] || 0) + 1;
+            idbSet('viewCounts', newCounts);
             return newCounts;
         });
         markAsDirty();
@@ -977,9 +1021,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleQuoteStatus: (quoteId: string) => {
             const quote = quotes.find(q=>q.id === quoteId);
             if (quote) {
-                const newStatus = quote.status === 'pending' ? 'quoted' : 'pending';
+                // FIX: Explicitly type `newStatus` to prevent TypeScript from widening it to `string` upon inference in the spread operator below.
+                const newStatus: 'pending' | 'quoted' = quote.status === 'pending' ? 'quoted' : 'pending';
                 const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
-                setQuotes(prev => prev.map(q => q.id === quoteId ? {...q, status: newStatus} : q));
+                setQuotes(prev => {
+                    const newState = prev.map(q => q.id === quoteId ? {...q, status: newStatus} : q);
+                    idbSet('quotes', newState);
+                    return newState;
+                });
                 addActivityLog({ actionType: 'UPDATE', entityType: 'Quote', entityId: quoteId, details: `Set quote for ${clientName} to "${newStatus}"` });
                 markAsDirty();
             }
@@ -988,7 +1037,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const quote = quotes.find(q=>q.id === quoteId);
             if(quote) {
                  const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
-                 setQuotes(prev => prev.filter(q => q.id !== quoteId));
+                 setQuotes(prev => {
+                     const newState = prev.filter(q => q.id !== quoteId);
+                     idbSet('quotes', newState);
+                     return newState;
+                 });
                  addActivityLog({ actionType: 'HARD_DELETE', entityType: 'Quote', entityId: quoteId, details: `Deleted quote for "${clientName}"` });
                  markAsDirty();
             }
