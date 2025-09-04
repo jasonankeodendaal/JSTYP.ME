@@ -1,13 +1,7 @@
-
-
-
-
 import React, { useMemo, useState, useEffect } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-import ProductCard from './ProductCard';
-import { ChevronLeftIcon } from './Icons';
-// FIX: Correct import path for AppContext
+import ProductCard from './ProductCard.tsx';
+import { ChevronLeftIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 
 const SearchResults: React.FC = () => {

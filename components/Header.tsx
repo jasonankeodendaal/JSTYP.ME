@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate } from 'react-router';
 import { Link, NavLink } from 'react-router-dom';
 import { SearchIcon, VolumeUpIcon, VolumeOffIcon, Bars3Icon, XIcon, EnterFullScreenIcon, ExitFullScreenIcon, VolumeLowIcon, SunIcon, MoonIcon } from './Icons.tsx';
@@ -82,7 +81,6 @@ const Header: React.FC = () => {
   const headerStyle: React.CSSProperties = {
     backgroundColor: headerSettings?.effect === 'glassmorphism' ? 'transparent' : headerSettings?.backgroundColor,
     color: theme === 'light' ? 'var(--main-text)' : headerSettings?.textColor,
-    // FIX: Typography is now managed globally. Use settings.typography.headings for the header.
     fontFamily: settings.typography?.headings?.fontFamily ?? 'inherit',
     fontWeight: settings.typography?.headings?.fontWeight ?? 'inherit',
     fontStyle: settings.typography?.headings?.fontStyle ?? 'inherit',

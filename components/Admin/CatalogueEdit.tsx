@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import type { Catalogue } from '../../types';
@@ -57,7 +56,6 @@ const CatalogueEdit: React.FC = () => {
         }
     }, [catalogueId, catalogues, isEditing]);
 
-    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: name === 'year' ? parseInt(value) : value }));

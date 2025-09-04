@@ -1,7 +1,6 @@
 /// <reference path="./swiper.d.ts" />
 
 import React, { useEffect, useRef, useCallback } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { Routes, Route, useLocation, useNavigate } from 'react-router';
 import { HashRouter } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
@@ -29,7 +28,6 @@ import AdminLogin from './components/Admin/Login.tsx';
 import AdminDashboard from './components/Admin/AdminDashboard.tsx';
 import ProtectedRoute from './components/Admin/ProtectedRoute.tsx';
 import ProductEdit from './components/Admin/ProductEdit.tsx';
-// FIX: Corrected the import path for AdminBrandProducts to point to the correct file.
 import AdminBrandProducts from './components/Admin/AdminBrandProducts.tsx';
 import CatalogueEdit from './components/Admin/CatalogueEdit.tsx';
 import PamphletEdit from './components/Admin/PamphletEdit.tsx';
@@ -130,7 +128,6 @@ const AppContent: React.FC = () => {
   useIdleRedirect();
   useScreensaverManager();
 
-  // ADDED: Effect to disable context menu based on settings.
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
         if (settings.kiosk.disableContextMenu) {

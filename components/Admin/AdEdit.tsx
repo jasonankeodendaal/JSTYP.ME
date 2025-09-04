@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { ScreensaverAd, AdLink } from '../../types.ts';
@@ -72,7 +70,6 @@ const AdEdit: React.FC = () => {
         }
     }, [adId, isEditing, screensaverAds, navigate]);
 
-    // FIX: Hoisted event handler functions above the JSX where they are used to resolve "used before its declaration" errors.
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };

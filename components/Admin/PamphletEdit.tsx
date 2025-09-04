@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
 import type { Pamphlet } from '../../types';
