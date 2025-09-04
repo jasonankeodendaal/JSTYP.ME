@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 import HTMLFlipBook from 'react-pageflip';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon } from './Icons';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
+// FIX: Use the legacy worker script to avoid module loading issues in sandboxed environments.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.js`;
 
 interface PdfModalProps {
     title: string;

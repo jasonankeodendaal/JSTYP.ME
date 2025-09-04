@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
-import * as pdfjsLib from 'pdfjs-dist';
 import type { Pamphlet } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
+import PdfImportModal from './PdfImportModal.tsx';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -32,8 +30,7 @@ const PamphletEdit: React.FC = () => {
     const [formData, setFormData] = useState<Pamphlet>(getInitialFormData());
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
-    const [isConverting, setIsConverting] = useState(false);
-    const [conversionProgress, setConversionProgress] = useState('');
+    const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     
     const canGoBack = location.key !== 'default';
     const backLabel = canGoBack ? 'Back' : 'Back to Dashboard';
@@ -86,61 +83,12 @@ const PamphletEdit: React.FC = () => {
             }
         }
     };
-
-    const handlePdfUploadAndConvert = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file || file.type !== 'application/pdf') return;
-
-        setIsConverting(true);
-        setConversionProgress('Starting conversion...');
-
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const numPages = pdf.numPages;
-            const newImageUrls: string[] = [];
-
-            for (let i = 1; i <= numPages; i++) {
-                setConversionProgress(`Processing page ${i} of ${numPages}...`);
-                const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.0 });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d', { alpha: false });
-                if (!context) continue;
-
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                await page.render({ canvasContext: context, viewport: viewport, background: 'rgba(255,255,255,1)' } as any).promise;
-                
-                const dataUrl = canvas.toDataURL('image/png');
-                const blob = await (await fetch(dataUrl)).blob();
-                const imageFile = new File([blob], `page_${i}.png`, { type: 'image/png' });
-
-                const savedPath = await saveFileToStorage(imageFile);
-                newImageUrls.push(savedPath);
-            }
-
-            setFormData(prev => {
-                const newForm = { ...prev };
-                if (newForm.type === 'image') {
-                    newForm.imageUrls = [...newForm.imageUrls, ...newImageUrls];
-                    if (!newForm.imageUrl && newImageUrls.length > 0) {
-                        newForm.imageUrl = newImageUrls[0]; // Set cover image
-                    }
-                }
-                return newForm;
-            });
-
-            setConversionProgress(`Successfully converted and added ${numPages} pages.`);
-        } catch (err) {
-            console.error(err);
-            setConversionProgress(`Error: ${err instanceof Error ? err.message : 'Failed to convert PDF'}`);
-        } finally {
-            setIsConverting(false);
-            if (e.target) e.target.value = ''; // Reset file input
-            setTimeout(() => setConversionProgress(''), 5000);
-        }
+    
+    const handlePdfImportComplete = (imagePaths: string[]) => {
+        setFormData(prev => {
+            if (prev.type !== 'image') return prev;
+            return { ...prev, imageUrls: [...prev.imageUrls, ...imagePaths] };
+        });
     };
 
     const removeDocumentImage = (index: number) => {
@@ -184,6 +132,8 @@ const PamphletEdit: React.FC = () => {
                 <Link to="/admin" className="text-blue-500 dark:text-blue-400 hover:underline mt-4 inline-block">Go back to dashboard</Link>
             </div>
         ) : (
+            <>
+            <PdfImportModal isOpen={isPdfModalOpen} onClose={() => setIsPdfModalOpen(false)} onComplete={handlePdfImportComplete} />
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>
@@ -263,19 +213,15 @@ const PamphletEdit: React.FC = () => {
                                             ))}
                                         </div>
                                         <div className="p-3 bg-gray-50 dark:bg-gray-900/30 rounded-lg border dark:border-gray-600 space-y-2">
-                                            <label htmlFor="pdf-upload-convert" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
-                                                <DocumentArrowRightIcon className="h-4 w-4" />
-                                                <span>Upload PDF & Convert</span>
-                                            </label>
-                                            <input id="pdf-upload-convert" type="file" className="sr-only" onChange={handlePdfUploadAndConvert} accept="application/pdf" disabled={isConverting} />
-                                            
                                             <label htmlFor="doc-image-upload" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
                                                 <UploadIcon className="h-4 w-4"/>
-                                                <span>Add Image(s) Manually</span>
+                                                <span>Add Image(s)</span>
                                             </label>
                                             <input id="doc-image-upload" type="file" multiple onChange={handleDocumentImageUpload} className="sr-only" accept="image/*" />
-
-                                            {conversionProgress && <p className="text-xs text-center pt-1 text-gray-500 dark:text-gray-400">{conversionProgress}</p>}
+                                            <button type="button" onClick={() => setIsPdfModalOpen(true)} className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
+                                                <DocumentArrowRightIcon className="h-4 w-4" />
+                                                Import from PDF
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -284,6 +230,7 @@ const PamphletEdit: React.FC = () => {
                     </div>
                 </div>
             </form>
+            </>
         )
     );
 

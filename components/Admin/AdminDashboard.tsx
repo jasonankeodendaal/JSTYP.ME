@@ -7,8 +7,7 @@ import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
 // FIX: Import missing ComputerDesktopIcon.
-// ADDED: Import DocumentArrowRightIcon for the new PDF Converter tab.
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ClockIcon, ComputerDesktopIcon, DocumentArrowRightIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ClockIcon, ComputerDesktopIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -20,11 +19,9 @@ import AdminClientManagement from './AdminClientManagement.tsx';
 import AdminActivityLog from './AdminActivityLog.tsx';
 import AdminOverview from './AdminOverview.tsx';
 import AdminRemoteControl from './AdminRemoteControl.tsx';
-import AdminPdfConverter from './AdminPdfConverter.tsx';
 
 type FooterTab = 'content' | 'system' | 'admin';
-// ADDED: 'pdfConverter' sub-tab to make the tool accessible.
-type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'pdfConverter';
+type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog';
 
 // Keep old type name `Tab` for minimal changes inside the render function
 type Tab = SubTab;
@@ -463,8 +460,6 @@ const AdminDashboard: React.FC = () => {
                 return <AdminAnalytics />;
             case 'activityLog':
                 return <AdminActivityLog />;
-            case 'pdfConverter':
-                return <AdminPdfConverter />;
             default: return null;
         }
     }
@@ -487,7 +482,6 @@ const AdminDashboard: React.FC = () => {
             { id: 'storage' as SubTab, label: 'Storage', icon: <ServerStackIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'backup' as SubTab, label: backupTabLabel, icon: <RestoreIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'settings' as SubTab, label: 'Appearance & Settings', icon: <PencilIcon className="h-4 w-4"/>, perm: canManageSettings },
-            { id: 'pdfConverter' as SubTab, label: 'PDF Converter', icon: <DocumentArrowRightIcon className="h-4 w-4"/>, perm: canManageSystem },
         ];
 
         const adminTabs = [

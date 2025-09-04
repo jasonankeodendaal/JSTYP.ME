@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
 import { Link } from 'react-router-dom';
-import * as pdfjsLib from 'pdfjs-dist';
 import type { Product, ProductDocument } from '../../types';
 import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon, SparklesIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia';
 import DescriptionAssistantModal from './AiDescriptionModal.tsx';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@4.4.178/build/pdf.worker.min.mjs`;
+import PdfImportModal from './PdfImportModal.tsx';
 
 const inputStyle = "block w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 
@@ -39,8 +37,8 @@ const ProductEdit: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
-    const [conversionState, setConversionState] = useState<{ [docId: string]: { progress: string; isConverting: boolean } }>({});
     const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+    const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageBrandsAndProducts;
     const brand = brands.find(b => b.id === formData?.brandId);
@@ -196,59 +194,16 @@ const ProductEdit: React.FC = () => {
         }
     };
 
-    const handleDocumentPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>, docId: string) => {
-        const file = e.target.files?.[0];
-        if (!file || file.type !== 'application/pdf') return;
-
-        setConversionState(prev => ({ ...prev, [docId]: { isConverting: true, progress: 'Starting...' } }));
-
-        try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const numPages = pdf.numPages;
-            const newImageUrls: string[] = [];
-
-            for (let i = 1; i <= numPages; i++) {
-                setConversionState(prev => ({ ...prev, [docId]: { ...prev[docId], progress: `Page ${i}/${numPages}` } }));
-                const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.0 });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d', { alpha: false });
-                if (!context) continue;
-
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                
-                await page.render({ canvasContext: context, viewport: viewport, background: 'rgba(255,255,255,1)' } as any).promise;
-                const blob = await new Promise<Blob|null>(resolve => canvas.toBlob(resolve, 'image/png'));
-                if(!blob) continue;
-
-                const imageFile = new File([blob], `page_${i}.png`, { type: 'image/png' });
-                const savedPath = await saveFileToStorage(imageFile);
-                newImageUrls.push(savedPath);
-            }
-
-            setFormData(prev => {
-                if (!prev) return null;
-                const newDocs = (prev.documents || []).map(doc => {
-                    if (doc.id === docId && doc.type === 'image') {
-                        return { ...doc, imageUrls: [...doc.imageUrls, ...newImageUrls] };
-                    }
-                    return doc;
-                });
-                return { ...prev, documents: newDocs };
-            });
-            markDirty();
-
-            setConversionState(prev => ({ ...prev, [docId]: { isConverting: false, progress: `Added ${numPages} pages.` } }));
-
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'PDF conversion failed.';
-            setConversionState(prev => ({ ...prev, [docId]: { isConverting: false, progress: `Error: ${message}` } }));
-        } finally {
-            if (e.target) e.target.value = '';
-            setTimeout(() => setConversionState(prev => ({ ...prev, [docId]: { isConverting: false, progress: '' } })), 5000);
-        }
+    const handlePdfImportComplete = (imagePaths: string[]) => {
+        if (!formData) return;
+        const newDocument: ProductDocument = {
+            id: `doc_pdf_${Date.now()}`,
+            title: 'Imported PDF Pages',
+            type: 'image',
+            imageUrls: imagePaths,
+        };
+        setFormData(prev => ({ ...prev!, documents: [...(prev!.documents || []), newDocument] }));
+        markDirty();
     };
     
     const removeDocumentImage = (docId: string, imageIndex: number) => {
@@ -336,6 +291,7 @@ const ProductEdit: React.FC = () => {
             </div>
         ) : (
             <>
+                <PdfImportModal isOpen={isPdfModalOpen} onClose={() => setIsPdfModalOpen(false)} onComplete={handlePdfImportComplete} />
                 {formData && brand && (
                     <DescriptionAssistantModal
                         isOpen={isDescriptionModalOpen}
@@ -525,10 +481,16 @@ const ProductEdit: React.FC = () => {
                                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                                         <div className="flex justify-between items-center">
                                         <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Documents</h3>
-                                        <button type="button" onClick={addDocument} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                                            <PlusIcon className="h-4 w-4" />
-                                            Add Document
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                             <button type="button" onClick={() => setIsPdfModalOpen(true)} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                                <DocumentArrowRightIcon className="h-4 w-4" />
+                                                Import from PDF
+                                            </button>
+                                            <button type="button" onClick={addDocument} className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+                                                <PlusIcon className="h-4 w-4" />
+                                                Add
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="mt-4 space-y-4">
                                         {(formData.documents || []).map(doc => (
@@ -540,15 +502,6 @@ const ProductEdit: React.FC = () => {
                                                     </button>
                                                 </div>
                                                 <div className="mt-3">
-                                                    <div className="space-y-2">
-                                                        <label htmlFor={`doc-pdf-upload-${doc.id}`} className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center !py-1.5 text-xs">
-                                                            <DocumentArrowRightIcon className="h-4 w-4" />
-                                                            <span>Upload PDF to Populate</span>
-                                                        </label>
-                                                        <input id={`doc-pdf-upload-${doc.id}`} type="file" className="sr-only" onChange={(e) => handleDocumentPdfUpload(e, doc.id)} accept="application/pdf" disabled={conversionState[doc.id]?.isConverting} />
-                                                        {conversionState[doc.id]?.progress && <p className="text-xs text-center text-gray-500 dark:text-gray-400">{conversionState[doc.id].progress}</p>}
-                                                    </div>
-
                                                     <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mt-3 block">Images</label>
                                                     <div className="mt-1 grid grid-cols-4 gap-2">
                                                         {doc.type === 'image' && doc.imageUrls.map((img, index) => (
