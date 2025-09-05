@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist/build/pdf.js';
 
 interface ConvertedPage {
     pageNumber: number;
@@ -18,7 +18,8 @@ interface PdfImportModalProps {
 const MotionDiv = motion.div as any;
 
 // Set the worker source once for all PDF operations in this module.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+// FIX: Correctly set static property on GlobalWorkerOptions.
+GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete }) => {
     const { saveFileToStorage } = useAppContext();
@@ -63,7 +64,8 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         setProgress('Reading PDF...');
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            // FIX: Use named import 'getDocument'.
+            const pdf = await getDocument({ data: arrayBuffer }).promise;
             const numPages = pdf.numPages;
             const newPages: ConvertedPage[] = [];
 
@@ -130,7 +132,8 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         try {
             const savedPaths: string[] = [];
             const arrayBuffer = await file!.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            // FIX: Use named import 'getDocument'.
+            const pdf = await getDocument({ data: arrayBuffer }).promise;
             const pagesToProcess = Array.from(selectedPages).sort((a,b) => a-b);
             let processedCount = 0;
 

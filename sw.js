@@ -1,5 +1,5 @@
-const CACHE_NAME = 'product-catalogue-cache-v4'; // Incremented version
-const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v4'; // Incremented version
+const CACHE_NAME = 'product-catalogue-cache-v6'; // Incremented version
+const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v6'; // Incremented version
 
 // Use relative paths for the app shell to avoid issues in sandboxed/nested environments.
 const APP_SHELL_URLS = [
@@ -78,47 +78,60 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Use a cache-first strategy for most assets.
-    // This provides the best performance and offline experience.
-    event.respondWith(
-        caches.match(request).then(cachedResponse => {
-            // If the resource is in the cache, return it
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            // If it's not in the cache, fetch it from the network
-            return fetch(request)
-                .then(networkResponse => {
-                    // Check for a valid response
-                    if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === 'error') {
-                        // For navigation requests that fail, fall back to the app shell.
-                        if (request.mode === 'navigate') {
-                            return caches.match('./');
+    // Strategy 1: Cache-first for immutable assets (CDNs, fonts)
+    const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
+    if (isImmutable) {
+        event.respondWith(
+            caches.open(IMMUTABLE_CACHE_NAME).then(cache => {
+                return cache.match(request).then(response => {
+                    // Return from cache, or fetch and cache if not found
+                    return response || fetch(request).then(networkResponse => {
+                        if (networkResponse.ok) {
+                            cache.put(request, networkResponse.clone());
                         }
-                        // For other types, just return the failed response.
                         return networkResponse;
-                    }
-
-                    // Cache the new valid response
-                    const responseToCache = networkResponse.clone();
-                    const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
-                    const cacheName = isImmutable ? IMMUTABLE_CACHE_NAME : CACHE_NAME;
-
-                    caches.open(cacheName).then(cache => {
-                        cache.put(request, responseToCache);
                     });
-
-                    return networkResponse;
-                })
-                .catch(() => {
-                    // If the network request fails completely (e.g., offline)
-                    // and it was a navigation request, serve the main app shell.
-                    if (request.mode === 'navigate') {
-                        return caches.match('./');
-                    }
-                    // For other failed requests, we don't have a fallback, so the request will fail.
                 });
-        })
+            })
+        );
+        return; // Don't process further
+    }
+
+    // Strategy 2: Network-first, bypassing browser cache, for everything else.
+    // This ensures that when online, the user always gets the freshest content.
+    event.respondWith(
+        (async () => {
+            try {
+                // Create a new request that bypasses the browser's HTTP cache to get the latest version.
+                const networkRequest = new Request(request, { cache: 'reload' });
+                const networkResponse = await fetch(networkRequest);
+
+                // If the fetch is successful, update our dynamic cache with the fresh response.
+                if (networkResponse.ok) {
+                    const cache = await caches.open(CACHE_NAME);
+                    cache.put(request, networkResponse.clone());
+                }
+                return networkResponse;
+            } catch (error) {
+                // If the network request fails (e.g., offline), fall back to the cache.
+                console.log('Network request failed, trying cache for:', request.url);
+                const cachedResponse = await caches.match(request);
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+                // For page navigation requests that aren't in the cache, return the main app shell page.
+                if (request.mode === 'navigate') {
+                    const rootCache = await caches.match('./');
+                    if (rootCache) return rootCache;
+                }
+                // If the resource is not in the cache and the network is down, let the browser handle it.
+                // This will result in the standard "You are offline" browser page for the failed resource.
+                return new Response("Network error: The resource is not available in the cache.", {
+                    status: 408,
+                    statusText: "Request Timeout",
+                    headers: { "Content-Type": "text/plain" },
+                });
+            }
+        })()
     );
 });

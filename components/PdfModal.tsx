@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, Squares2X2Icon, EnterFullScreenIcon, ExitFullScreenIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon } from './Icons.tsx';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist/build/pdf.js';
 import { usePanZoom } from './usePanZoom.tsx';
 
 interface PdfModalProps {
@@ -10,7 +10,8 @@ interface PdfModalProps {
     onClose: () => void;
 }
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+// FIX: Correctly set static property on GlobalWorkerOptions.
+GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const MIN_SCALE = 0.8;
 const MAX_SCALE = 8;
@@ -33,7 +34,8 @@ const PdfModal: React.FC<PdfModalProps> = ({ title, url, onClose }) => {
         const renderPdfToImages = async () => {
             setIsLoading(true); setProgress('');
             try {
-                const pdf = await pdfjsLib.getDocument(url).promise;
+                // FIX: Use named import 'getDocument'.
+                const pdf = await getDocument(url).promise;
                 const urls: string[] = [];
                 for (let i = 1; i <= pdf.numPages; i++) {
                     setProgress(`Rendering page ${i} of ${pdf.numPages}...`);
