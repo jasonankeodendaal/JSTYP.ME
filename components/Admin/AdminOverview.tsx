@@ -124,7 +124,7 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ setActiveSubTab }) => {
                 </div>
 
                 <div className="lg:col-span-2 xl:col-span-3">
-                    <Widget title="Activity Log" icon={<ClockIcon className="w-6 h-6"/>}>
+                    <Widget title="Recent Activity" icon={<ClockIcon className="w-6 h-6"/>} viewAllLink={() => setActiveSubTab('activityLog')}>
                         <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                             {recentActivity.length > 0 ? recentActivity.map(log => (
                                 <div key={log.id} className="text-sm">

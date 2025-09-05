@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import type { ActivityLog } from '../../types';
+import type { ActivityLog } from '../../types.ts';
 import { EyeIcon, PlusIcon, PencilIcon, TrashIcon, RestoreIcon, ArrowPathIcon, CheckIcon, ArrowLeftOnRectangleIcon, SearchIcon } from '../Icons.tsx';
 
 const getActionDetails = (actionType: ActivityLog['actionType']) => {

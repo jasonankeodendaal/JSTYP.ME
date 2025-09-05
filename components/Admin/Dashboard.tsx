@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import type { Brand, Catalogue, Pamphlet, TvContent } from '../../types';
+import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types.ts';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -14,8 +13,16 @@ import AdminStorage from './AdminStorage.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 import AdminTrash from './AdminTrash.tsx';
 import AdminAnalytics from './AdminAnalytics.tsx';
+import AdminClientManagement from './AdminClientManagement.tsx';
+import AdminActivityLog from './AdminActivityLog.tsx';
+import AdminOverview from './AdminOverview.tsx';
+import AdminRemoteControl from './AdminRemoteControl.tsx';
 
-type Tab = 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'settings' | 'storage' | 'backup' | 'users' | 'trash' | 'analytics';
+type FooterTab = 'admin' | 'content' | 'system';
+type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog';
+
+// Keep old type name `Tab` for minimal changes inside the render function
+type Tab = SubTab;
 
 const getStatus = (item: Catalogue | Pamphlet) => {
     const today = new Date();
@@ -93,9 +100,15 @@ const AdminContentCard: React.FC<{
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<Tab>('storage');
+    const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
+    const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
-    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent } = useAppContext();
+    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal } = useAppContext();
+
+    useEffect(() => {
+        sessionStorage.setItem('adminFooterTab', activeFooterTab);
+        sessionStorage.setItem('adminSubTab', activeSubTab);
+    }, [activeFooterTab, activeSubTab]);
 
     const handleLogout = () => {
         logout();
@@ -129,22 +142,21 @@ const AdminDashboard: React.FC = () => {
             () => deleteTvContent(id)
         );
     };
-    
-    const backupTabLabel = storageProvider === 'customApi' ? 'Cloud Sync' : 'Backup & Restore';
 
-    const TabButton: React.FC<{ tabName: Tab; label: string, icon: React.ReactNode }> = ({ tabName, label, icon }) => (
-        <button
-            type="button"
-            onClick={() => setActiveTab(tabName)}
-            className={`flex items-center gap-2 px-3 py-3 font-semibold text-sm rounded-t-lg transition-colors border-b-2 -mb-px whitespace-nowrap ${
-                activeTab === tabName
-                    ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
-                    : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500'
-            }`}
-        >
-            {icon} {label}
-        </button>
-    );
+    const handleDeleteQuote = (quote: Quote) => {
+        const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown Client';
+        showConfirmation(
+            `Are you sure you want to delete the quote for "${clientName}"? This action cannot be undone.`,
+            () => deleteQuote(quote.id)
+        );
+    };
+
+    const handleFooterTabClick = (tab: FooterTab) => {
+        setActiveFooterTab(tab);
+        if (tab === 'content') setActiveSubTab('brands');
+        if (tab === 'system') setActiveSubTab('storage');
+        if (tab === 'admin') setActiveSubTab('overview');
+    };
     
     const ContentGrid: React.FC<{ title: string; items: (Catalogue[] | Pamphlet[]); type: 'catalogue' | 'pamphlet'; onDelete: (id: string, title: string) => void; allBrands?: Brand[], canEdit: boolean }> = ({ title, items, type, onDelete, allBrands, canEdit }) => {
         if (items.length === 0) return null;
@@ -160,17 +172,17 @@ const AdminDashboard: React.FC = () => {
         )
     }
 
-    const EmptyState: React.FC<{ icon: React.ReactNode; title: string; message: string; ctaText: string; ctaLink: string; canAdd: boolean; }> = ({ icon, title, message, ctaText, ctaLink, canAdd }) => (
+    const EmptyState: React.FC<{ icon: React.ReactNode; title: string; message: string; ctaText: string; onCtaClick: () => void; canAdd: boolean; }> = ({ icon, title, message, ctaText, onCtaClick, canAdd }) => (
         <div className="text-center py-12 bg-white dark:bg-gray-800/50 rounded-2xl shadow-inner border border-gray-200 dark:border-gray-700/50">
              <div className="mx-auto h-12 w-12 text-gray-400">{icon}</div>
              <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{message}</p>
             {canAdd && (
                 <div className="mt-6">
-                    <Link to={ctaLink} className="btn btn-primary">
+                    <button onClick={onCtaClick} className="btn btn-primary">
                         <PlusIcon className="h-4 w-4" />
                         <span>{ctaText}</span>
-                    </Link>
+                    </button>
                 </div>
             )}
         </div>
@@ -185,22 +197,26 @@ const AdminDashboard: React.FC = () => {
     const canManageSystem = loggedInUser?.isMainAdmin || perms?.canManageSystem;
     const canManageTvContent = loggedInUser?.isMainAdmin || perms?.canManageTvContent;
     const canViewAnalytics = loggedInUser?.isMainAdmin || perms?.canViewAnalytics;
+    const canManageQuotesAndClients = loggedInUser?.isMainAdmin || perms?.canManageQuotesAndClients;
 
-
-    const renderContent = () => {
-        const titleAndButton = (title: string, addUrl: string, canAdd: boolean) => (
+    const renderSubTabContent = () => {
+        const titleAndButton = (title: string, onAdd: () => void, canAdd: boolean) => (
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">{title}</h3>
                 {canAdd && (
-                    <Link to={addUrl} className="btn btn-primary">
+                    <button onClick={onAdd} className="btn btn-primary">
                         <PlusIcon className="h-4 w-4" />
                         <span>Add New</span>
-                    </Link>
+                    </button>
                 )}
             </div>
         );
 
-        switch (activeTab) {
+        switch (activeSubTab) {
+            case 'overview':
+                return <AdminOverview setActiveSubTab={setActiveSubTab as any} />;
+            case 'remoteControl':
+                return <AdminRemoteControl />;
             case 'brands':
                 const visibleBrands = brands.filter(b => !b.isDeleted);
                  return (
@@ -248,7 +264,7 @@ const AdminDashboard: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <EmptyState icon={<CircleStackIcon className="w-full h-full" />} title="No Brands Found" message="Get started by adding your first brand." ctaText="Add New Brand" ctaLink="/admin/brand/new" canAdd={!!canManageBrands}/>
+                                <EmptyState icon={<CircleStackIcon className="w-full h-full" />} title="No Brands Found" message="Get started by adding your first brand." ctaText="Add New Brand" onCtaClick={() => navigate('/admin/brand/new')} canAdd={!!canManageBrands}/>
                             )}
                         </div>
                         {canManageBrands && (
@@ -292,7 +308,7 @@ const AdminDashboard: React.FC = () => {
             case 'catalogues':
                 const visibleCatalogues = catalogues.filter(c => !c.isDeleted);
                 if (visibleCatalogues.length === 0) {
-                     return <EmptyState icon={<BookOpenIcon className="w-full h-full" />} title="No Catalogues Found" message="Upload your first digital catalogue." ctaText="Add New Catalogue" ctaLink="/admin/catalogue/new" canAdd={!!canManageCatalogues} />;
+                     return <EmptyState icon={<BookOpenIcon className="w-full h-full" />} title="No Catalogues Found" message="Upload your first digital catalogue." ctaText="Add New Catalogue" onCtaClick={() => navigate('/admin/catalogue/new')} canAdd={!!canManageCatalogues} />;
                 }
                 const currentYear = new Date().getFullYear();
                 const currentCatalogues = visibleCatalogues.filter(c => c.year === currentYear).sort((a,b) => a.title.localeCompare(b.title));
@@ -300,7 +316,7 @@ const AdminDashboard: React.FC = () => {
                 
                 return (
                     <div className="space-y-8">
-                        {titleAndButton("Manage Catalogues", "/admin/catalogue/new", !!canManageCatalogues)}
+                        {titleAndButton("Manage Catalogues", () => navigate('/admin/catalogue/new'), !!canManageCatalogues)}
                         <ContentGrid title={`Current Catalogues (${currentYear})`} items={currentCatalogues} type="catalogue" onDelete={handleDeleteCatalogue} allBrands={brands} canEdit={!!canManageCatalogues} />
                         <ContentGrid title="Archived Catalogues" items={expiredCatalogues} type="catalogue" onDelete={handleDeleteCatalogue} allBrands={brands} canEdit={!!canManageCatalogues} />
                     </div>
@@ -308,7 +324,7 @@ const AdminDashboard: React.FC = () => {
             case 'pamphlets':
                  const visiblePamphlets = pamphlets.filter(p => !p.isDeleted);
                  if (visiblePamphlets.length === 0) {
-                     return <EmptyState icon={<DocumentTextIcon className="w-full h-full" />} title="No Pamphlets Found" message="Create your first promotional pamphlet." ctaText="Add New Pamphlet" ctaLink="/admin/pamphlet/new" canAdd={!!canManagePamphlets} />;
+                     return <EmptyState icon={<DocumentTextIcon className="w-full h-full" />} title="No Pamphlets Found" message="Create your first promotional pamphlet." ctaText="Add New Pamphlet" onCtaClick={() => navigate('/admin/pamphlet/new')} canAdd={!!canManagePamphlets} />;
                  }
                  const todayPamphlet = new Date();
                  todayPamphlet.setHours(0, 0, 0, 0);
@@ -319,12 +335,72 @@ const AdminDashboard: React.FC = () => {
 
                  return (
                     <div className="space-y-8">
-                        {titleAndButton("Manage Pamphlets", "/admin/pamphlet/new", !!canManagePamphlets)}
+                        {titleAndButton("Manage Pamphlets", () => navigate('/admin/pamphlet/new'), !!canManagePamphlets)}
                         <ContentGrid title="Active Pamphlets" items={activePamphlets} type="pamphlet" onDelete={handleDeletePamphlet} canEdit={!!canManagePamphlets} />
                         <ContentGrid title="Upcoming Pamphlets" items={upcomingPamphlets} type="pamphlet" onDelete={handleDeletePamphlet} canEdit={!!canManagePamphlets} />
                         <ContentGrid title="Expired Pamphlets" items={expiredPamphlets} type="pamphlet" onDelete={handleDeletePamphlet} canEdit={!!canManagePamphlets} />
                     </div>
                  );
+            case 'quotes':
+                const sortedQuotes = [...quotes].sort((a, b) => b.createdAt - a.createdAt);
+                return (
+                     <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Manage Quotes</h3>
+                            <button onClick={openQuoteStartModal} className="btn btn-primary">
+                                <PlusIcon className="h-4 w-4" />
+                                <span>Create New Quote</span>
+                            </button>
+                        </div>
+                        {sortedQuotes.length > 0 ? (
+                            <div className="overflow-x-auto bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Client</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created By</th>
+                                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
+                                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                            <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                                        {sortedQuotes.map(quote => {
+                                            const client = clients.find(c => c.id === quote.clientId);
+                                            const admin = adminUsers.find(a => a.id === quote.adminId);
+                                            const adminName = admin ? `${admin.firstName} ${admin.lastName}` : (quote.adminId === 'kiosk_user' ? 'Kiosk' : 'Unknown User');
+                                            return (
+                                                <tr key={quote.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{client?.companyName || 'N/A'}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(quote.createdAt).toLocaleDateString()}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{adminName}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{quote.items.length}</td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                                                        <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${quote.status === 'quoted' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
+                                                            {quote.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                        <div className="flex items-center justify-end gap-1">
+                                                            <Link to={`/admin/quote/${quote.id}/print`} target="_blank" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Print Quote"><EyeIcon className="h-4 w-4" /></Link>
+                                                            <button onClick={() => toggleQuoteStatus(quote.id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle Status"><PencilIcon className="h-4 w-4" /></button>
+                                                            <button onClick={() => handleDeleteQuote(quote)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete Quote"><TrashIcon className="h-4 w-4" /></button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                           <EmptyState icon={<ClipboardDocumentListIcon className="w-full h-full" />} title="No Quotes Found" message="Create your first client quote to see it here." ctaText="Create New Quote" onCtaClick={openQuoteStartModal} canAdd={true} />
+                        )}
+                    </div>
+                );
+            case 'clients':
+                return <AdminClientManagement />;
             case 'screensaverAds':
                 return <AdminScreensaverAds />;
             case 'tv-content':
@@ -338,7 +414,7 @@ const AdminDashboard: React.FC = () => {
 
                 return (
                     <div className="space-y-8">
-                        {titleAndButton("Manage TV Content", "/admin/tv-content/new", !!canManageTvContent)}
+                        {titleAndButton("Manage TV Content", () => navigate('/admin/tv-content/new'), !!canManageTvContent)}
                          {Object.keys(groupedByBrand).length > 0 ? Object.entries(groupedByBrand).map(([brandName, contents]) => (
                              <div key={brandName}>
                                 <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4 section-heading">{brandName}</h4>
@@ -364,7 +440,7 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                              </div>
                          )) : (
-                            <EmptyState icon={<TvIcon className="w-full h-full" />} title="No TV Content Found" message="Get started by adding your first TV model content." ctaText="Add TV Content" ctaLink="/admin/tv-content/new" canAdd={!!canManageTvContent}/>
+                            <EmptyState icon={<TvIcon className="w-full h-full" />} title="No TV Content Found" message="Get started by adding your first TV model content." ctaText="Add TV Content" onCtaClick={() => navigate('/admin/tv-content/new')} canAdd={!!canManageTvContent}/>
                          )}
                     </div>
                 )
@@ -380,52 +456,118 @@ const AdminDashboard: React.FC = () => {
                 return <AdminTrash />;
             case 'analytics':
                 return <AdminAnalytics />;
+            case 'activityLog':
+                return <AdminActivityLog />;
             default: return null;
         }
     }
 
+    const renderSecondaryNav = () => {
+        const backupTabLabel = storageProvider === 'customApi' ? 'Cloud Sync' : 'Backup & Restore';
+
+        const contentTabs = [
+            { id: 'brands' as SubTab, label: 'Brands & Products', icon: <CircleStackIcon className="h-4 w-4"/>, perm: canManageBrands },
+            { id: 'catalogues' as SubTab, label: 'Catalogues', icon: <BookOpenIcon className="h-4 w-4"/>, perm: canManageCatalogues },
+            { id: 'pamphlets' as SubTab, label: 'Pamphlets', icon: <DocumentTextIcon className="h-4 w-4"/>, perm: canManagePamphlets },
+            { id: 'screensaverAds' as SubTab, label: 'Screensaver', icon: <EyeIcon className="h-4 w-4"/>, perm: canManageScreensaver },
+            { id: 'tv-content' as SubTab, label: 'TV Content', icon: <TvIcon className="h-4 w-4"/>, perm: canManageTvContent },
+            { id: 'trash' as SubTab, label: 'Trash', icon: <TrashIcon className="h-4 w-4"/>, perm: canManageSystem }
+        ];
+
+        const systemTabs = [
+            { id: 'storage' as SubTab, label: 'Storage', icon: <ServerStackIcon className="h-4 w-4"/>, perm: canManageSystem },
+            { id: 'backup' as SubTab, label: backupTabLabel, icon: <RestoreIcon className="h-4 w-4"/>, perm: canManageSystem },
+            { id: 'settings' as SubTab, label: 'Appearance & Settings', icon: <PencilIcon className="h-4 w-4"/>, perm: canManageSettings },
+        ];
+
+        const adminTabs = [
+            { id: 'overview' as SubTab, label: 'Overview', icon: <HomeIcon className="h-4 w-4" />, perm: true },
+            { id: 'quotes' as SubTab, label: 'Quotes', icon: <ClipboardDocumentListIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
+            { id: 'clients' as SubTab, label: 'Clients', icon: <BuildingStorefrontIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
+            { id: 'analytics' as SubTab, label: 'Analytics', icon: <ChartPieIcon className="h-4 w-4"/>, perm: canViewAnalytics },
+            { id: 'remoteControl' as SubTab, label: 'Remote Control', icon: <ComputerDesktopIcon className="h-4 w-4" />, perm: loggedInUser?.isMainAdmin },
+            { id: 'activityLog' as SubTab, label: 'Activity Log', icon: <DocumentTextIcon className="h-4 w-4" />, perm: true },
+            { id: 'users' as SubTab, label: 'Users', icon: <UsersIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
+        ];
+
+        let tabsToShow: { id: SubTab, label: string, icon: React.ReactNode, perm?: boolean }[] = [];
+        if (activeFooterTab === 'content') tabsToShow = contentTabs;
+        if (activeFooterTab === 'system') tabsToShow = systemTabs;
+        if (activeFooterTab === 'admin') tabsToShow = adminTabs;
+
+        return (
+            <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
+                <nav className="flex items-center flex-wrap gap-x-6 gap-y-1 -mb-px" aria-label="Tabs">
+                    {tabsToShow.filter(t => t.perm).map(tab => (
+                         <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setActiveSubTab(tab.id)}
+                            className={`flex items-center gap-2 px-3 py-3 font-semibold text-sm rounded-t-lg transition-colors border-b-2 whitespace-nowrap ${
+                                activeSubTab === tab.id
+                                    ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
+                                    : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500'
+                            }`}
+                        >
+                            {tab.icon} {tab.label}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+        );
+    };
+
+    const FooterButton: React.FC<{ tab: FooterTab; label: string; icon: React.ReactNode; }> = ({ tab, label, icon }) => {
+        const isActive = activeFooterTab === tab;
+        return (
+            <button
+                type="button"
+                onClick={() => handleFooterTabClick(tab)}
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            >
+                <div className={`h-6 w-6 ${isActive ? '' : 'opacity-70'}`}>{icon}</div>
+                <span className="text-xs font-bold">{label}</span>
+            </button>
+        );
+    };
+
+
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
-            <div className="w-full max-w-6xl mx-auto">
-                <div className="space-y-8">
-                    <div className="flex justify-between items-center">
-                        <div>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+            <header className="p-4 sm:p-6 lg:p-8 shrink-0">
+                 <div className="w-full max-w-6xl mx-auto flex justify-between items-center">
+                    <div>
                         <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Admin Dashboard</h1>
                         {loggedInUser && <p className="text-gray-600 dark:text-gray-400 mt-1">Signed in as {loggedInUser.firstName} {loggedInUser.lastName}</p>}
-                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Link to="/" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <BuildingStorefrontIcon className="h-4 w-4" />
+                            <span>View Kiosk</span>
+                        </Link>
                         <button type="button" onClick={handleLogout} className="btn btn-destructive">
                             Logout
                         </button>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400">
-                        Welcome to the admin panel. All changes made here are live for the current session.
-                        <br />
-                        <strong className="font-semibold">Note:</strong> To persist changes across devices or sessions, connect a storage provider and sync your data.
-                    </p>
-
-                    <div>
-                        <div className="border-b border-gray-200 dark:border-gray-700">
-                            <nav className="flex items-center flex-wrap gap-x-8 gap-y-1" aria-label="Tabs">
-                                {canManageBrands && <TabButton tabName="brands" label="Brands" icon={<CircleStackIcon className="h-4 w-4"/>} />}
-                                {canViewAnalytics && <TabButton tabName="analytics" label="Analytics" icon={<ChartPieIcon className="h-4 w-4"/>} />}
-                                {canManageCatalogues && <TabButton tabName="catalogues" label="Catalogues" icon={<BookOpenIcon className="h-4 w-4"/>} />}
-                                {canManagePamphlets && <TabButton tabName="pamphlets" label="Pamphlets" icon={<DocumentTextIcon className="h-4 w-4"/>} />}
-                                {canManageScreensaver && <TabButton tabName="screensaverAds" label="Screensaver" icon={<EyeIcon className="h-4 w-4"/>} />}
-                                {canManageTvContent && <TabButton tabName="tv-content" label="TV Content" icon={<TvIcon className="h-4 w-4"/>} />}
-                                {canManageSettings && <TabButton tabName="settings" label="Settings" icon={<PencilIcon className="h-4 w-4"/>} />}
-                                {canManageSystem && <TabButton tabName="storage" label="Storage" icon={<ServerStackIcon className="h-4 w-4"/>} />}
-                                {canManageSystem && <TabButton tabName="backup" label={backupTabLabel} icon={<RestoreIcon className="h-4 w-4"/>} />}
-                                {loggedInUser?.isMainAdmin && <TabButton tabName="users" label="Users" icon={<UsersIcon className="h-4 w-4"/>}/>}
-                                {canManageSystem && <TabButton tabName="trash" label="Trash" icon={<TrashIcon className="h-4 w-4"/>} />}
-                            </nav>
-                        </div>
-                        
-                        <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-b-2xl rounded-tr-2xl shadow-xl mt-0">
-                            {renderContent()}
-                        </div>
+                </div>
+            </header>
+            
+            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto pb-48">
+                <div className="w-full max-w-6xl mx-auto">
+                    {renderSecondaryNav()}
+                    <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl">
+                        {renderSubTabContent()}
                     </div>
                 </div>
-            </div>
+            </main>
+
+            <footer className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-2">
+                <nav className="max-w-md mx-auto flex items-center justify-around">
+                    <FooterButton tab="admin" label="Admin" icon={<UsersIcon />} />
+                    <FooterButton tab="content" label="Content" icon={<CircleStackIcon />} />
+                    <FooterButton tab="system" label="System" icon={<ServerStackIcon />} />
+                </nav>
+            </footer>
         </div>
     );
 };

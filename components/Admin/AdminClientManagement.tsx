@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import type { Client } from '../../types';
+import type { Client } from '../../types.ts';
 import { PlusIcon, PencilIcon, TrashIcon } from '../Icons.tsx';
 import ClientEditModal from './ClientEditModal.tsx';
 

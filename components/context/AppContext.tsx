@@ -14,11 +14,8 @@ import {
     clients as initialClients,
     quotes as initialQuotes,
     viewCounts as initialViewCounts,
-    // FIX: Import initial activity logs data.
     activityLogs as initialActivityLogs
 } from '../../data/mockData.ts';
-// FIX: Import ActivityLog type.
-// FIX: Add KioskSession and RemoteCommand types for remote control feature.
 import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog, KioskSession, RemoteCommand } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
 
@@ -100,7 +97,6 @@ interface AppContextType {
   clients: Client[];
   quotes: Quote[];
   viewCounts: ViewCounts;
-  // FIX: Add activityLogs to context type.
   activityLogs: ActivityLog[];
   login: (userId: string, pin: string) => AdminUser | null;
   logout: () => void;
@@ -141,7 +137,6 @@ interface AppContextType {
   restoreCategory: (categoryId: string) => void;
   permanentlyDeleteCategory: (categoryId: string) => void;
   addClient: (client: Client) => string;
-  // FIX: Add missing client management functions to the context type.
   updateClient: (client: Client) => void;
   deleteClient: (clientId: string) => void;
   restoreClient: (clientId: string) => void;
@@ -196,12 +191,9 @@ interface AppContextType {
   localVolume: number;
   setLocalVolume: (volume: number) => void;
   kioskId: string;
-  // FIX: Add setKioskId to the context type to allow main admin to change it.
   setKioskId: (newId: string) => void;
-  // FIX: Add kioskSessions and sendRemoteCommand for the remote control feature.
   kioskSessions: KioskSession[];
   sendRemoteCommand: (kioskId: string, command: RemoteCommand) => void;
-  // FIX: Add missing properties for touch sound and screensaver PIN modal.
   playTouchSound: () => void;
   isScreensaverPinModalOpen: boolean;
   setIsScreensaverPinModalOpen: (isOpen: boolean) => void;
@@ -231,9 +223,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [clients, setClients] = useState<Client[]>(initialClients);
     const [quotes, setQuotes] = useState<Quote[]>(initialQuotes);
     const [viewCounts, setViewCounts] = useState<ViewCounts>(initialViewCounts);
-    // FIX: Add activityLogs state.
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialActivityLogs);
-    // FIX: Add state for remote control sessions.
     const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -255,7 +245,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [bookletModalState, setBookletModalState] = useState<BookletModalState>({ isOpen: false, title: '', imageUrls: [] });
     const [pdfModalState, setPdfModalState] = useState<PdfModalState>({ isOpen: false, url: '', title: '' });
     const [quoteStartModal, setQuoteStartModal] = useState<QuoteStartModalState>({ isOpen: false });
-    // FIX: Add state for the screensaver PIN modal.
     const [isScreensaverPinModalOpen, setIsScreensaverPinModalOpen] = useState(false);
 
     // TV Player state
@@ -281,7 +270,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     const [localVolume, setLocalVolume] = useState(settings.videoVolume);
 
-    // FIX: Add state setter for kioskId.
     const [kioskId, setKioskIdState] = useState<string>(() => {
         let id = localStorage.getItem('kioskId');
         if (!id) {
@@ -291,7 +279,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return id;
     });
 
-    // FIX: Create a function to safely update kioskId state and localStorage.
     const setKioskId = (newId: string) => {
         const trimmedId = newId.trim();
         if (trimmedId) {
@@ -932,7 +919,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 clients: { setter: setClients, initial: initialClients },
                 quotes: { setter: setQuotes, initial: initialQuotes },
                 viewCounts: { setter: setViewCounts, initial: initialViewCounts },
-                // FIX: Load activity logs from IndexedDB.
                 activityLogs: { setter: setActivityLogs, initial: initialActivityLogs },
             };
 
@@ -1031,7 +1017,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setIsSetupComplete(true);
             localStorage.setItem('kioskSetupComplete', 'true');
         },
-        // FIX: Add activityLogs to context value.
         settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, quotes, viewCounts, activityLogs,
         login, logout,
         addBrand: brandOps.add, updateBrand: brandOps.update, 
@@ -1072,7 +1057,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleQuoteStatus: (quoteId: string) => {
             const quote = quotes.find(q=>q.id === quoteId);
             if (quote) {
-                // FIX: Explicitly type `newStatus` to prevent TypeScript from widening it to `string` upon inference in the spread operator below.
                 const newStatus: 'pending' | 'quoted' = quote.status === 'pending' ? 'quoted' : 'pending';
                 const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown';
                 setQuotes(prev => {
@@ -1126,10 +1110,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localVolume, setLocalVolume: (vol: number) => { setLocalVolume(vol); idbSet('localVolume', vol); },
         kioskId,
         setKioskId,
-        // FIX: Add remote control state and functions to context value.
         kioskSessions,
         sendRemoteCommand,
-        // FIX: Add touch sound and screensaver PIN modal properties to context value.
         playTouchSound,
         isScreensaverPinModalOpen,
         setIsScreensaverPinModalOpen,

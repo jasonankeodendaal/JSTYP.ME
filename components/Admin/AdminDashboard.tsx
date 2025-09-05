@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate, Link } from 'react-router-dom';
-import type { Brand, Catalogue, Pamphlet, TvContent } from '../../types.ts';
+import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types.ts';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-// FIX: Import missing ComputerDesktopIcon.
 import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
@@ -20,7 +18,7 @@ import AdminActivityLog from './AdminActivityLog.tsx';
 import AdminOverview from './AdminOverview.tsx';
 import AdminRemoteControl from './AdminRemoteControl.tsx';
 
-type FooterTab = 'content' | 'system' | 'admin';
+type FooterTab = 'admin' | 'content' | 'system';
 type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog';
 
 // Keep old type name `Tab` for minimal changes inside the render function
@@ -145,7 +143,7 @@ const AdminDashboard: React.FC = () => {
         );
     };
 
-    const handleDeleteQuote = (quote: any) => {
+    const handleDeleteQuote = (quote: Quote) => {
         const clientName = clients.find(c => c.id === quote.clientId)?.companyName || 'Unknown Client';
         showConfirmation(
             `Are you sure you want to delete the quote for "${clientName}"? This action cannot be undone.`,
@@ -488,6 +486,7 @@ const AdminDashboard: React.FC = () => {
             { id: 'overview' as SubTab, label: 'Overview', icon: <HomeIcon className="h-4 w-4" />, perm: true },
             { id: 'analytics' as SubTab, label: 'Analytics', icon: <ChartPieIcon className="h-4 w-4"/>, perm: canViewAnalytics },
             { id: 'remoteControl' as SubTab, label: 'Remote Control', icon: <ComputerDesktopIcon className="h-4 w-4" />, perm: loggedInUser?.isMainAdmin },
+            { id: 'activityLog' as SubTab, label: 'Activity Log', icon: <DocumentTextIcon className="h-4 w-4" />, perm: true },
             { id: 'users' as SubTab, label: 'Users', icon: <UsersIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
         ];
 
@@ -564,9 +563,9 @@ const AdminDashboard: React.FC = () => {
 
             <footer className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-2">
                 <nav className="max-w-md mx-auto flex items-center justify-around">
+                    <FooterButton tab="admin" label="Admin" icon={<UsersIcon />} />
                     <FooterButton tab="content" label="Content" icon={<CircleStackIcon />} />
                     <FooterButton tab="system" label="System" icon={<ServerStackIcon />} />
-                    <FooterButton tab="admin" label="Admin" icon={<UsersIcon />} />
                 </nav>
             </footer>
         </div>
