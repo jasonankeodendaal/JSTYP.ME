@@ -118,6 +118,9 @@ export interface CreatorProfile {
   whatsapp: string;
 }
 
+export type ScreensaverTransitionEffect = 'fade' | 'slide' | 'scale' | 'slide-fade' | 'gentle-drift' | 'reveal-blur' | 'slide-up' | 'zoom-in' | 'slow-pan';
+
+
 export interface Settings {
   logoUrl: string;
   sharedUrl?: string;
@@ -131,9 +134,13 @@ export interface Settings {
   backgroundMusicVolume: number; // 0 to 1
   touchSoundUrl: string;
   screensaverImageDuration: number; // in seconds
-  screensaverTransitionEffect: 'fade' | 'slide' | 'scale' | 'slide-fade' | 'gentle-drift' | 'reveal-blur';
+  screensaverTransitionEffect: ScreensaverTransitionEffect;
   screensaverTouchPromptText: string;
   screensaverContentSource: 'products_and_ads' | 'ads_only';
+  screensaverItemsPerPrompt: number;
+  screensaverShowClock: boolean;
+  screensaverShowProductInfo: boolean;
+  screensaverProductInfoStyle: 'overlay' | 'banner';
   typography: {
     googleFontUrl: string;
     body: FontStyleSettings;
@@ -156,7 +163,7 @@ export interface Settings {
     width: 'standard' | 'wide';
   };
   pageTransitions: {
-    effect: 'none' | 'fade';
+    effect: 'none' | 'fade' | 'slide';
   };
   kiosk: {
     idleRedirectTimeout: number; // in seconds, 0 to disable
@@ -180,7 +187,7 @@ export interface Settings {
   lastUpdated?: number; // Timestamp for sync checking
 }
 
-export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'googleDrive' | 'none';
+export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'googleDrive' | 'dropbox' | 'onedrive' | 'supabase' | 'firebase' | 'vercel' | 'netlify' | 'aws' | 'xano' | 'backendless' | 'none';
 
 export type AdLink =
   | { type: 'brand'; id: string; }
@@ -255,7 +262,7 @@ export interface Quote {
 
 export type ViewCounts = Record<string, {
   brands: Record<string, number>;
-  products: Record<string, number>;
+  products: Record<string, number;
 }>;
 
 export interface ActivityLog {

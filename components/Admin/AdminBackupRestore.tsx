@@ -11,19 +11,30 @@ const SyncStatusIndicator: React.FC = () => {
         return null;
     }
 
-    const providerName = {
+    const providerName: Record<string, string> = {
         local: 'Local Folder',
         customApi: 'Custom API',
         sharedUrl: 'Shared URL',
         googleDrive: 'Google Drive',
+        dropbox: 'Dropbox',
+        onedrive: 'OneDrive',
+        supabase: 'Supabase',
+        firebase: 'Firebase',
+        vercel: 'Vercel',
+        netlify: 'Netlify',
+        aws: 'AWS Lambda',
+        xano: 'Xano',
+        backendless: 'Backendless',
         none: 'None'
-    }[storageProvider];
+    };
+
+    const currentProviderName = providerName[storageProvider] || 'Provider';
 
     const statusMap = {
         idle: { text: 'Status: Idle', color: 'text-gray-500 dark:text-gray-400', animate: false },
         pending: { text: 'Status: Unsaved changes', color: 'text-yellow-600 dark:text-yellow-400', animate: false },
         syncing: { text: 'Status: Syncing...', color: 'text-blue-600 dark:text-blue-400', animate: true },
-        synced: { text: `Status: All changes saved to ${providerName}`, color: 'text-green-600 dark:text-green-400', animate: false },
+        synced: { text: `Status: All changes saved to ${currentProviderName}`, color: 'text-green-600 dark:text-green-400', animate: false },
         error: { text: 'Status: Sync Error. Please try a manual save.', color: 'text-red-600 dark:text-red-400', animate: false },
     };
 
@@ -188,7 +199,27 @@ const AdminBackupRestore: React.FC = () => {
         switch (storageProvider) {
             case 'customApi':
             case 'sharedUrl':
-                const providerName = storageProvider === 'sharedUrl' ? 'Shared URL' : 'Custom API';
+            case 'googleDrive':
+            case 'supabase':
+            case 'firebase':
+            case 'vercel':
+            case 'netlify':
+            case 'aws':
+            case 'xano':
+            case 'backendless':
+                const providerName = {
+                    sharedUrl: 'Shared URL',
+                    customApi: 'Custom API',
+                    googleDrive: 'Google Drive',
+                    supabase: 'Supabase',
+                    firebase: 'Firebase',
+                    vercel: 'Vercel',
+                    netlify: 'Netlify',
+                    aws: 'AWS',
+                    xano: 'Xano',
+                    backendless: 'Backendless',
+                }[storageProvider] || 'Cloud';
+
                 return (
                      <div className="space-y-4">
                         <div className="flex justify-between items-center">

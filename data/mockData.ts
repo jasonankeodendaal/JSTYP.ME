@@ -228,6 +228,10 @@ export const settings: Settings = {
     screensaverTransitionEffect: 'gentle-drift',
     screensaverTouchPromptText: "Touch to Explore",
     screensaverContentSource: 'products_and_ads',
+    screensaverItemsPerPrompt: 3,
+    screensaverShowClock: true,
+    screensaverShowProductInfo: true,
+    screensaverProductInfoStyle: 'overlay',
     typography: {
         googleFontUrl: "",
         body: defaultBodyFont,

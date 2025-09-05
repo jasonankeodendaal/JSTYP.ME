@@ -34,6 +34,8 @@ const PamphletDisplay: React.FC = () => {
             backgroundClip: 'text',
             color: 'transparent',
             textDecoration: font?.textDecoration || 'none',
+            letterSpacing: font?.letterSpacing || 'normal',
+            textTransform: font?.textTransform || 'none',
         };
 
         return (

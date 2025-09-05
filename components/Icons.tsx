@@ -346,3 +346,49 @@ export const MagnifyingGlassMinusIcon: React.FC<{ className?: string }> = ({ cla
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
     </svg>
 );
+// FIX: Add missing icons for storage providers.
+export const CodeBracketIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+    </svg>
+);
+
+export const GoogleDriveIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M2.86 14.143 0 19.143l7.857-8.823-5 3.823zM9.33 24l-3.606-6.25h7.21L9.33 24zm7.384-8.143h7.21l-3.606 6.25-3.605-6.25zm-3.098-8.001L9.366 14.11l-4.25-9.322h7.21zm.001 0 3.606-6.249 4.25 9.322h-7.857zM14.32 1.608 10.714 7.858h7.21l3.605-6.25H14.32z"/></svg>
+);
+
+export const DropboxIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="m12 7.77-5.25 3.033L12 13.834 17.25 10.8l-5.25-3.03m0-2.22 5.25 3.033L12 11.615 6.75 8.583 12 5.55M6.75 13.834 12 16.867l5.25-3.033L12 10.8l-5.25 3.034m-1.5-1.5 5.25 3.033L12 19.417 6.75 16.383 1.5 13.35l5.25-3.033m15 0 5.25 3.033-5.25 3.034-5.25-3.033 5.25-3.033L22.5 13.35l-5.25 3.033-5.25-3.033"/></svg>
+);
+
+export const OneDriveIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12.923 2.585c-3.133.226-5.83 2.112-7.653 4.54-1.226 1.635-1.897 3.523-2.074 5.48-.44 4.808 2.91 8.868 7.398 8.868h9.117c2.516 0 4.84-2.228 4.84-5.21 0-2.88-2.21-5.147-4.87-5.21-1.04-.03-2.01.27-2.88.85-.3.19-.6.41-.86.66-.41.38-1.01.62-1.63.62-.2 0-.39-.03-.58-.09-.59-.16-1.12-.52-1.46-1-.28-.38-.63-.7-.98-.95-1.33-1.02-3.1-1.55-4.73-1.61zm-1.68 1.458c1.38.05 2.7.46 3.8 1.28.32.24.6.53.81.87.57.88.75 1.95.42 2.96-.13.39-.33.74-.57 1.05-.18.23-.39.43-.6.6-.78.64-1.78.96-2.77.82-2.1-.29-3.7-2.06-3.74-4.22-.03-1.53.86-2.9 2.22-3.52 1.05-.48 2.23-.52 3.43-.84zm-3.48 7.34c3.54-.1 6.88 2.5 7.15 6.13-.26 2.37-2.58 4.02-4.93 4.02h-7.66C4.463 22.473.6 18.773.93 14.18c.24-3.23 3-5.74 6.22-5.79h.61z"/></svg>
+);
+
+export const SupabaseIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M11.996 0C5.372 0 0 5.372 0 12c0 2.89.96 5.64 2.857 7.97L11.996 9.49V0zm0 14.508L2.857 4.026A11.94 11.94 0 0 0 0 12c0 6.628 5.372 12 11.996 12V14.508zm.004-5.02v14.51C18.627 24 24 18.627 24 12c0-2.89-.96-5.64-2.857-7.97L12.004 9.488z"/></svg>
+);
+
+export const FirebaseIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M3.633 20.384l2.457-11.047L12 3.167l5.91 6.17-1.396 6.942-5.49 4.39-2.39-9.143zM18.84 2.11l-5.442 5.11-1.34-5.42L3.13 8.356l1.24 12.028L12 24l8.84-6.55-1.24-12.03z"/></svg>
+);
+
+export const VercelIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12 1.5l12 21H0L12 1.5z"/></svg>
+);
+
+export const NetlifyIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M18.818 19.333h-2.909v-4.485L12 20.303 8.09 14.848v4.485H5.182V5.03h3.182l3.637 5.758 3.636-5.758h3.182v14.303z"/></svg>
+);
+
+export const AwsIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12.484 13.682c.28-.276.46-.66.46-1.11a1.29 1.29 0 00-.45-1.02c-.3-.29-1.31-.83-1.31-.83-.49-.24-.7-.39-.7-.7a.78.78 0 01.81-.8c.42 0 .8.16.8.16l.24-.31s-1.07-.6-2.11-.23c-1.04.37-1.26.83-1.26 1.48 0 .62.4 1 .86 1.25.46.25 1.3.79 1.3.79.43.2.66.36.66.67 0 .42-.57.65-1.07.52-.5-.13-.88-.41-.88-.41l-.25.31s.99.78 2.37.28zm1.96 1.77h.37V9.75h-.37v5.7zm2.34-2.1c-.2-.2-.49-.31-.84-.31-.6 0-1.2.22-1.63.63-.44.4-.66.97-.66 1.63 0 .64.22 1.2.66 1.62.43.42.95.63 1.55.63.36 0 .67-.12.89-.35l.23.27s-.6.5-1.4.32c-1.14-.26-1.74-.95-1.74-2.02s.5-1.85 1.6-2.1c.8-.17 1.43.2 1.43.2l-.22.3zm-10.9-3.6h.37v5.7h-.37V9.75zm1.55 3.03c.51-1.16 1.38-1.74 2.58-1.74.5 0 .97.1 1.4.3.44.2.79.5 1.05.9l-.3.2c-.2-.3-.5-.6-.8-.7-.4-.1-.7-.2-1.1-.2-1.3 0-2.1.8-2.6 2.1-.3.8-.4 1.7-.2 2.7l.4-.1c.2-1.1.4-1.9.7-2.7zm11.23-.97c.3-.3.4-.7.4-1.1 0-.6-.3-1.1-.8-1.5-.6-.4-1.3-.6-2.2-.6-1.5 0-2.8.4-3.8 1.3s-1.6 2-1.6 3.4c0 2.2 1.3 3.8 3.6 3.8 1.1 0 2-.3 2.8-.9.3-.2.5-.5.7-.8l-.3-.2c-.2.2-.4.4-.7.5-.7.3-1.5.2-2.2-.3-1.1-.8-1.4-1.9-1-3.2.2-.8.7-1.5 1.4-1.8.8-.4 1.6-.3 2.4.1.3.1.5.3.7.6zm-18.73-4.2C3.1-.3 1.5-.3 0 .1L1.4 3C3.3 1 5.4.6 7.6.6c2.4 0 4.3.4 5.9 1.3 1.6.9 2.7 2.2 3.3 3.9.6 1.7.7 3.5.3 5.3-.4 1.8-1.3 3.4-2.6 4.7-1.3 1.3-3 2.3-5 2.8-2 .5-4.2.5-6.4-.1S-.1 16.4 0 14.2c.1-1.3.5-2.5 1.2-3.6C1.9 9.5 2.9 8.6 4 7.9c1.1-.7 2.4-1.2 3.7-1.4 1.3-.2 2.7-.2 4 .2 1.3.4 2.6 1 3.6 1.8l1.4-2.1c-1.3-1-2.9-1.8-4.7-2.3-1.7-.5-3.6-.6-5.4-.3z"/></svg>
+);
+
+export const XanoIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M16.94 18.172L24 12.115l-1.96-1.69-5.1 5.913-5.11-5.913-1.95 1.69 7.059 6.057zM1.96 10.425L0 12.115l7.06 6.057L12.001 24l4.94-5.74-7.06-6.06L7.06 8.372l-5.1 2.053zm11.082-2.053L7.06 2.316 0 8.372l1.96 1.69 5.1-5.912 5.11 5.912 1.95-1.69zm3.897-6.056L12.001 0l-4.94 5.74 7.06 6.06 2.822-3.828 5.1-2.054-7.06-6.057z"/></svg>
+);
+
+export const BackendlessIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12 0L2.4 6v12L12 24l9.6-6V6L12 0zm7.2 16.8l-7.2 4.2-7.2-4.2V7.2l7.2-4.2 7.2 4.2v9.6zM12 2.19l8.4 4.91v9.8L12 21.81l-8.4-4.91V7.1L12 2.19m0 2.4l-7.2 4.2v8.4l7.2 4.2 7.2-4.2V9.01l-7.2-4.21M12 5.5l6 3.5v7l-6 3.5-6-3.5v-7l6-3.5m0 1.1L7.2 9.8v5.6L12 18.6l4.8-3.2V9.8L12 6.6z"/></svg>
+);

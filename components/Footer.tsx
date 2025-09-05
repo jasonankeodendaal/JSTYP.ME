@@ -136,11 +136,7 @@ const Footer: React.FC = () => {
   const footerStyle: React.CSSProperties = {
     backgroundColor: footerSettings?.effect === 'glassmorphism' ? 'transparent' : footerSettings?.backgroundColor,
     color: theme === 'light' ? 'var(--main-text)' : footerSettings?.textColor,
-    // FIX: Typography is now managed globally. Use settings.typography.body for the footer.
-    fontFamily: settings.typography?.body?.fontFamily ?? 'inherit',
-    fontWeight: settings.typography?.body?.fontWeight ?? 'inherit',
-    fontStyle: settings.typography?.body?.fontStyle ?? 'inherit',
-    textDecoration: settings.typography?.body?.textDecoration ?? 'inherit',
+    fontFamily: 'inherit', // Let it inherit from the body tag
     position: 'relative',
   };
 

@@ -16,6 +16,7 @@ import ConfirmationModal from './components/ConfirmationModal.tsx';
 import TvContentPlayer from './components/TvContentPlayer.tsx';
 import SetupWizard from './components/SetupWizard.tsx';
 import ClientDetailsModal from './components/Admin/ClientDetailsModal.tsx';
+import ScreensaverPinModal from './components/ScreensaverPinModal.tsx';
 
 // Component imports
 import Header from './components/Header.tsx';
@@ -41,6 +42,7 @@ import TvContentEdit from './components/Admin/TvContentEdit.tsx';
 import StockPick from './components/Admin/StockPick.tsx';
 import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
+import type { FontStyleSettings } from './types';
 
 
 // Register Swiper custom elements
@@ -123,11 +125,63 @@ const useScreensaverManager = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal } = useAppContext();
+  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal, playTouchSound, theme } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
   useIdleRedirect();
   useScreensaverManager();
+
+  // Dynamic theming and typography
+    useEffect(() => {
+        const root = document.documentElement;
+
+        // 1. Apply Theme Colors
+        const themeColors = settings[theme === 'light' ? 'lightTheme' : 'darkTheme'];
+        if (themeColors) {
+            root.style.setProperty('--app-bg', themeColors.appBg);
+            root.style.setProperty('--app-bg-image', themeColors.appBgImage);
+            root.style.setProperty('--main-bg', themeColors.mainBg);
+            root.style.setProperty('--main-text', themeColors.mainText);
+            root.style.setProperty('--main-shadow', themeColors.mainShadow);
+            root.style.setProperty('--main-border', themeColors.mainBorder);
+            root.style.setProperty('--primary-color', themeColors.primary);
+            root.style.setProperty('--btn-primary-bg', themeColors.primaryButton.background);
+            root.style.setProperty('--btn-primary-text', themeColors.primaryButton.text);
+            root.style.setProperty('--btn-primary-hover-bg', themeColors.primaryButton.hoverBackground);
+            root.style.setProperty('--btn-destructive-bg', themeColors.destructiveButton.background);
+            root.style.setProperty('--btn-destructive-text', themeColors.destructiveButton.text);
+            root.style.setProperty('--btn-destructive-hover-bg', themeColors.destructiveButton.hoverBackground);
+        }
+        
+        // 2. Apply Typography
+        const { typography } = settings;
+        if(typography) {
+            const googleFontsLink = document.getElementById('google-fonts-link') as HTMLLinkElement;
+            if (googleFontsLink && typography.googleFontUrl && googleFontsLink.href !== typography.googleFontUrl) {
+                googleFontsLink.href = typography.googleFontUrl;
+            }
+
+            const applyFontStyles = (prefix: string, styles: FontStyleSettings) => {
+                if(!styles) return;
+                root.style.setProperty(`--${prefix}-font-family`, `'${styles.fontFamily}', sans-serif`);
+                root.style.setProperty(`--${prefix}-font-weight`, styles.fontWeight);
+                root.style.setProperty(`--${prefix}-font-style`, styles.fontStyle);
+                root.style.setProperty(`--${prefix}-font-decoration`, styles.textDecoration);
+                root.style.setProperty(`--${prefix}-letter-spacing`, styles.letterSpacing);
+                root.style.setProperty(`--${prefix}-text-transform`, styles.textTransform);
+            };
+
+            applyFontStyles('body', typography.body);
+            applyFontStyles('headings', typography.headings);
+            applyFontStyles('item-titles', typography.itemTitles);
+        }
+    }, [settings, theme]);
+
+  useEffect(() => {
+    const handler = () => playTouchSound();
+    window.addEventListener('click', handler, { passive: true });
+    return () => window.removeEventListener('click', handler);
+  }, [playTouchSound]);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => {
@@ -196,6 +250,7 @@ const AppContent: React.FC = () => {
       )}
       {quoteStartModal.isOpen && <ClientDetailsModal />}
       <ConfirmationModal />
+      <ScreensaverPinModal />
       
       {isPrinting ? (
            <Routes>

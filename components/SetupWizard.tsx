@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
 import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronDownIcon, ChevronLeftIcon } from './Icons.tsx';
 import { useNavigate } from 'react-router-dom';
+import SetupInstruction from './Admin/SetupInstruction.tsx';
+import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent, TokenStorageGuideContent } from './Admin/SetupGuides.tsx';
 
 const CodeBracketIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
@@ -17,20 +19,6 @@ const stepVariants = {
 };
 
 const MotionDiv = motion.div as any;
-
-const SetupInstruction: React.FC<{ title: string, children: React.ReactNode, id?: string, defaultOpen?: boolean }> = ({ title, children, id, defaultOpen = false }) => (
-    <details id={id} className="group bg-gray-100 dark:bg-gray-700/50 rounded-2xl shadow-lg overflow-hidden border dark:border-gray-600/50" open={defaultOpen}>
-        <summary className="flex items-center justify-between p-4 cursor-pointer list-none hover:bg-gray-200/50 dark:hover:bg-gray-600/50 transition-colors">
-            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">{title}</h4>
-            <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-white transition-transform duration-300 transform group-open:rotate-180">
-                <ChevronDownIcon className="w-5 h-5"/>
-            </div>
-        </summary>
-        <div className="px-5 py-4 border-t border-gray-200/80 dark:border-gray-600/50 prose prose-sm dark:prose-invert max-w-none prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-code:bg-gray-200 prose-code:dark:bg-gray-900/50 prose-code:p-1 prose-code:rounded-md prose-code:font-mono prose-strong:text-gray-800 dark:prose-strong:text-gray-100">
-            {children}
-        </div>
-    </details>
-);
 
 const SetupWizard: React.FC = () => {
     const { 
@@ -240,73 +228,20 @@ const SetupWizard: React.FC = () => {
                             </button>
                         </div>
                         <div className="space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
-                             <SetupInstruction title="The Definitive Guide: Cloud Sync with PM2 (Recommended)" defaultOpen>
-                                <p><strong>Use this for:</strong> The most powerful and reliable setup. Manage a main admin PC and multiple display kiosks across different locations, all synced together over the internet.</p>
-                                <p>This setup uses <strong>PM2</strong>, a professional process manager, to ensure your server and the secure connection run 24/7 and restart automatically.</p>
-                                
-                                <hr/>
-                                <h4>Part 1: Configure Your Central Server (On Your Main PC)</h4>
-                                
-                                <h5>Step 1.1: One-Time System Installations</h5>
-                                <ol>
-                                    <li><strong>Install Node.js:</strong> If you don't have it, go to <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">nodejs.org</a>, download and install the <strong>LTS version</strong>. Verify the installation by opening a terminal and running <code>node -v</code> and <code>npm -v</code>.</li>
-                                    <li><strong>Install PM2:</strong> In your terminal, run this command to install PM2 globally: <pre><code>npm install -g pm2</code></pre></li>
-                                    <li><strong>Install Cloudflare Tunnel:</strong> Follow the official guide to install the <code>cloudflared</code> tool from <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/" target="_blank" rel="noopener noreferrer">this link</a>.</li>
-                                </ol>
-
-                                <h5>Step 1.2: Configure the Server Project</h5>
-                                <ol>
-                                    <li><strong>Open a Terminal in the `server` Folder:</strong> In your project, navigate into the <code>server</code> directory.</li>
-                                    <li><strong>Install Server Dependencies:</strong> Run this command once: <pre><code>npm install</code></pre></li>
-                                    <li><strong>CRITICAL - Set Your Secret API Key:</strong> In the <code>server</code> folder, rename the file <code>.env.example</code> to exactly <code>.env</code>. Open this new file and replace the placeholder key with your own private password.</li>
-                                </ol>
-
-                                <h5>Step 1.3: Run and Persist the Server with PM2</h5>
-                                <ol>
-                                    <li>
-                                        <strong>Start Both Services:</strong> In your terminal (still inside the <code>server</code> folder), run this command. It uses the project's configuration file to start both your API server and the Cloudflare tunnel in the background.
-                                        <pre><code>pm2 start</code></pre>
-                                        <p className="text-xs"><strong>Tip:</strong> You can run <code>pm2 delete all</code> first for a clean start. Check that both <code>kiosk-api</code> and <code>kiosk-tunnel</code> are online with <code>pm2 list</code>.</p>
-                                    </li>
-                                    <li>
-                                        <strong>Get Your Public URL:</strong> The "Cloudflare terminal" is now running in the background. To see its output and get your permanent public URL, run:
-                                        <pre><code>pm2 logs kiosk-tunnel</code></pre>
-                                        Look for a URL like <code>https://...trycloudflare.com</code>. <strong>Copy this URL</strong>. You can press <code>Ctrl + C</code> to exit the logs view.
-                                    </li>
-                                    <li>
-                                        <strong>Make it Permanent (Crucial for Reliability):</strong> To make PM2 restart everything automatically after a computer reboot, run this command:
-                                        <pre><code>pm2 startup</code></pre>
-                                        <strong>The command will output another command.</strong> You must copy that entire new command, paste it back into the same terminal, and press Enter. Finally, save your current process list so it knows what to restart:
-                                        <pre><code>pm2 save</code></pre>
-                                        Your server is now fully configured and running 24/7. You can close the terminal.
-                                    </li>
-                                </ol>
-                                <hr/>
-                                <h4>Part 2: Connect Your Kiosks to Your Server</h4>
-                                <p>You must do this on <strong>every single device</strong> you want to sync, including your main PC's browser.</p>
-                                <ol>
-                                    <li>In this setup wizard, choose the <strong>"Custom API Sync"</strong> option.</li>
-                                    <li>In <strong>"Custom API URL"</strong>, paste your public Cloudflare URL from Part 1 and <strong>add <code>/data</code></strong> to the end (e.g., <code>https://...com/data</code>).</li>
-                                    <li>In <strong>"Custom API Auth Key"</strong>, enter the secret <code>API_KEY</code> from your server's <code>.env</code> file.</li>
-                                    <li>Click <strong>"Test &amp; Connect"</strong>. If it succeeds, click <strong>"Finish Setup"</strong>.</li>
-                                    <li>After setup, log in as admin and go to the <strong>System</strong> tab in the admin panel.
-                                        <ul>
-                                            <li><strong>On your main admin PC:</strong> Click <strong>"Push to Cloud"</strong> in the Backup/Sync section. This uploads your local data to the server for the first time.</li>
-                                            <li><strong>On all other devices:</strong> Click <strong>"Pull from Cloud"</strong>. This downloads the master data from your server.</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>Enable Auto-Sync:</strong> On <strong>every device</strong>, go to <strong>System &gt; Storage &gt; Sync &amp; API Settings</strong> and turn on the <strong>"Enable Auto-Sync"</strong> toggle.</li>
-                                </ol>
-                                <p>Your multi-device kiosk system is now fully configured and running!</p>
+                             <SetupInstruction title="Cloud Sync with a PC Server (Recommended)" defaultOpen>
+                                <CloudSyncGuideContent />
                             </SetupInstruction>
-                            <SetupInstruction title="Alternative: How to use a Local or Network Folder">
-                                <ol>
-                                    <li>Click the <strong>"Connect to Folder"</strong> button on the previous step.</li>
-                                    <li>Your browser will ask you to select a folder. Choose a folder on your computer or a shared network drive accessible by other kiosks. Grant permission when prompted.</li>
-                                    <li>Once setup is complete and you are in the admin panel, go to the <strong>"System"</strong> tab.</li>
-                                    <li>Click <strong>"Save to Drive"</strong> to create a `database.json` file and save all your current product data and assets to the selected folder.</li>
-                                    <li>On other kiosks, connect to the same folder and use the <strong>"Load from Drive"</strong> button to get the latest data.</li>
-                                </ol>
+                            <SetupInstruction title="Local or Network Folder Setup">
+                                <LocalFolderGuideContent />
+                            </SetupInstruction>
+                            <SetupInstruction title="Advanced: Deploying to Vercel">
+                                <VercelGuideContent />
+                            </SetupInstruction>
+                             <SetupInstruction title="Advanced: Deploying to Supabase">
+                                <SupabaseGuideContent />
+                            </SetupInstruction>
+                            <SetupInstruction title="Advanced: Token-Based Storage (Dropbox, Google Drive)">
+                                <TokenStorageGuideContent />
                             </SetupInstruction>
                         </div>
                     </MotionDiv>

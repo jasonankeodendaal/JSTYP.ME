@@ -177,7 +177,7 @@ interface AppContextType {
   isStorageConnected: boolean;
   directoryHandle: FileSystemDirectoryHandle | null;
   connectToLocalProvider: () => Promise<void>;
-  connectToCloudProvider: (provider: 'customApi' | 'googleDrive') => void;
+  connectToCloudProvider: (provider: StorageProvider) => void;
   connectToSharedUrl: (url: string) => void;
   disconnectFromStorage: () => void;
   saveFileToStorage: (file: File) => Promise<string>;
@@ -201,6 +201,10 @@ interface AppContextType {
   // FIX: Add kioskSessions and sendRemoteCommand for the remote control feature.
   kioskSessions: KioskSession[];
   sendRemoteCommand: (kioskId: string, command: RemoteCommand) => void;
+  // FIX: Add missing properties for touch sound and screensaver PIN modal.
+  playTouchSound: () => void;
+  isScreensaverPinModalOpen: boolean;
+  setIsScreensaverPinModalOpen: (isOpen: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -251,6 +255,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [bookletModalState, setBookletModalState] = useState<BookletModalState>({ isOpen: false, title: '', imageUrls: [] });
     const [pdfModalState, setPdfModalState] = useState<PdfModalState>({ isOpen: false, url: '', title: '' });
     const [quoteStartModal, setQuoteStartModal] = useState<QuoteStartModalState>({ isOpen: false });
+    // FIX: Add state for the screensaver PIN modal.
+    const [isScreensaverPinModalOpen, setIsScreensaverPinModalOpen] = useState(false);
 
     // TV Player state
     const [activeTvContent, setActiveTvContent] = useState<TvContent | null>(null);
@@ -474,6 +480,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const exitScreensaver = useCallback(() => setIsScreensaverActive(false), []);
     const toggleScreensaver = () => setIsScreensaverEnabled(prev => !prev);
     
+    // --- AUDIO ---
+    const touchSoundRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        // Preload touch sound if URL is provided in settings
+        if (settings.touchSoundUrl) {
+            const audio = new Audio(settings.touchSoundUrl);
+            audio.preload = 'auto';
+            audio.volume = 0.3; 
+            touchSoundRef.current = audio;
+        } else {
+            touchSoundRef.current = null;
+        }
+    }, [settings.touchSoundUrl]);
+
+    const playTouchSound = useCallback(() => {
+        if (touchSoundRef.current) {
+            touchSoundRef.current.currentTime = 0;
+            touchSoundRef.current.play().catch(e => {
+                if (e.name !== 'AbortError') {
+                    console.error("Error playing touch sound:", e);
+                }
+            });
+        }
+    }, []);
+
     // --- REMOTE CONTROL ---
     const remoteControlChannel = useRef<BroadcastChannel | null>(null);
     const kioskInstanceId = useRef(kioskId);
@@ -637,11 +669,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
     const pullFromCloud = useCallback(async (): Promise<boolean> => {
-        const isCustomApi = storageProvider === 'customApi' && settings.customApiUrl;
+        const isCustomApi = storageProvider !== 'local' && storageProvider !== 'none' && storageProvider !== 'sharedUrl';
         const isSharedUrl = storageProvider === 'sharedUrl' && settings.sharedUrl;
         if (!isCustomApi && !isSharedUrl) return false;
         
-        const url = isCustomApi ? settings.customApiUrl : settings.sharedUrl!;
+        const url = (isCustomApi ? settings.customApiUrl : settings.sharedUrl)!;
         setSyncStatus('syncing');
         try {
             const response = await fetch(url, {
@@ -684,8 +716,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
     }, []);
 
-    const connectToCloudProvider = useCallback((provider: 'customApi' | 'googleDrive') => {
-        if (provider === 'customApi') {
+    const connectToCloudProvider = useCallback((provider: StorageProvider) => {
+        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'firebase', 'xano', 'backendless', 'googleDrive', 'dropbox', 'onedrive'];
+        if (apiLikeProviders.includes(provider)) {
             if (!settings.customApiUrl) {
                 alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
                 const settingsSection = document.getElementById('api-settings-section');
@@ -722,7 +755,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const data = await response.json();
                 if (data.status !== 'ok') throw new Error('Invalid server status response.');
                 
-                connectToCloudProvider('customApi');
+                // The provider is set by the UI before calling this, so just confirm.
                 return { success: true, message: 'Successfully connected to Custom API.' };
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -770,7 +803,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
         }
         
-        const isCustomApi = storageProvider === 'customApi';
+        const isCustomApi = storageProvider !== 'local' && storageProvider !== 'none' && storageProvider !== 'sharedUrl';
         const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
 
         if (isCustomApi || isSharedUrlApi) {
@@ -812,7 +845,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
         }
 
-        const isCustomApi = storageProvider === 'customApi';
+        const isCustomApi = storageProvider !== 'local' && storageProvider !== 'none' && storageProvider !== 'sharedUrl';
         const isSharedUrlApi = storageProvider === 'sharedUrl' && isApiEndpoint(settings.sharedUrl);
     
         if (isCustomApi || isSharedUrlApi) {
@@ -878,7 +911,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const performSync = useCallback(() => {
         if (storageProvider === 'local') {
             saveDatabaseToLocal();
-        } else if (storageProvider === 'customApi') {
+        } else if (storageProvider !== 'none' && storageProvider !== 'sharedUrl') {
             pushToCloud();
         }
     }, [storageProvider, saveDatabaseToLocal, pushToCloud]);
@@ -935,7 +968,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                         await idbSet('directoryHandle', null);
                     }
                 }
-            } else if (provider === 'customApi' || provider === 'sharedUrl') {
+            } else if (provider && provider !== 'none') {
                 setStorageProvider(provider);
             }
             setIsDataLoaded(true);
@@ -1096,6 +1129,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // FIX: Add remote control state and functions to context value.
         kioskSessions,
         sendRemoteCommand,
+        // FIX: Add touch sound and screensaver PIN modal properties to context value.
+        playTouchSound,
+        isScreensaverPinModalOpen,
+        setIsScreensaverPinModalOpen,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
