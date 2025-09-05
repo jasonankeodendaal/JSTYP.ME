@@ -122,6 +122,8 @@ export type ScreensaverTransitionEffect = 'fade' | 'slide' | 'scale' | 'slide-fa
 
 
 export interface Settings {
+  appName: string;
+  appDescription: string;
   logoUrl: string;
   sharedUrl?: string;
   customApiUrl: string;

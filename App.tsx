@@ -175,6 +175,74 @@ const AppContent: React.FC = () => {
             applyFontStyles('headings', typography.headings);
             applyFontStyles('item-titles', typography.itemTitles);
         }
+
+        // 3. Update PWA Manifest & Icons
+        const { appName, appDescription, logoUrl, lightTheme, darkTheme } = settings;
+
+        // Update document title and Apple-specific meta tags
+        if (appName) {
+            document.title = appName;
+            const appleTitleEl = document.getElementById('apple-mobile-web-app-title-link');
+            if (appleTitleEl) {
+                appleTitleEl.setAttribute('content', appName);
+            }
+        }
+        if (logoUrl) {
+            const appleIconLink = document.getElementById('apple-touch-icon-link');
+            if (appleIconLink) {
+                appleIconLink.setAttribute('href', logoUrl);
+            }
+        }
+
+        // Dynamically generate and apply the manifest
+        const manifestLink = document.getElementById('manifest-link') as HTMLLinkElement;
+        if (manifestLink && logoUrl && appName) {
+            const updateManifest = async () => {
+                try {
+                    const response = await fetch('./manifest.json');
+                    if (!response.ok) return;
+                    
+                    const manifest = await response.json();
+
+                    manifest.name = appName;
+                    manifest.short_name = appName.length > 12 ? appName.substring(0, 9) + '...' : appName;
+                    manifest.description = appDescription;
+                    manifest.theme_color = darkTheme.mainBg;
+                    manifest.background_color = lightTheme.mainBg;
+
+                    manifest.icons = [
+                        { src: logoUrl, type: "image/png", sizes: "192x192", purpose: "any" },
+                        { src: logoUrl, type: "image/png", sizes: "512x512", purpose: "maskable" }
+                    ];
+                    
+                    if(manifest.shortcuts && Array.isArray(manifest.shortcuts)){
+                        manifest.shortcuts.forEach((shortcut: any) => {
+                            if(shortcut.icons && Array.isArray(shortcut.icons)){
+                                shortcut.icons[0].src = logoUrl;
+                            }
+                        });
+                    }
+
+                    const manifestString = JSON.stringify(manifest);
+                    const manifestBlob = new Blob([manifestString], { type: 'application/json' });
+                    const manifestUrl = URL.createObjectURL(manifestBlob);
+                    
+                    const oldManifestUrl = manifestLink.dataset.blobUrl;
+                    if (oldManifestUrl) {
+                        URL.revokeObjectURL(oldManifestUrl);
+                    }
+
+                    manifestLink.href = manifestUrl;
+                    manifestLink.dataset.blobUrl = manifestUrl;
+
+                } catch (error) {
+                    console.error("Error updating manifest:", error);
+                }
+            };
+            
+            updateManifest();
+        }
+
     }, [settings, theme]);
 
   useEffect(() => {
