@@ -123,22 +123,6 @@ const Screensaver: React.FC = () => {
             mediaUrl: string;
         };
 
-        const productItems: MediaSource[] = products
-            .filter(p => !p.isDiscontinued && !p.isDeleted)
-            .flatMap(product => {
-                const brand = brands.find(b => b.id === product.brandId);
-                const itemBase = {
-                    title: product.name,
-                    brandName: brand?.name,
-                    link: { type: 'product' as const, id: product.id }
-                };
-                const items: MediaSource[] = product.images.map(imageUrl => ({ ...itemBase, mediaType: 'image' as const, mediaUrl: imageUrl }));
-                if (product.video) {
-                    items.push({ ...itemBase, mediaType: 'video' as const, mediaUrl: product.video });
-                }
-                return items;
-            });
-
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const activeAdItems: MediaSource[] = screensaverAds
@@ -156,8 +140,31 @@ const Screensaver: React.FC = () => {
                     link: ad.link,
                 }))
             );
+
+        let sourceMedia: MediaSource[] = [];
+
+        if (settings.screensaverContentSource === 'ads_only') {
+            sourceMedia = activeAdItems;
+        } else { // 'products_and_ads' is the default
+             const productItems: MediaSource[] = products
+                .filter(p => !p.isDiscontinued && !p.isDeleted)
+                .flatMap(product => {
+                    const brand = brands.find(b => b.id === product.brandId);
+                    const itemBase = {
+                        title: product.name,
+                        brandName: brand?.name,
+                        link: { type: 'product' as const, id: product.id }
+                    };
+                    const items: MediaSource[] = product.images.map(imageUrl => ({ ...itemBase, mediaType: 'image' as const, mediaUrl: imageUrl }));
+                    if (product.video) {
+                        items.push({ ...itemBase, mediaType: 'video' as const, mediaUrl: product.video });
+                    }
+                    return items;
+                });
+            sourceMedia = [...productItems, ...activeAdItems];
+        }
         
-        const mediaItems: PlaylistItem[] = [...productItems, ...activeAdItems].map(item => {
+        const mediaItems: PlaylistItem[] = sourceMedia.map(item => {
             const { mediaType, mediaUrl, ...rest } = item;
             return {
                 ...rest,
@@ -190,7 +197,7 @@ const Screensaver: React.FC = () => {
 
         return finalPlaylist;
 
-    }, [products, screensaverAds, brands, settings.screensaverTouchPromptText]);
+    }, [products, screensaverAds, brands, settings.screensaverTouchPromptText, settings.screensaverContentSource]);
 
     const goToNextItem = useCallback(() => {
         if (playlist.length > 0) {

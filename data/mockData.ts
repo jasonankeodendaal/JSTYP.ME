@@ -227,6 +227,7 @@ export const settings: Settings = {
     screensaverImageDuration: 8,
     screensaverTransitionEffect: 'gentle-drift',
     screensaverTouchPromptText: "Touch to Explore",
+    screensaverContentSource: 'products_and_ads',
     typography: {
         googleFontUrl: "",
         body: defaultBodyFont,

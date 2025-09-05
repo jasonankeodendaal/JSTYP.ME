@@ -133,6 +133,7 @@ export interface Settings {
   screensaverImageDuration: number; // in seconds
   screensaverTransitionEffect: 'fade' | 'slide' | 'scale' | 'slide-fade' | 'gentle-drift' | 'reveal-blur';
   screensaverTouchPromptText: string;
+  screensaverContentSource: 'products_and_ads' | 'ads_only';
   typography: {
     googleFontUrl: string;
     body: FontStyleSettings;
