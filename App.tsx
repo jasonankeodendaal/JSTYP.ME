@@ -124,6 +124,28 @@ const useScreensaverManager = () => {
     }, [isScreensaverActive, resetScreensaverTimer]);
 };
 
+// Helper to infer MIME type from a URL or data URI for the PWA manifest
+const getMimeTypeFromUrl = (url: string): string => {
+    if (url.startsWith('data:')) {
+        const match = url.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);/);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    const extensionMatch = url.match(/\.([^.?#]+)(?:[?#]|$)/);
+    const extension = extensionMatch ? extensionMatch[1].toLowerCase() : '';
+    switch (extension) {
+        case 'png': return 'image/png';
+        case 'jpg':
+        case 'jpeg': return 'image/jpeg';
+        case 'svg': return 'image/svg+xml';
+        case 'webp': return 'image/webp';
+        case 'gif': return 'image/gif';
+        case 'ico': return 'image/x-icon';
+        default: return 'image/png'; // Fallback for unknown types
+    }
+};
+
 const AppContent: React.FC = () => {
   const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal, playTouchSound, theme } = useAppContext();
   const location = useLocation();
@@ -210,9 +232,10 @@ const AppContent: React.FC = () => {
                     manifest.theme_color = darkTheme.mainBg;
                     manifest.background_color = lightTheme.mainBg;
 
+                    const logoMimeType = getMimeTypeFromUrl(logoUrl);
                     manifest.icons = [
-                        { src: logoUrl, type: "image/png", sizes: "192x192", purpose: "any" },
-                        { src: logoUrl, type: "image/png", sizes: "512x512", purpose: "maskable" }
+                        { src: logoUrl, type: logoMimeType, sizes: "192x192", purpose: "any" },
+                        { src: logoUrl, type: logoMimeType, sizes: "512x512", purpose: "maskable" }
                     ];
                     
                     if(manifest.shortcuts && Array.isArray(manifest.shortcuts)){
