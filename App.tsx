@@ -60,8 +60,15 @@ const useIdleRedirect = () => {
             if (idleTimer.current) {
                 clearTimeout(idleTimer.current);
             }
-            // Don't start timer on home page, product pages, admin pages, if disabled, or if TV player or any modal is active
-            if (timeout <= 0 || location.pathname === '/' || location.pathname.startsWith('/product/') || location.pathname.startsWith('/admin') || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || quoteStartModal.isOpen) {
+            
+            const isExemptPath = location.pathname === '/' || 
+                                 location.pathname.startsWith('/product/') || 
+                                 location.pathname.startsWith('/admin') ||
+                                 location.pathname.startsWith('/catalogues') || 
+                                 location.pathname.startsWith('/tvs');
+
+            // Don't start timer on exempt paths, if disabled, or if TV player or any modal is active
+            if (timeout <= 0 || isExemptPath || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || quoteStartModal.isOpen) {
                 return;
             }
             idleTimer.current = window.setTimeout(() => {

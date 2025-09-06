@@ -75,7 +75,10 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
         window.speechSynthesis.onvoiceschanged = setupUtterance;
         setupUtterance();
 
-        return cleanupSpeech;
+        return () => {
+            cleanupSpeech();
+            window.speechSynthesis.onvoiceschanged = null; // Remove listener to prevent memory leak
+        };
     }, []);
 
     const handlePlay = () => {

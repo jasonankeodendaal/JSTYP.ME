@@ -171,7 +171,7 @@ export const ChevronDownIcon: React.FC<{ className?: string }> = ({ className })
 );
 
 export const PhotoIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 017.5 0z" /></svg>
 );
 
 export const PencilIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -257,7 +257,7 @@ export const ChevronRightIcon: React.FC<{ className?: string }> = ({ className }
 );
 
 export const BuildingStorefrontIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75v-7.5a.75.75 0 01.75-.75h7.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75zm8.25-9.75h.008v.008h-.008V11.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5v-7.5a.75.75 0 01.75-.75h16.5a.75.75 0 01.75.75v7.5m-18 0h18M12 12h.008v.008H12V12z" /></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.25a.75.75 0 01-.75-.75v-7.5a.75.75 0 01.75-.75h7.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75zm8.25-9.75h.008v.008h-.008V11.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 017.5 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.5v-7.5a.75.75 0 01.75-.75h16.5a.75.75 0 01.75.75v7.5m-18 0h18M12 12h.008v.008H12V12z" /></svg>
 );
 
 export const ChevronUpIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -409,4 +409,7 @@ export const IdentificationIcon: React.FC<{ className?: string }> = ({ className
 );
 
 export const ChatBubbleLeftRightIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72 3.72a1.125 1.125 0 01-1.59 0l-3.72-3.72a1.125 1.125 0 01-.282-1.072V9.422c0-.969.616-1.813 1.5-2.097m0 0A9.006 9.006 0 0012 2.25a9.008 9.008 0 00-9.75 9.75c0 .344.035.68.1.006.208-.073.435-.114.67-.114a1.125 1.125 0 011.125 1.125v4.286c0 .324.0
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72 3.72a1.125 1.125 0 01-1.59 0l-3.72-3.72a1.125 1.125 0 01-.282-1.072V9.422c0-.969.616-1.813 1.5-2.097m0 0A9.006 9.006 0 0012 2.25a9.008 9.008 0 00-9.75 9.75c0 .344.035.68.1.006.208-.073.435-.114.67-.114a1.125 1.125 0 011.125 1.125v4.286c0 .324-.03.642-.08.956a8.996 8.996 0 00-1.753-1.611l-3.23-3.23a1.125 1.125 0 010-1.59l3.23-3.23a8.996 8.996 0 001.753-1.611 1.125 1.125 0 01.08-.956z" />
+    </svg>
+);

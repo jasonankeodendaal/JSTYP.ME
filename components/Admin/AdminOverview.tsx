@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import { CircleStackIcon, CubeIcon, UsersIcon, ClockIcon, SignalIcon, ChartBarIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
+import type { SubTab } from './AdminDashboard.tsx';
 
 interface AdminOverviewProps {
-    setActiveSubTab: (tab: 'brands' | 'analytics' | 'activityLog' | 'remoteControl' | 'clients' | 'users') => void;
+    setActiveSubTab: (tab: SubTab) => void;
 }
 
 const StatCard: React.FC<{ title: string, value: number, icon: React.ReactNode, onClick: () => void }> = ({ title, value, icon, onClick }) => (

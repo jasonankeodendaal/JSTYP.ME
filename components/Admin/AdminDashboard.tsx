@@ -20,7 +20,7 @@ import AdminRemoteControl from './AdminRemoteControl.tsx';
 import { AboutSystem } from '../SetupWizard.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
-type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
+export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
 
 // Keep old type name `Tab` for minimal changes inside the render function
 type Tab = SubTab;
@@ -215,7 +215,7 @@ const AdminDashboard: React.FC = () => {
 
         switch (activeSubTab) {
             case 'overview':
-                return <AdminOverview setActiveSubTab={setActiveSubTab as any} />;
+                return <AdminOverview setActiveSubTab={setActiveSubTab} />;
             case 'remoteControl':
                 return <AdminRemoteControl />;
             case 'brands':
