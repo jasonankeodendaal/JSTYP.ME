@@ -227,10 +227,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
-    const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(() => {
-        const savedUser = localStorage.getItem('kiosk-user');
-        return savedUser ? JSON.parse(savedUser) : null;
-    });
+    const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(null);
 
     const [isSetupComplete, setIsSetupComplete] = useState<boolean>(() => {
         return localStorage.getItem('kioskSetupComplete') === 'true';
@@ -432,14 +429,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             addActivityLog({ actionType: 'LOGOUT', entityType: 'AdminUser', entityId: userToLogOut.id, details: `User "${userToLogOut.firstName}" logged out.` });
         }
         setLoggedInUser(null);
-        localStorage.removeItem('kiosk-user');
     }, [addActivityLog, loggedInUser]);
 
     const login = (userId: string, pin: string) => {
         const user = adminUsers.find(u => u.id === userId && u.pin === pin);
         if (user) {
             setLoggedInUser(user);
-            localStorage.setItem('kiosk-user', JSON.stringify(user));
             addActivityLog({ actionType: 'LOGIN', entityType: 'AdminUser', entityId: user.id, details: `User "${user.firstName}" logged in.` }, user);
             return user;
         }
