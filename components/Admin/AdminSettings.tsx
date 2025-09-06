@@ -292,6 +292,14 @@ const BrandingAndIdentitySection: React.FC<{formData: Settings, onFileChange: an
             onFileChange={(e) => onFileChange(e, 'logoUrl')}
             onRemove={() => onNestedChange('logoUrl', '')}
         />
+        <ImageUpload
+            label="PWA & Shortcut Icon"
+            value={formData.pwaIconUrl || ''}
+            onTextChange={(e) => onNestedChange('pwaIconUrl', e.target.value)}
+            onFileChange={(e) => onFileChange(e, 'pwaIconUrl')}
+            onRemove={() => onNestedChange('pwaIconUrl', '')}
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-4">Used for the homescreen icon when the app is installed on a device. Should be a square image, at least 512x512px. If left empty, the main logo will be used.</p>
         <div>
             <label htmlFor="kioskId" className={labelStyle}>Unique Kiosk ID</label>
             <input id="kioskId" type="text" readOnly={!loggedInUser?.isMainAdmin} value={kioskId} onChange={(e) => setKioskId(e.target.value)}

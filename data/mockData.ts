@@ -216,6 +216,7 @@ export const settings: Settings = {
     appName: "Product Catalogue",
     appDescription: "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
     logoUrl: "data:image/svg+xml,%3csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='50' cy='50' r='48' fill='%23FFFFFF' stroke='%23E5E7EB' stroke-width='4' /%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat, sans-serif' font-size='16' font-weight='800' fill='%23475569'%3eLogo%3c/text%3e%3c/svg%3e",
+    pwaIconUrl: "",
     sharedUrl: "",
     customApiUrl: "",
     customApiKey: "",

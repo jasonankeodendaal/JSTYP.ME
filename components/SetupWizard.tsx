@@ -43,64 +43,77 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
     const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    const cleanupSpeech = () => {
+    const speak = useCallback(() => {
+        if (!contentRef.current) {
+            console.error("Content ref not available for TTS");
+            return;
+        }
+
         if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
             window.speechSynthesis.cancel();
         }
-    };
 
-    useEffect(() => {
-        const setupUtterance = () => {
-            if (!contentRef.current) return;
+        const elementsToRead = contentRef.current.querySelectorAll('[data-speech]');
+        const textToSpeak = Array.from(elementsToRead).map(el => el.textContent?.trim()).join('. ');
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utteranceRef.current = utterance;
 
-            const elementsToRead = contentRef.current?.querySelectorAll('[data-speech]');
-            const textToSpeak = Array.from(elementsToRead).map(el => el.textContent).join('. ');
+        const voices = window.speechSynthesis.getVoices();
+        let selectedVoice = voices.find(v => v.name === 'Google US English' && v.lang.startsWith('en')) || null;
+        if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en-US')) || null;
+        if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en')) || null;
+        if (selectedVoice) utterance.voice = selectedVoice;
 
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            
-            const voices = window.speechSynthesis.getVoices();
-            let selectedVoice = voices.find(v => v.name === 'Google US English' && v.lang.startsWith('en')) || null;
-            if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en-US') && v.name.toLowerCase().includes('male')) || null;
-            if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')) || null;
-            if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en') && !v.name.toLowerCase().includes('female')) || null; // Fallback to any non-female english voice
-            if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('en')) || null; // Final fallback
-
-            if (selectedVoice) utterance.voice = selectedVoice;
-
-            utterance.onend = () => setSpeechState('idle');
-            utterance.onerror = () => setSpeechState('idle');
-            utteranceRef.current = utterance;
+        utterance.onstart = () => setSpeechState('playing');
+        utterance.onend = () => {
+            setSpeechState('idle');
+            utteranceRef.current = null;
+        };
+        utterance.onpause = () => setSpeechState('paused');
+        utterance.onresume = () => setSpeechState('playing');
+        utterance.onerror = (event) => {
+            console.error('TTS Error:', event.error);
+            setSpeechState('idle');
+            utteranceRef.current = null;
         };
 
-        window.speechSynthesis.onvoiceschanged = setupUtterance;
-        setupUtterance();
+        window.speechSynthesis.speak(utterance);
+    }, [contentRef]);
 
-        return () => {
-            cleanupSpeech();
-            window.speechSynthesis.onvoiceschanged = null; // Remove listener to prevent memory leak
-        };
-    }, []);
-
-    const handlePlay = () => {
-        if (!utteranceRef.current) return;
-        if (speechState === 'paused') {
+    const handlePlay = useCallback(() => {
+        if (speechState === 'paused' && utteranceRef.current) {
             window.speechSynthesis.resume();
-        } else {
-            cleanupSpeech();
-            window.speechSynthesis.speak(utteranceRef.current);
+            return;
         }
-        setSpeechState('playing');
-    };
+
+        if (window.speechSynthesis.getVoices().length > 0) {
+            speak();
+        } else {
+            window.speechSynthesis.onvoiceschanged = () => {
+                speak();
+                window.speechSynthesis.onvoiceschanged = null;
+            };
+            window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+            window.speechSynthesis.cancel();
+        }
+    }, [speak, speechState]);
 
     const handlePause = () => {
         window.speechSynthesis.pause();
-        setSpeechState('paused');
     };
 
     const handleStop = () => {
-        cleanupSpeech();
+        window.speechSynthesis.cancel();
         setSpeechState('idle');
+        utteranceRef.current = null;
     };
+
+    useEffect(() => {
+        return () => {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.onvoiceschanged = null;
+        };
+    }, []);
     
     return (
         <div ref={contentRef}>

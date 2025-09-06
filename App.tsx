@@ -206,7 +206,8 @@ const AppContent: React.FC = () => {
         }
 
         // 3. Update PWA Manifest & Icons
-        const { appName, appDescription, logoUrl, lightTheme, darkTheme } = settings;
+        const { appName, appDescription, logoUrl, pwaIconUrl, lightTheme, darkTheme } = settings;
+        const iconUrl = pwaIconUrl || logoUrl;
 
         // Update document title and Apple-specific meta tags
         if (appName) {
@@ -216,16 +217,16 @@ const AppContent: React.FC = () => {
                 appleTitleEl.setAttribute('content', appName);
             }
         }
-        if (logoUrl) {
+        if (iconUrl) {
             const appleIconLink = document.getElementById('apple-touch-icon-link');
             if (appleIconLink) {
-                appleIconLink.setAttribute('href', logoUrl);
+                appleIconLink.setAttribute('href', iconUrl);
             }
         }
 
         // Dynamically generate and apply the manifest
         const manifestLink = document.getElementById('manifest-link') as HTMLLinkElement;
-        if (manifestLink && logoUrl && appName) {
+        if (manifestLink && iconUrl && appName) {
             const updateManifest = async () => {
                 try {
                     const response = await fetch('./manifest.json');
@@ -239,16 +240,16 @@ const AppContent: React.FC = () => {
                     manifest.theme_color = darkTheme.mainBg;
                     manifest.background_color = lightTheme.mainBg;
 
-                    const logoMimeType = getMimeTypeFromUrl(logoUrl);
+                    const logoMimeType = getMimeTypeFromUrl(iconUrl);
                     manifest.icons = [
-                        { src: logoUrl, type: logoMimeType, sizes: "192x192", purpose: "any" },
-                        { src: logoUrl, type: logoMimeType, sizes: "512x512", purpose: "maskable" }
+                        { src: iconUrl, type: logoMimeType, sizes: "192x192", purpose: "any" },
+                        { src: iconUrl, type: logoMimeType, sizes: "512x512", purpose: "maskable" }
                     ];
                     
                     if(manifest.shortcuts && Array.isArray(manifest.shortcuts)){
                         manifest.shortcuts.forEach((shortcut: any) => {
                             if(shortcut.icons && Array.isArray(shortcut.icons)){
-                                shortcut.icons[0].src = logoUrl;
+                                shortcut.icons[0].src = iconUrl;
                             }
                         });
                     }

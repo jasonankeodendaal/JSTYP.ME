@@ -125,6 +125,7 @@ export interface Settings {
   appName: string;
   appDescription: string;
   logoUrl: string;
+  pwaIconUrl?: string;
   sharedUrl?: string;
   customApiUrl: string;
   customApiKey: string;
