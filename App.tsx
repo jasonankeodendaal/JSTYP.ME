@@ -43,6 +43,7 @@ import StockPick from './components/Admin/StockPick.tsx';
 import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
 import type { FontStyleSettings } from './types';
+import { idbSet } from './components/context/idb.ts';
 
 
 // Register Swiper custom elements
@@ -205,11 +206,11 @@ const AppContent: React.FC = () => {
             applyFontStyles('item-titles', typography.itemTitles);
         }
 
-        // 3. Update PWA Manifest & Icons
+        // 3. Update PWA Manifest Data in IndexedDB
         const { appName, appDescription, logoUrl, pwaIconUrl, lightTheme, darkTheme } = settings;
         const iconUrl = pwaIconUrl || logoUrl;
 
-        // Update document title and Apple-specific meta tags
+        // Update document title and Apple-specific meta tags (still needed for non-PWA context)
         if (appName) {
             document.title = appName;
             const appleTitleEl = document.getElementById('apple-mobile-web-app-title-link');
@@ -224,55 +225,20 @@ const AppContent: React.FC = () => {
             }
         }
 
-        // Dynamically generate and apply the manifest
-        const manifestLink = document.getElementById('manifest-link') as HTMLLinkElement;
-        if (manifestLink && iconUrl && appName) {
-            const updateManifest = async () => {
-                try {
-                    const response = await fetch('./manifest.json');
-                    if (!response.ok) return;
-                    
-                    const manifest = await response.json();
-
-                    manifest.name = appName;
-                    manifest.short_name = appName.length > 12 ? appName.substring(0, 9) + '...' : appName;
-                    manifest.description = appDescription;
-                    manifest.theme_color = darkTheme.mainBg;
-                    manifest.background_color = lightTheme.mainBg;
-
-                    const logoMimeType = getMimeTypeFromUrl(iconUrl);
-                    manifest.icons = [
-                        { src: iconUrl, type: logoMimeType, sizes: "192x192", purpose: "any" },
-                        { src: iconUrl, type: logoMimeType, sizes: "512x512", purpose: "maskable" }
-                    ];
-                    
-                    if(manifest.shortcuts && Array.isArray(manifest.shortcuts)){
-                        manifest.shortcuts.forEach((shortcut: any) => {
-                            if(shortcut.icons && Array.isArray(shortcut.icons)){
-                                shortcut.icons[0].src = iconUrl;
-                            }
-                        });
-                    }
-
-                    const manifestString = JSON.stringify(manifest);
-                    const manifestBlob = new Blob([manifestString], { type: 'application/json' });
-                    const manifestUrl = URL.createObjectURL(manifestBlob);
-                    
-                    const oldManifestUrl = manifestLink.dataset.blobUrl;
-                    if (oldManifestUrl) {
-                        URL.revokeObjectURL(oldManifestUrl);
-                    }
-
-                    manifestLink.href = manifestUrl;
-                    manifestLink.dataset.blobUrl = manifestUrl;
-
-                } catch (error) {
-                    console.error("Error updating manifest:", error);
-                }
-            };
-            
-            updateManifest();
-        }
+        // Save manifest data to IndexedDB for the Service Worker to use
+        const manifestData = {
+            name: appName,
+            short_name: appName.length > 12 ? appName.substring(0, 9) + '...' : appName,
+            description: appDescription,
+            theme_color: darkTheme.mainBg,
+            background_color: lightTheme.mainBg,
+            iconUrl: iconUrl,
+            iconType: getMimeTypeFromUrl(iconUrl)
+        };
+        
+        idbSet('dynamic-manifest-data', manifestData).catch(err => {
+            console.error("Failed to save dynamic manifest data to IDB:", err);
+        });
 
     }, [settings, theme]);
 

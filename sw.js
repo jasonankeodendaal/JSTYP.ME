@@ -1,10 +1,9 @@
-const CACHE_NAME = 'product-catalogue-cache-v6'; // Incremented version
-const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v6'; // Incremented version
+const CACHE_NAME = 'product-catalogue-cache-v7'; // Incremented version
+const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v7'; // Incremented version
 
 // Use relative paths for the app shell to avoid issues in sandboxed/nested environments.
 const APP_SHELL_URLS = [
   './',
-  // './manifest.json', // FIX: Removed from app shell to ensure it's always fetched from the network.
   './index.css',
 ];
 
@@ -33,6 +32,36 @@ const IMMUTABLE_URLS = [
   'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700;800;900&display=swap'
 ];
 
+// --- IndexedDB Helper for Service Worker ---
+const DB_NAME = 'KioskStateDB';
+const STORE_NAME = 'KeyValueStore';
+const DB_VERSION = 1;
+
+function getDb() {
+    return new Promise((resolve, reject) => {
+        const request = self.indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = (event) => reject(`IndexedDB error: ${event.target.error}`);
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+    });
+}
+
+async function idbGet(key) {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => reject(`Failed to get data from IDB: ${event.target.error}`);
+    });
+}
+// --- End IndexedDB Helper ---
 
 self.addEventListener('install', event => {
   console.log('Service Worker: Installing...');
@@ -40,8 +69,9 @@ self.addEventListener('install', event => {
     Promise.all([
         caches.open(CACHE_NAME).then(cache => {
             console.log('Service Worker: Caching App Shell');
-            // Using reload to bypass browser cache during installation
-            const requests = APP_SHELL_URLS.map(url => new Request(url, { cache: 'reload' }));
+            // Add manifest.json to the app shell so we have a template
+            const urlsToCache = [...APP_SHELL_URLS, './manifest.json'];
+            const requests = urlsToCache.map(url => new Request(url, { cache: 'reload' }));
             return cache.addAll(requests);
         }),
         caches.open(IMMUTABLE_CACHE_NAME).then(cache => {
@@ -69,12 +99,67 @@ self.addEventListener('activate', event => {
   );
 });
 
+async function generateManifestResponse() {
+    try {
+        // Fetch the base manifest from cache first
+        const cache = await caches.open(CACHE_NAME);
+        let baseManifestResponse = await cache.match('./manifest.json');
+
+        // If not in cache, fetch from network
+        if (!baseManifestResponse) {
+            baseManifestResponse = await fetch('./manifest.json');
+        }
+
+        const baseManifest = await baseManifestResponse.json();
+        
+        // Get dynamic data from IndexedDB
+        const dynamicData = await idbGet('dynamic-manifest-data');
+
+        if (dynamicData) {
+            baseManifest.name = dynamicData.name || baseManifest.name;
+            baseManifest.short_name = dynamicData.short_name || baseManifest.short_name;
+            baseManifest.description = dynamicData.description || baseManifest.description;
+            baseManifest.theme_color = dynamicData.theme_color || baseManifest.theme_color;
+            baseManifest.background_color = dynamicData.background_color || baseManifest.background_color;
+
+            if (dynamicData.iconUrl) {
+                baseManifest.icons = [
+                    { src: dynamicData.iconUrl, type: dynamicData.iconType, sizes: "192x192", purpose: "any" },
+                    { src: dynamicData.iconUrl, type: dynamicData.iconType, sizes: "512x512", purpose: "maskable" }
+                ];
+                 if(baseManifest.shortcuts && Array.isArray(baseManifest.shortcuts)){
+                    baseManifest.shortcuts.forEach(shortcut => {
+                        if(shortcut.icons && Array.isArray(shortcut.icons)){
+                            shortcut.icons[0].src = dynamicData.iconUrl;
+                        }
+                    });
+                }
+            }
+        }
+
+        return new Response(JSON.stringify(baseManifest), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        console.error('Error generating manifest:', error);
+        // Fallback to cached or network manifest if IDB fails
+        return caches.match('./manifest.json') || fetch('./manifest.json');
+    }
+}
+
+
 self.addEventListener('fetch', event => {
     const { request } = event;
     const url = new URL(request.url);
 
     // Only handle GET requests
     if (request.method !== 'GET') {
+        return;
+    }
+    
+    // Special handling for manifest.json
+    if (url.pathname.endsWith('/manifest.json')) {
+        event.respondWith(generateManifestResponse());
         return;
     }
 
@@ -84,7 +169,6 @@ self.addEventListener('fetch', event => {
         event.respondWith(
             caches.open(IMMUTABLE_CACHE_NAME).then(cache => {
                 return cache.match(request).then(response => {
-                    // Return from cache, or fetch and cache if not found
                     return response || fetch(request).then(networkResponse => {
                         if (networkResponse.ok) {
                             cache.put(request, networkResponse.clone());
@@ -94,38 +178,31 @@ self.addEventListener('fetch', event => {
                 });
             })
         );
-        return; // Don't process further
+        return;
     }
 
     // Strategy 2: Network-first, bypassing browser cache, for everything else.
-    // This ensures that when online, the user always gets the freshest content.
     event.respondWith(
         (async () => {
             try {
-                // Create a new request that bypasses the browser's HTTP cache to get the latest version.
                 const networkRequest = new Request(request, { cache: 'reload' });
                 const networkResponse = await fetch(networkRequest);
 
-                // If the fetch is successful, update our dynamic cache with the fresh response.
                 if (networkResponse.ok) {
                     const cache = await caches.open(CACHE_NAME);
                     cache.put(request, networkResponse.clone());
                 }
                 return networkResponse;
             } catch (error) {
-                // If the network request fails (e.g., offline), fall back to the cache.
                 console.log('Network request failed, trying cache for:', request.url);
                 const cachedResponse = await caches.match(request);
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                // For page navigation requests that aren't in the cache, return the main app shell page.
                 if (request.mode === 'navigate') {
                     const rootCache = await caches.match('./');
                     if (rootCache) return rootCache;
                 }
-                // If the resource is not in the cache and the network is down, let the browser handle it.
-                // This will result in the standard "You are offline" browser page for the failed resource.
                 return new Response("Network error: The resource is not available in the cache.", {
                     status: 408,
                     statusText: "Request Timeout",
