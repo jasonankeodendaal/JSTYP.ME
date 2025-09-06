@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-// FIX: Switched from a namespace import to named imports for pdfjs-dist to resolve type errors.
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf.js';
+// FIX: Switched to a namespace import to resolve module resolution errors.
+import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
 
 interface ConvertedPage {
     pageNumber: number;
@@ -19,8 +19,8 @@ interface PdfImportModalProps {
 const MotionDiv = motion.div as any;
 
 // Set the worker source once for all PDF operations in this module.
-// FIX: Set workerSrc directly on the named import 'GlobalWorkerOptions'.
-GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+// FIX: Set workerSrc on the pdfjsLib namespace.
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete }) => {
     const { saveFileToStorage } = useAppContext();
@@ -65,8 +65,8 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         setProgress('Reading PDF...');
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
-            // FIX: Use the named import 'getDocument' directly.
-            const pdf = await getDocument({ data: arrayBuffer }).promise;
+            // FIX: Use getDocument from the pdfjsLib namespace.
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const numPages = pdf.numPages;
             const newPages: ConvertedPage[] = [];
 
@@ -133,8 +133,8 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         try {
             const savedPaths: string[] = [];
             const arrayBuffer = await file!.arrayBuffer();
-            // FIX: Use the named import 'getDocument' directly.
-            const pdf = await getDocument({ data: arrayBuffer }).promise;
+            // FIX: Use getDocument from the pdfjsLib namespace.
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             const pagesToProcess = Array.from(selectedPages).sort((a,b) => a-b);
             let processedCount = 0;
 

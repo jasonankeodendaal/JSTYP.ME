@@ -704,7 +704,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
 
     const connectToCloudProvider = useCallback((provider: StorageProvider) => {
-        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'firebase', 'xano', 'backendless', 'googleDrive', 'dropbox', 'onedrive'];
+        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'firebase', 'xano', 'backendless'];
         if (apiLikeProviders.includes(provider)) {
             if (!settings.customApiUrl) {
                 alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");

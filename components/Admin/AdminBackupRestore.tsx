@@ -15,9 +15,6 @@ const SyncStatusIndicator: React.FC = () => {
         local: 'Local Folder',
         customApi: 'Custom API',
         sharedUrl: 'Shared URL',
-        googleDrive: 'Google Drive',
-        dropbox: 'Dropbox',
-        onedrive: 'OneDrive',
         supabase: 'Supabase',
         firebase: 'Firebase',
         vercel: 'Vercel',
@@ -199,7 +196,6 @@ const AdminBackupRestore: React.FC = () => {
         switch (storageProvider) {
             case 'customApi':
             case 'sharedUrl':
-            case 'googleDrive':
             case 'supabase':
             case 'firebase':
             case 'vercel':
@@ -210,7 +206,6 @@ const AdminBackupRestore: React.FC = () => {
                 const providerName = {
                     sharedUrl: 'Shared URL',
                     customApi: 'Custom API',
-                    googleDrive: 'Google Drive',
                     supabase: 'Supabase',
                     firebase: 'Firebase',
                     vercel: 'Vercel',

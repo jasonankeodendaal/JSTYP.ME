@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import type { Settings } from '../../types';
-import LocalMedia from '../LocalMedia';
-import { SearchIcon, SunIcon, MoonIcon } from '../Icons';
+import type { Settings } from '../../types.ts';
+import LocalMedia from '../LocalMedia.tsx';
+import { SearchIcon, SunIcon, MoonIcon } from '../Icons.tsx';
 
 interface KioskPreviewProps {
     settings: Settings;
@@ -35,7 +35,7 @@ const KioskPreview: React.FC<KioskPreviewProps> = ({ settings }) => {
     const headerBgStyle: React.CSSProperties = {
         position: 'absolute',
         top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: `url(${settings.header.backgroundImageUrl})`,
+        backgroundImage: settings.header.backgroundImageUrl ? `url(${settings.header.backgroundImageUrl})` : 'none',
         backgroundColor: settings.header.backgroundColor,
         opacity: settings.header.backgroundImageOpacity,
         zIndex: -1,
@@ -50,7 +50,7 @@ const KioskPreview: React.FC<KioskPreviewProps> = ({ settings }) => {
     const footerBgStyle: React.CSSProperties = {
         position: 'absolute',
         top: 0, left: 0, right: 0, bottom: 0,
-        backgroundImage: `url(${settings.footer.backgroundImageUrl})`,
+        backgroundImage: settings.footer.backgroundImageUrl ? `url(${settings.footer.backgroundImageUrl})` : 'none',
         backgroundColor: settings.footer.backgroundColor,
         opacity: settings.footer.backgroundImageOpacity,
         zIndex: -1,

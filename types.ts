@@ -189,7 +189,7 @@ export interface Settings {
   lastUpdated?: number; // Timestamp for sync checking
 }
 
-export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'googleDrive' | 'dropbox' | 'onedrive' | 'supabase' | 'firebase' | 'vercel' | 'netlify' | 'aws' | 'xano' | 'backendless' | 'none';
+export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'supabase' | 'firebase' | 'vercel' | 'netlify' | 'aws' | 'xano' | 'backendless' | 'none';
 
 export type AdLink =
   | { type: 'brand'; id: string; }

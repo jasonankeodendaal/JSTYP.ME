@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { ServerStackIcon, ChevronDownIcon, LinkIcon, CodeBracketIcon, GoogleDriveIcon, DropboxIcon, OneDriveIcon, SupabaseIcon, FirebaseIcon, VercelIcon, NetlifyIcon, AwsIcon, XanoIcon, BackendlessIcon, XIcon } from '../Icons.tsx';
+import { ServerStackIcon, ChevronDownIcon, LinkIcon, CodeBracketIcon, SupabaseIcon, FirebaseIcon, VercelIcon, NetlifyIcon, AwsIcon, XanoIcon, BackendlessIcon, XIcon } from '../Icons.tsx';
 import { Link } from 'react-router-dom';
 import InstallPrompt from '../InstallPrompt.tsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { StorageProvider } from '../../types.ts';
 import SetupInstruction from './SetupInstruction.tsx';
-import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent, DropboxGuideContent, GoogleDriveGuideContent } from './SetupGuides.tsx';
+import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent } from './SetupGuides.tsx';
 
 
 const MotionDiv = motion.div as any;
@@ -23,9 +23,6 @@ interface Provider {
 }
 
 const PROVIDERS: Provider[] = [
-    { id: 'googleDrive', name: 'Google Drive', description: 'Sync using the Google Drive API.', icon: <GoogleDriveIcon />, category: 'storage', config: ['url', 'apiKey'], placeholders: { url: 'API Endpoint URL', apiKey: 'Access Token' }, guide: GoogleDriveGuideContent },
-    { id: 'dropbox', name: 'Dropbox', description: 'Connect to a Dropbox app for file syncing.', icon: <DropboxIcon />, category: 'storage', config: ['url', 'apiKey'], placeholders: { url: 'API Endpoint URL', apiKey: 'Access Token' }, guide: DropboxGuideContent },
-    { id: 'onedrive', name: 'OneDrive', description: 'Use Microsoft OneDrive via the Graph API.', icon: <OneDriveIcon />, category: 'storage', config: ['url', 'apiKey'], placeholders: { url: 'MS Graph Endpoint', apiKey: 'Access Token' }, guide: GoogleDriveGuideContent }, // Similar setup to Google Drive
     { id: 'supabase', name: 'Supabase', description: 'Connect to a Supabase project for a powerful PostgreSQL backend.', icon: <SupabaseIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'Project URL', apiKey: 'Anon Key' }, guide: SupabaseGuideContent },
     { id: 'firebase', name: 'Firebase', description: 'Utilize Firebase Realtime Database for live data syncing.', icon: <FirebaseIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'Database URL', apiKey: 'Web API Key' }, guide: CloudSyncGuideContent },
     { id: 'xano', name: 'Xano', description: 'Connect to a Xano no-code backend instance.', icon: <XanoIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'API Group Base URL' }, guide: CloudSyncGuideContent },

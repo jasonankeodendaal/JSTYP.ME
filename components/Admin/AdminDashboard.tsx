@@ -5,7 +5,7 @@ import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon, IdentificationIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -17,9 +17,10 @@ import AdminClientManagement from './AdminClientManagement.tsx';
 import AdminActivityLog from './AdminActivityLog.tsx';
 import AdminOverview from './AdminOverview.tsx';
 import AdminRemoteControl from './AdminRemoteControl.tsx';
+import { AboutSystem } from '../SetupWizard.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
-type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog';
+type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
 
 // Keep old type name `Tab` for minimal changes inside the render function
 type Tab = SubTab;
@@ -458,6 +459,8 @@ const AdminDashboard: React.FC = () => {
                 return <AdminAnalytics />;
             case 'activityLog':
                 return <AdminActivityLog />;
+            case 'about':
+                return <AboutSystem isDashboard={true} />;
             default: return null;
         }
     }
@@ -467,8 +470,6 @@ const AdminDashboard: React.FC = () => {
 
         const contentTabs = [
             { id: 'brands' as SubTab, label: 'Brands & Products', icon: <CircleStackIcon className="h-4 w-4"/>, perm: canManageBrands },
-            { id: 'quotes' as SubTab, label: 'Quotes', icon: <ClipboardDocumentListIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
-            { id: 'clients' as SubTab, label: 'Clients', icon: <BuildingStorefrontIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
             { id: 'catalogues' as SubTab, label: 'Catalogues', icon: <BookOpenIcon className="h-4 w-4"/>, perm: canManageCatalogues },
             { id: 'pamphlets' as SubTab, label: 'Pamphlets', icon: <DocumentTextIcon className="h-4 w-4"/>, perm: canManagePamphlets },
             { id: 'screensaverAds' as SubTab, label: 'Screensaver', icon: <EyeIcon className="h-4 w-4"/>, perm: canManageScreensaver },
@@ -484,10 +485,13 @@ const AdminDashboard: React.FC = () => {
 
         const adminTabs = [
             { id: 'overview' as SubTab, label: 'Overview', icon: <HomeIcon className="h-4 w-4" />, perm: true },
+            { id: 'quotes' as SubTab, label: 'Quotes', icon: <ClipboardDocumentListIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
+            { id: 'clients' as SubTab, label: 'Clients', icon: <BuildingStorefrontIcon className="h-4 w-4" />, perm: canManageQuotesAndClients },
             { id: 'analytics' as SubTab, label: 'Analytics', icon: <ChartPieIcon className="h-4 w-4"/>, perm: canViewAnalytics },
             { id: 'remoteControl' as SubTab, label: 'Remote Control', icon: <ComputerDesktopIcon className="h-4 w-4" />, perm: loggedInUser?.isMainAdmin },
             { id: 'activityLog' as SubTab, label: 'Activity Log', icon: <DocumentTextIcon className="h-4 w-4" />, perm: true },
             { id: 'users' as SubTab, label: 'Users', icon: <UsersIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
+            { id: 'about' as SubTab, label: 'About', icon: <IdentificationIcon className="h-4 w-4"/>, perm: true },
         ];
 
         let tabsToShow: { id: SubTab, label: string, icon: React.ReactNode, perm?: boolean }[] = [];

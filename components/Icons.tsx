@@ -346,23 +346,30 @@ export const MagnifyingGlassMinusIcon: React.FC<{ className?: string }> = ({ cla
         <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5h-6" />
     </svg>
 );
+
+export const PlayIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+    </svg>
+);
+
+export const PauseIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+    </svg>
+);
+
+export const StopIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z" />
+    </svg>
+);
+
 // FIX: Add missing icons for storage providers.
 export const CodeBracketIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
     </svg>
-);
-
-export const GoogleDriveIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M2.86 14.143 0 19.143l7.857-8.823-5 3.823zM9.33 24l-3.606-6.25h7.21L9.33 24zm7.384-8.143h7.21l-3.606 6.25-3.605-6.25zm-3.098-8.001L9.366 14.11l-4.25-9.322h7.21zm.001 0 3.606-6.249 4.25 9.322h-7.857zM14.32 1.608 10.714 7.858h7.21l3.605-6.25H14.32z"/></svg>
-);
-
-export const DropboxIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="m12 7.77-5.25 3.033L12 13.834 17.25 10.8l-5.25-3.03m0-2.22 5.25 3.033L12 11.615 6.75 8.583 12 5.55M6.75 13.834 12 16.867l5.25-3.033L12 10.8l-5.25 3.034m-1.5-1.5 5.25 3.033L12 19.417 6.75 16.383 1.5 13.35l5.25-3.033m15 0 5.25 3.033-5.25 3.034-5.25-3.033 5.25-3.033L22.5 13.35l-5.25 3.033-5.25-3.033"/></svg>
-);
-
-export const OneDriveIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12.923 2.585c-3.133.226-5.83 2.112-7.653 4.54-1.226 1.635-1.897 3.523-2.074 5.48-.44 4.808 2.91 8.868 7.398 8.868h9.117c2.516 0 4.84-2.228 4.84-5.21 0-2.88-2.21-5.147-4.87-5.21-1.04-.03-2.01.27-2.88.85-.3.19-.6.41-.86.66-.41.38-1.01.62-1.63.62-.2 0-.39-.03-.58-.09-.59-.16-1.12-.52-1.46-1-.28-.38-.63-.7-.98-.95-1.33-1.02-3.1-1.55-4.73-1.61zm-1.68 1.458c1.38.05 2.7.46 3.8 1.28.32.24.6.53.81.87.57.88.75 1.95.42 2.96-.13.39-.33.74-.57 1.05-.18.23-.39.43-.6.6-.78.64-1.78.96-2.77.82-2.1-.29-3.7-2.06-3.74-4.22-.03-1.53.86-2.9 2.22-3.52 1.05-.48 2.23-.52 3.43-.84zm-3.48 7.34c3.54-.1 6.88 2.5 7.15 6.13-.26 2.37-2.58 4.02-4.93 4.02h-7.66C4.463 22.473.6 18.773.93 14.18c.24-3.23 3-5.74 6.22-5.79h.61z"/></svg>
 );
 
 export const SupabaseIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -392,3 +399,14 @@ export const XanoIcon: React.FC<{ className?: string }> = ({ className }) => (
 export const BackendlessIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className={className}><path d="M12 0L2.4 6v12L12 24l9.6-6V6L12 0zm7.2 16.8l-7.2 4.2-7.2-4.2V7.2l7.2-4.2 7.2 4.2v9.6zM12 2.19l8.4 4.91v9.8L12 21.81l-8.4-4.91V7.1L12 2.19m0 2.4l-7.2 4.2v8.4l7.2 4.2 7.2-4.2V9.01l-7.2-4.21M12 5.5l6 3.5v7l-6 3.5-6-3.5v-7l6-3.5m0 1.1L7.2 9.8v5.6L12 18.6l4.8-3.2V9.8L12 6.6z"/></svg>
 );
+
+export const PaintBrushIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 01-3.388 1.62m-5.043-.025a15.998 15.998 0 00-3.388-1.62m5.043.025a15.998 15.998 0 013.388-1.62" /></svg>
+);
+
+export const IdentificationIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+);
+
+export const ChatBubbleLeftRightIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72 3.72a1.125 1.125 0 01-1.59 0l-3.72-3.72a1.125 1.125 0 01-.282-1.072V9.422c0-.969.616-1.813 1.5-2.097m0 0A9.006 9.006 0 0012 2.25a9.008 9.008 0 00-9.75 9.75c0 .344.035.68.1.006.208-.073.435-.114.67-.114a1.125 1.125 0 011.125 1.125v4.286c0 .324.0
