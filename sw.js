@@ -4,7 +4,7 @@ const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v6'; // Incremented ve
 // Use relative paths for the app shell to avoid issues in sandboxed/nested environments.
 const APP_SHELL_URLS = [
   './',
-  './manifest.json',
+  // './manifest.json', // FIX: Removed from app shell to ensure it's always fetched from the network.
   './index.css',
 ];
 

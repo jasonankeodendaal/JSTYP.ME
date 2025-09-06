@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon, MoonIcon, SunIcon, SearchIcon } from '../Icons.tsx';
+import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon, MoonIcon, SunIcon, SearchIcon, ArrowPathIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
 import LocalMedia from '../LocalMedia.tsx';
 import { Link } from 'react-router-dom';
@@ -150,6 +150,7 @@ const AdminSettings: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+    const [showReloadNotice, setShowReloadNotice] = useState(false);
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSettings;
 
@@ -188,6 +189,7 @@ const AdminSettings: React.FC = () => {
         setTimeout(() => {
             setSaving(false);
             setSaved(true);
+            setShowReloadNotice(true);
             setTimeout(() => setSaved(false), 2000);
         }, 300);
     };
@@ -217,11 +219,33 @@ const AdminSettings: React.FC = () => {
                         <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
                         <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} />
 
-                        <div className="pt-8 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                            <button type="submit" className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`} disabled={saving || saved}>
-                                <SaveIcon className="h-4 w-4" />
-                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save All Settings')}
-                            </button>
+                        <div className="pt-8 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                             <AnimatePresence>
+                                {showReloadNotice && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        className="bg-blue-100 dark:bg-blue-900/50 border-l-4 border-blue-500 text-blue-800 dark:text-blue-200 p-4 rounded-r-lg flex justify-between items-center"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <ArrowPathIcon className="h-5 w-5 flex-shrink-0" />
+                                            <p className="text-sm font-medium">
+                                                Please reload the application for PWA icon and name changes to apply.
+                                            </p>
+                                        </div>
+                                        <button type="button" onClick={() => setShowReloadNotice(false)} className="p-1.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800/60">
+                                            <XIcon className="h-4 w-4" />
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            <div className="flex justify-end">
+                                <button type="submit" className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`} disabled={saving || saved}>
+                                    <SaveIcon className="h-4 w-4" />
+                                    {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save All Settings')}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
