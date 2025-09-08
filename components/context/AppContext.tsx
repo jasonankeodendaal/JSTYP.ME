@@ -1,4 +1,3 @@
-
 /// <reference path="../../swiper.d.ts" />
 
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
@@ -200,9 +199,9 @@ interface AppContextType {
   isScreensaverPinModalOpen: boolean;
   setIsScreensaverPinModalOpen: (isOpen: boolean) => void;
   uploadProjectZip: (file: File) => Promise<void>;
-  // FIX: Add missing property `apkDownloadUrl` to satisfy the ApkDownloadCTA component.
+  projectZipBlob: Blob | null;
+  uploadProjectZipToLocalDB: (file: File) => Promise<void>;
   apkDownloadUrl: string;
-  // FIX: Add missing backup properties
   backupProgress: BackupProgress;
   setBackupProgress: (progress: Partial<BackupProgress>) => void;
   createZipBackup: () => Promise<void>;
@@ -236,9 +235,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [viewCounts, setViewCounts] = useState<ViewCounts>(initialViewCounts);
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialActivityLogs);
     const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
-    // FIX: Add state for the APK download URL.
     const [apkDownloadUrl, setApkDownloadUrl] = useState<string>('');
     const [backupProgress, setBackupProgressState] = useState<BackupProgress>({ active: false, message: '', percent: 0 });
+    const [projectZipBlob, setProjectZipBlob] = useState<Blob | null>(null);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(null);
@@ -584,8 +583,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
     
     // --- SYNC & STORAGE ---
+    const debounceTimerRef = useRef<number | null>(null);
 
     const saveDatabaseToLocal = useCallback(async (): Promise<boolean> => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         if (!directoryHandle) return false;
         isSyncingRef.current = true;
         setSyncStatus('syncing');
@@ -613,6 +614,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [directoryHandle, brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
     const loadDatabaseFromLocal = useCallback(async (): Promise<boolean> => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         if (!directoryHandle) return false;
         setSyncStatus('syncing');
         try {
@@ -632,6 +634,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [directoryHandle, restoreBackup, addActivityLog]);
     
     const pushToCloud = useCallback(async (): Promise<boolean> => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         const url = settings.customApiUrl;
         if (storageProvider !== 'customApi' || !url) return false;
         isSyncingRef.current = true;
@@ -665,6 +668,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, [storageProvider, settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, addActivityLog]);
 
     const pullFromCloud = useCallback(async (): Promise<boolean> => {
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
         const isCustomApi = storageProvider !== 'local' && storageProvider !== 'none' && storageProvider !== 'sharedUrl';
         const isSharedUrl = storageProvider === 'sharedUrl' && settings.sharedUrl;
         if (!isCustomApi && !isSharedUrl) return false;
@@ -861,6 +865,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         throw new Error('No compatible storage provider (Local Folder or Custom API) is connected for this operation.');
     }, [storageProvider, directoryHandle, settings, addActivityLog]);
 
+    const uploadProjectZipToLocalDB = useCallback(async (file: File): Promise<void> => {
+        try {
+            const blob = new Blob([file], { type: file.type });
+            await idbSet('project-zip-blob', blob);
+            setProjectZipBlob(blob);
+            addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip for offline download.' });
+        } catch (error) {
+            console.error('Error saving project.zip to local DB:', error);
+            throw new Error('Failed to save project.zip to local DB.');
+        }
+    }, [addActivityLog]);
+
     const getFileUrl = useCallback(async (fileName: string): Promise<string> => {
         if (!fileName || fileName.startsWith('http') || fileName.startsWith('data:')) {
             return fileName || '';
@@ -902,7 +918,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return fileName;
     }, [storageProvider, directoryHandle, settings]);
     
-    // FIX: Check for APK availability and update state.
     useEffect(() => {
         const checkApk = async () => {
             if (storageProvider === 'none') {
@@ -1017,6 +1032,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             } else {
                 setInitialSyncStatus('idle');
             }
+            
+            const blob = await idbGet<Blob>('project-zip-blob');
+            if (blob) {
+                setProjectZipBlob(blob);
+            }
 
             const provider = await idbGet<StorageProvider>('storageProvider');
             if (provider === 'local') {
@@ -1045,9 +1065,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             performSync();
         }
     }, [isDataLoaded, initialSyncStatus, storageProvider, settings.sync.autoSyncEnabled, performSync]);
-
-    const debounceTimerRef = useRef<number | null>(null);
-
+    
     useEffect(() => {
         if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') {
             return;
@@ -1155,7 +1173,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const backupData: BackupData = JSON.parse(dbContent);
             const assetsFolder = zip.folder('assets');
             if (assetsFolder) {
-                const assetFiles = Object.values(assetsFolder.files).filter(f => !f.dir);
+                const assetFiles: JSZip.JSZipObject[] = Object.values(assetsFolder.files).filter((f) => !f.dir);
                 let uploadedCount = 0;
                 for (const assetFile of assetFiles) {
                     try {
@@ -1318,6 +1336,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isScreensaverPinModalOpen,
         setIsScreensaverPinModalOpen,
         uploadProjectZip,
+        projectZipBlob,
+        uploadProjectZipToLocalDB,
         apkDownloadUrl,
         backupProgress,
         setBackupProgress,

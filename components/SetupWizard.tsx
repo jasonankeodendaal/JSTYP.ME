@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
-import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, SparklesIcon, CubeIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, SignalIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon } from './Icons.tsx';
+// FIX: Add missing UsersIcon import to fix 'Cannot find name' error.
+import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, SparklesIcon, CubeIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, SignalIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, TvIcon, BuildingStorefrontIcon, IdentificationIcon, ComputerDesktopIcon, UsersIcon } from './Icons.tsx';
 import { useNavigate } from 'react-router-dom';
 import SetupInstruction from './Admin/SetupInstruction.tsx';
 import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent } from './Admin/SetupGuides.tsx';
@@ -14,14 +15,37 @@ const stepVariants = {
 
 const MotionDiv = motion.div as any;
 
+const containerVariants = {
+    visible: {
+        transition: {
+            staggerChildren: 0.15,
+            delayChildren: 0.1,
+        }
+    }
+};
+
+// FIX: Explicitly type itemVariants as Variants to fix type error with the 'ease' property.
+const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            ease: "easeOut"
+        }
+    }
+};
+
+
 const FeatureItem: React.FC<{icon: React.ReactNode, title: string, children: React.ReactNode}> = ({ icon, title, children }) => (
     <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500">
             {icon}
         </div>
         <div>
-            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h4>
-            <p className="text-sm">{children}</p>
+            <h4 className="font-semibold text-gray-100">{title}</h4>
+            <p className="text-sm text-gray-400">{children}</p>
         </div>
     </div>
 );
@@ -32,490 +56,211 @@ interface AboutSystemProps {
     isDashboard?: boolean;
 }
 
+const HeroDiagram: React.FC = () => (
+    <svg viewBox="0 0 800 400" className="w-full h-auto rounded-lg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
+            <linearGradient id="hero-kiosk-screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient>
+            <linearGradient id="hero-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(15, 23, 42, 0)" /><stop offset="100%" stopColor="rgba(15, 23, 42, 1)" /></linearGradient>
+            <filter id="hero-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="15" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+        </defs>
+        <rect width="800" height="400" fill="url(#hero-bg-grad)" />
+        <path d="M 0 300 C 200 280, 600 280, 800 300 L 800 400 L 0 400 Z" fill="url(#hero-floor)" />
+        <g opacity="0.2" transform="translate(0, 560) scale(1, -1)">
+             <path d="M 270 235 L 250 255 L 550 255 L 530 235 Z" fill="#475569" />
+             <path d="M 325 50 L 270 235 L 530 235 L 475 50 Z" fill="#334155" />
+             <rect x="330" y="55" width="140" height="170" fill="url(#hero-kiosk-screen)" />
+        </g>
+        <g transform="translate(400, 200)">
+            <path d="M -130 135 L -150 155 L 150 155 L 130 135 Z" fill="#475569" />
+            <path d="M -75 -150 L -130 135 L 130 135 L 75 -150 Z" fill="#334155" />
+            <rect x="-70" y="-145" width="140" height="270" fill="#0f172a" />
+            <g filter="url(#hero-glow)" opacity="0.4"><rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" /></g>
+            <rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" />
+            <g className="fill-white opacity-80">
+                <rect x="-60" y="-135" width="120" height="40" rx="4" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="-125" width="50" height="4" rx="2" fill="rgba(255,255,255,0.4)" /><rect x="-60" y="-85" width="120" height="190" rx="4" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="-75" width="100" height="120" rx="2" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" /><rect x="5" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+            </g>
+        </g>
+        <g className="text-white">
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}><circle cx="150" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><CloudSlashIcon className="w-10 h-10 text-white/70" x="130" y="130" /><text x="150" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Offline-First</text></motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}><circle cx="650" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><ArrowPathIcon className="w-10 h-10 text-white/70" x="630" y="130" /><text x="650" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Cloud Sync</text></motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}><circle cx="100" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><ChartBarIcon className="w-10 h-10 text-white/70" x="80" y="280" /><text x="100" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Analytics</text></motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}><circle cx="700" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><PaintBrushIcon className="w-10 h-10 text-white/70" x="680" y="280" /><text x="700" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Customizable</text></motion.g>
+        </g>
+    </svg>
+);
+
 const SystemEcosystemDiagram: React.FC = () => (
-    <svg viewBox="0 0 500 250" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 500 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="kioskScreenGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" className="text-indigo-400 dark:text-indigo-500" stopColor="currentColor"/>
-                <stop offset="100%" className="text-purple-400 dark:text-purple-500" stopColor="currentColor"/>
-            </linearGradient>
-            <linearGradient id="syncArrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                 <stop offset="0%" className="text-gray-400" stopColor="currentColor"/>
-                <stop offset="100%" className="text-gray-500" stopColor="currentColor"/>
-            </linearGradient>
-            <filter id="glow-soft" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-                <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-            </filter>
+            <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
+            <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
+            <linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.05)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
+            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-500"/></marker>
+            <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset in="blur" dy="4" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-
-        {/* Central Kiosk Element */}
-        <g transform="translate(150 125)">
-            <path d="M-60 60 L 0 90 L 60 60 L 60 -60 L 0 -90 L-60 -60Z" className="fill-gray-200 dark:fill-gray-700/50" />
-            <path d="M0 -90 L 60 -60 V 60 L 0 90Z" className="fill-gray-300 dark:fill-gray-700" />
-            <rect x="-55" y="-55" width="110" height="110" rx="10" className="fill-white dark:fill-gray-800" />
-            <rect x="-50" y="-50" width="100" height="100" rx="5" fill="url(#kioskScreenGrad)" opacity="0.1"/>
-            <text textAnchor="middle" y="-25" className="font-bold text-lg fill-gray-800 dark:fill-gray-100">Kiosk Device</text>
-            <text textAnchor="middle" y="-8" className="font-semibold text-sm fill-indigo-500 dark:fill-indigo-400">(Offline Core)</text>
-            
-            {/* Internal Components */}
-            <g transform="translate(0 30)">
-                 <rect x="-40" y="-15" width="80" height="30" rx="5" className="fill-gray-100 dark:fill-gray-900/50" />
-                 <text textAnchor="middle" y="-3" className="text-[8px] font-bold fill-gray-500 dark:fill-gray-400">UI (React)</text>
-                 <text textAnchor="middle" y="8" className="text-[8px] font-bold fill-gray-500 dark:fill-gray-400">Local Database (IndexedDB)</text>
-                 <path d="M-20 0 A 10 5 0 1 1 20 0" fill="none" className="stroke-indigo-400" strokeWidth="1.5" strokeDasharray="2 2"/>
-                 <polygon points="20,0 17,-2 17,2" className="fill-indigo-400"/>
-                 <path d="M20 0 A 10 5 0 1 1 -20 0" fill="none" className="stroke-indigo-400" strokeWidth="1.5" strokeDasharray="2 2"/>
-                 <polygon points="-20,0 -17,2 -17,-2" className="fill-indigo-400"/>
-            </g>
-             <text x="0" y="55" textAnchor="middle" className="text-[9px] font-bold fill-green-600 dark:fill-green-400">Instant Access (Offline)</text>
+        <g transform="translate(120 140)" filter="url(#card-shadow)">
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-slate-800/80 stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
+            <circle cx="-50" cy="-50" r="25" fill="url(#eco-kiosk-grad)"/><ComputerDesktopIcon className="w-8 h-8 text-white" x="-62" y="-62" />
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-100 section-heading">Kiosk Device</text>
+            <foreignObject x="-90" y="-20" width="180" height="100"><div className="text-center text-sm text-gray-300 font-semibold">Offline-First Core</div><div className="text-center text-xs text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div><div className="mt-4 text-center text-xs font-bold text-green-400 bg-green-900/50 rounded-full px-3 py-1 inline-block">FAST &amp; RELIABLE</div></foreignObject>
         </g>
-        
-        {/* Sync Provider */}
-        <g transform="translate(370 125)">
-            <g filter="url(#glow-soft)" opacity="0.5">
-                <circle cx="0" cy="0" r="35" fill="url(#syncArrowGrad)" />
-            </g>
-            <circle cx="0" cy="0" r="35" className="fill-gray-100 dark:fill-gray-700/50 stroke-gray-200 dark:stroke-gray-600" />
-            <ServerStackIcon className="w-8 h-8 text-gray-500 dark:text-gray-400" x="-16" y="-30"/>
-            <text textAnchor="middle" y="15" className="font-semibold text-sm fill-gray-700 dark:fill-gray-200">Sync Provider</text>
-            <text textAnchor="middle" y="28" className="text-xs fill-gray-500 dark:fill-gray-400">(Cloud/Local)</text>
+        <g transform="translate(380 140)" filter="url(#card-shadow)">
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-slate-800/80 stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
+            <circle cx="-50" cy="-50" r="25" fill="url(#eco-cloud-grad)"/><ServerStackIcon className="w-8 h-8 text-white" x="-62" y="-62" />
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-100 section-heading">Sync Provider</text>
+            <foreignObject x="-90" y="-20" width="180" height="100"><div className="text-center text-sm text-gray-300 font-semibold">Optional &amp; Flexible</div><div className="text-center text-xs text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div><div className="mt-4 text-center text-xs font-bold text-purple-400 bg-purple-900/50 rounded-full px-3 py-1 inline-block">CENTRALIZED</div></foreignObject>
         </g>
-        
-        {/* Connection Arrow */}
-        <g>
-            <path d="M230 125 H 315" fill="none" className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="2" strokeDasharray="5 3"/>
-            <polygon points="315,125 307,121 307,129" className="fill-gray-400 dark:fill-gray-500" />
-            <polygon points="230,125 238,121 238,129" className="fill-gray-400 dark:fill-gray-500" />
-            <text x="272.5" y="115" textAnchor="middle" className="text-[10px] font-semibold fill-gray-600 dark:fill-gray-300">Optional Sync</text>
+        <g className="text-gray-500">
+            <path d="M 215 110 C 245 80, 295 80, 325 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/><path d="M 325 170 C 295 200, 245 200, 215 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <text x="270" y="75" textAnchor="middle" className="text-xs font-semibold fill-gray-300">Push Changes (Sync)</text><text x="270" y="210" textAnchor="middle" className="text-xs font-semibold fill-gray-300">Pull Updates</text>
         </g>
     </svg>
 );
 
-const WhyYouNeedThisSystemDiagram: React.FC = () => (
-    <svg viewBox="0 0 400 225" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+const ValueLoopDiagram: React.FC = () => (
+    <svg viewBox="0 0 300 300" className="w-full h-auto max-w-sm mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="floorGradient" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" className="text-gray-200 dark:text-gray-700/50" stopColor="currentColor" />
-                <stop offset="100%" className="text-gray-100 dark:text-gray-800/50" stopColor="currentColor" />
-            </linearGradient>
-            <linearGradient id="wallGradient" x1="0.5" y1="0" x2="0.5" y2="1">
-                <stop offset="0%" className="text-gray-100 dark:text-gray-800" stopColor="currentColor" />
-                <stop offset="100%" className="text-gray-50 dark:text-gray-800/80" stopColor="currentColor" />
-            </linearGradient>
-            <linearGradient id="dataStreamGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" className="text-indigo-400" stopColor="currentColor" stopOpacity="0"/>
-                <stop offset="50%" className="text-indigo-400" stopColor="currentColor" stopOpacity="1"/>
-                <stop offset="100%" className="text-purple-400" stopColor="currentColor" stopOpacity="1"/>
-            </linearGradient>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                </feMerge>
-            </filter>
+            <linearGradient id="val-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a5b4fc"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
+            <linearGradient id="val-grad-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c4b5fd"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
+            <linearGradient id="val-grad-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f9a8d4"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
+            <marker id="val-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-gray-500"/></marker>
+            <filter id="val-shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/><feOffset dy="3" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-
-        {/* Environment */}
-        <path d="M0 215 L200 115 L400 215 V225 H0 Z" fill="url(#floorGradient)" />
-        <path d="M0 50 L200 -50 L400 50 V215 L200 115 L0 215Z" fill="url(#wallGradient)" />
-        <line x1="200" y1="-50" x2="200" y2="115" className="stroke-gray-200 dark:stroke-gray-700/50" />
-        <line x1="0" y1="215" x2="400" y2="215" className="stroke-gray-200 dark:stroke-gray-700/50" />
-        <line x1="0" y1="50" x2="400" y2="50" className="stroke-gray-200 dark:stroke-gray-700/50" />
-
-        {/* Kiosk */}
-        <g transform="translate(140 120)">
-            <path d="M -20, 50 l 10, -5 v -70 l -10, 5 z" className="fill-gray-300 dark:fill-gray-600" />
-            <path d="M 20, 50 l 10, 5 v -70 l -10, -5 z" className="fill-gray-400 dark:fill-gray-500" />
-            <rect x="-20" y="-20" width="40" height="70" className="fill-gray-800 dark:fill-black" />
-            <rect x="-18" y="-18" width="36" height="66" rx="2" className="fill-white dark:fill-gray-700" />
-            <circle cx="-15" cy="-14" r="1.5" className="fill-gray-600 dark:fill-gray-400" />
-            <path d="M 0, 50 l 0, 15" className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="8" strokeLinecap="round" />
-            <path d="M -15, 65 h 30" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="5" strokeLinecap="round" />
-            {/* Screen Content */}
-            <rect x="-14" y="-12" width="28" height="18" rx="1" className="fill-blue-100 dark:fill-blue-900/50" />
-            <rect x="-14" y="8" width="13" height="10" rx="1" className="fill-gray-100 dark:fill-gray-600/50" />
-            <rect x="1" y="8" width="13" height="10" rx="1" className="fill-gray-100 dark:fill-gray-600/50" />
-        </g>
-        
-        {/* Customer */}
-        <g transform="translate(90 135)">
-            <path d="M 0, 45 a 15 15 0 0 1 0 -30 a 12 12 0 0 1 0 30" className="fill-blue-200 dark:fill-blue-900/50 stroke-blue-300 dark:stroke-blue-700" />
-            <circle cx="0" cy="-25" r="10" className="fill-blue-200 dark:fill-blue-900/50 stroke-blue-300 dark:stroke-blue-700" />
-            <path d="M 12, 10 l 20, -10" strokeWidth="3" className="stroke-blue-200 dark:stroke-blue-900/50" strokeLinecap="round" />
-        </g>
-        
-        {/* Data Streams */}
-        <g filter="url(#glow)">
-            <path d="M160 110 C 200 90, 220 50, 250 40" fill="none" stroke="url(#dataStreamGradient)" strokeWidth="2" />
-            <path d="M165 120 C 220 120, 230 100, 280 90" fill="none" stroke="url(#dataStreamGradient)" strokeWidth="2" />
-        </g>
-
-        {/* Floating UI Elements */}
-        <g transform="translate(260 35)">
-            <rect x="-30" y="-20" width="60" height="40" rx="5" className="fill-white/80 dark:fill-gray-900/80 backdrop-blur-sm stroke-gray-300 dark:stroke-gray-600" />
-            <rect x="-25" y="10" width="10" height="-20" className="fill-indigo-300 dark:fill-indigo-600" />
-            <rect x="-10" y="10" width="10" height="-30" className="fill-indigo-400 dark:fill-indigo-500" />
-            <rect x="5" y="10" width="10" height="-15" className="fill-indigo-300 dark:fill-indigo-600" />
-            <rect x="20" y="10" width="10" height="-25" className="fill-indigo-400 dark:fill-indigo-500" />
-        </g>
-         <g transform="translate(290 95)">
-            <rect x="-25" y="-25" width="50" height="50" rx="5" className="fill-white/80 dark:fill-gray-900/80 backdrop-blur-sm stroke-gray-300 dark:stroke-gray-600" />
-            <circle cx="0" cy="0" r="18" className="fill-purple-200 dark:fill-purple-900/50" />
-            <path d="M 0 0 L 0 -18 A 18 18 0 0 1 15.58 -9 Z" className="fill-purple-400 dark:fill-purple-600" />
-            <circle cx="0" cy="0" r="8" className="fill-white dark:fill-gray-900/80" />
-        </g>
-
-        {/* Store Manager */}
-        <g transform="translate(350 145)">
-            <circle cx="0" cy="-25" r="10" className="fill-green-200 dark:fill-green-900/50 stroke-green-300 dark:stroke-green-700" />
-            <path d="M 0, 45 a 15 15 0 0 0 0 -30 a 12 12 0 0 0 0 30" className="fill-green-200 dark:fill-green-900/50 stroke-green-300 dark:stroke-green-700" />
-            <g transform="rotate(20)">
-                <rect x="-35" y="-10" width="30" height="20" rx="2" className="fill-gray-800 dark:fill-black" />
-                <rect x="-33" y="-8" width="26" height="16" rx="1" className="fill-white dark:fill-gray-700" />
-            </g>
-        </g>
-        <path d="M280 50 C 320 80, 340 110, 350 120" fill="none" className="stroke-gray-300 dark:stroke-gray-600" strokeDasharray="2 2" />
-        <path d="M305 110 C 320 120, 335 120, 350 120" fill="none" className="stroke-gray-300 dark:stroke-gray-600" strokeDasharray="2 2" />
+        <circle cx="150" cy="150" r="120" strokeDasharray="8 8" className="stroke-gray-600" strokeWidth="1.5" fill="none" marker-end="url(#val-arrowhead)" marker-start="url(#val-arrowhead)"/>
+        <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-1)"/><UserCircleIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
+        <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-100">Customer Interaction</text>
+        <g transform="translate(260, 150)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-2)"/><ChartBarIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
+        <text x="260" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-100">Actionable Analytics</text>
+        <g transform="translate(40, 150)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-3)"/><BuildingStorefrontIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
+        <text x="40" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-100">Smarter Decisions</text>
     </svg>
 );
 
-
-const ScenarioBoutiqueDiagram: React.FC = () => (
-    <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-        <defs>
-            <linearGradient id="boutique-floor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" className="text-orange-100/50 dark:text-gray-700/50"/>
-                <stop offset="100%" className="text-orange-200/50 dark:text-gray-800/50"/>
-            </linearGradient>
-            <linearGradient id="boutique-wall" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" className="text-gray-50 dark:text-gray-800"/>
-                <stop offset="100%" className="text-gray-100 dark:text-gray-800/80"/>
-            </linearGradient>
-            <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
-                <feOffset in="blur" dx="1" dy="2" result="offsetBlur"/>
-                <feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-        </defs>
-
-        {/* Environment */}
-        <path d="M0 145 L150 75 L300 145 V150 H0Z" fill="url(#boutique-floor)"/>
-        <path d="M0 45 L150 -25 L300 45 V145 L150 75 L0 145Z" fill="url(#boutique-wall)"/>
-        
-        {/* Wood floor pattern */}
-        <g className="stroke-orange-300/50 dark:stroke-gray-600/50" strokeWidth="0.5">
-            {[...Array(10)].map((_, i) => <path key={i} d={`M${i*30} 145 L${150 + i*15} 75`} />)}
-            {[...Array(10)].map((_, i) => <path key={i} d={`M300 ${145-i*10} L150 ${75-i*5}`} />)}
-        </g>
-        
-        {/* Back wall details */}
-        <rect x="20" y="5" width="80" height="50" rx="5" className="fill-gray-200/50 dark:fill-gray-700/50"/>
-        <circle cx="200" cy="15" r="30" className="fill-gray-200/50 dark:fill-gray-700/50"/>
-
-        {/* Kiosk */}
-        <g transform="translate(150 100)" filter="url(#soft-shadow)">
-            <path d="M -15, 25 l 5, -2.5 v -40 l -5, 2.5 z" className="fill-gray-300 dark:fill-gray-600"/>
-            <path d="M 15, 25 l 5, 2.5 v -40 l -5, -2.5 z" className="fill-gray-400 dark:fill-gray-500"/>
-            <rect x="-15" y="-17.5" width="30" height="42.5" className="fill-gray-800 dark:fill-black"/>
-            <rect x="-13.5" y="-16" width="27" height="39.5" rx="1" className="fill-white dark:fill-gray-700"/>
-            <path d="M 0, 25 l 0, 10" className="stroke-gray-400 dark:stroke-gray-500" strokeWidth="5" strokeLinecap="round"/>
-            <path d="M -10, 35 h 20" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="4" strokeLinecap="round"/>
-        </g>
-
-        {/* Clothing Rack */}
-        <g transform="translate(40 90)" filter="url(#soft-shadow)">
-            <path d="M0 0 L50 25" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="2"/>
-            <path d="M5 2.5 V30 M45 22.5 V50" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="2"/>
-            <rect x="7" y="5" width="8" height="18" rx="1" className="fill-red-200 dark:fill-red-900/50"/>
-            <rect x="18" y="9.5" width="8" height="18" rx="1" className="fill-blue-200 dark:fill-blue-900/50"/>
-            <rect x="29" y="14" width="8" height="18" rx="1" className="fill-yellow-200 dark:fill-yellow-900/50"/>
-        </g>
-
-        {/* Shelves */}
-        <g transform="translate(220 50)" filter="url(#soft-shadow)">
-            <path d="M0 0 L50 -25" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1"/>
-            <path d="M0 20 L50 -5" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1"/>
-            <path d="M0 40 L50 15" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1"/>
-            <rect x="5" y="-2" width="10" height="5" className="fill-green-200 dark:fill-green-800"/>
-            <rect x="20" y="-9.5" width="10" height="5" className="fill-purple-200 dark:fill-purple-800"/>
-            <rect x="8" y="18" width="10" height="5" className="fill-blue-200 dark:fill-blue-800"/>
-        </g>
-    </svg>
-);
-
-const ScenarioFranchiseDiagram: React.FC = () => (
-    <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-      <defs>
-        <linearGradient id="franchise-bg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" className="text-gray-50 dark:text-gray-800/60" stopColor="currentColor" />
-            <stop offset="100%" className="text-gray-100 dark:text-gray-800" stopColor="currentColor" />
-        </linearGradient>
-        <linearGradient id="data-stream-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#A5B4FC" stopOpacity="0"/>
-            <stop offset="100%" stopColor="#C4B5FD" />
-        </linearGradient>
-         <filter id="shadow-filter" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
-            <feOffset in="blur" dx="2" dy="2" result="offsetBlur"/>
-            <feMerge>
-                <feMergeNode in="offsetBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-        </filter>
-      </defs>
-      <rect width="300" height="150" rx="10" fill="url(#franchise-bg)" />
-      
-      {/* Faint World Map */}
-      <path d="M50 125 C 80 80, 220 80, 250 125 M 70 140 C 120 160, 180 160, 230 140" fill="none" className="stroke-gray-200 dark:stroke-gray-700/50" strokeWidth="1.5" transform="translate(0 -40)" />
-
-      {/* Central HQ */}
-      <g transform="translate(150 75)" filter="url(#shadow-filter)">
-        <path d="M-30 20 L0 40 L30 20 L30 -20 L0 -40 L-30 -20 Z" className="fill-gray-200 dark:fill-gray-700" />
-        <path d="M0 -40 L30 -20 V20 L0 40Z" className="fill-indigo-500 dark:fill-indigo-600" />
-        <path d="M0 -40 L-30 -20 V20 L0 40Z" className="fill-indigo-400 dark:fill-indigo-500" />
-        <rect x="-10" y="-30" width="20" height="10" className="fill-white/30 dark:fill-white/20"/>
-        <rect x="-25" y="-12" width="10" height="25" className="fill-white/30 dark:fill-white/20"/>
-        <ServerStackIcon className="w-8 h-8 text-white/80" x="-16" y="-8"/>
-      </g>
-      
-      {/* Stores */}
-      {[50, 250].map(x => 
-        <g transform={`translate(${x} 35)`} key={x}>
-          <path d="M-15 10 L0 20 L15 10 V-10 L0 -20 L-15 -10Z" className="fill-gray-200/80 dark:fill-gray-700/80" />
-          <path d="M0 -20 L15 -10 L15 10 L0 20Z" className="fill-purple-400 dark:fill-purple-500"/>
-          <path d="M0 0 L15 -5 V-10 L0 -15Z" className="fill-white/20"/>
-          <path d="M-12 8 H12" className="stroke-purple-300 dark:stroke-purple-600" strokeWidth="3"/>
-        </g>
-      )}
-      <g transform="translate(80 120)">
-         <path d="M-15 10 L0 20 L15 10 V-10 L0 -20 L-15 -10Z" className="fill-gray-200/80 dark:fill-gray-700/80" />
-         <path d="M0 -20 L15 -10 L15 10 L0 20Z" className="fill-purple-400 dark:fill-purple-500"/>
-         <path d="M-12 8 H12" className="stroke-purple-300 dark:stroke-purple-600" strokeWidth="3"/>
-      </g>
-
-      {/* Animated Data Streams */}
-      <path id="path1" d="M70 40 C 100 50, 120 60, 140 70" fill="none" />
-      <path id="path2" d="M230 40 C 200 50, 180 60, 160 70" fill="none" />
-      <path id="path3" d="M100 115 C 115 100, 130 85, 145 78" fill="none" />
-      {[1, 2, 3].map(i =>
-        <g key={i}>
-            <use href={`#path${i}`} className="stroke-indigo-300/50 dark:stroke-indigo-600/50" strokeWidth="3" strokeDasharray="4 4" />
-            <circle r="2" fill="url(#data-stream-grad)">
-                <animateMotion dur={`${1.5 + i * 0.2}s`} repeatCount="indefinite">
-                    <mpath href={`#path${i}`} />
-                </animateMotion>
-            </circle>
-        </g>
-      )}
-    </svg>
-);
-
-const ScenarioB2bDiagram: React.FC = () => (
-    <svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-        <defs>
-            <linearGradient id="b2b-floor-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" className="text-gray-100 dark:text-gray-700/80" stopColor="currentColor"/>
-                <stop offset="100%" className="text-gray-200 dark:text-gray-800/80" stopColor="currentColor"/>
-            </linearGradient>
-             <linearGradient id="b2b-wall-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" className="text-gray-50 dark:text-gray-800/50" stopColor="currentColor"/>
-                <stop offset="100%" className="text-gray-100 dark:text-gray-900/50" stopColor="currentColor"/>
-            </linearGradient>
-        </defs>
-        
-        {/* Environment */}
-        <path d="M0 145 L150 75 L300 145 V150 H0Z" fill="url(#b2b-floor-grad)" />
-        <path d="M0 45 L150 -25 L300 45 V145 L150 75 L0 145Z" fill="url(#b2b-wall-grad)" />
-        
-        {/* Backdrop */}
-        <g transform="translate(0 -5)">
-            <path d="M70 115 L70 35 L230 35 L230 115" className="fill-white dark:fill-gray-700" />
-            <path d="M110 45 h80 v15 h-80z" className="fill-indigo-500" />
-            <text x="150" y="56" textAnchor="middle" className="text-[9px] font-bold fill-white">YOUR BRAND</text>
-        </g>
-        
-        {/* Counter */}
-        <g transform="translate(80 105)">
-            <path d="M0 0 L30 -15 L100 -15 L70 0 Z" className="fill-gray-300 dark:fill-gray-600" />
-            <path d="M0 0 L0 25 L70 25 L70 0 Z" className="fill-gray-200 dark:fill-gray-700" />
-            <path d="M70 0 L70 25 L100 10 L100 -15 Z" className="fill-gray-100 dark:fill-gray-700/50"/>
-        </g>
-        
-        {/* Plant */}
-        <g transform="translate(45 105)">
-            <path d="M-10 10 L0 25 L10 10 Z" className="fill-orange-200 dark:fill-orange-800"/>
-            <path d="M0 10 C-10 -5, 10 -5, 0 10 M-5 5 C -15 -10, -5 -10, -5 5 M5 5 C 5 -10, 15 -10, 5 5" className="stroke-green-500 dark:stroke-green-600" strokeWidth="2" fill="none"/>
-        </g>
-
-        {/* Characters */}
-        <g transform="translate(180 90)">
-            <circle cx="0" cy="-15" r="8" className="fill-green-200 dark:fill-green-900"/>
-            <path d="M0 -7 C-10 5, 10 5, 0 30" className="fill-green-100 dark:fill-green-800/80"/>
-        </g>
-        <g transform="translate(230 100)">
-            <circle cx="0" cy="-15" r="8" className="fill-blue-200 dark:fill-blue-900"/>
-            <path d="M0 -7 C-10 5, 10 5, 0 30" className="fill-blue-100 dark:fill-blue-800/80"/>
-        </g>
-        
-        {/* Tablet */}
-        <g transform="translate(200 75) rotate(-15)">
-            <rect x="-15" y="-10" width="30" height="20" rx="2" className="fill-gray-800 dark:fill-black"/>
-            <rect x="-14" y="-9" width="28" height="18" rx="1" className="fill-indigo-300 dark:fill-indigo-500" />
-        </g>
-    </svg>
-);
+const ScenarioBoutiqueDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><path d="M5 75 L 20 15 H 80 L 95 75 Z" className="fill-gray-700/50" /><path d="M 15 15 H 85" className="fill-gray-600" /><path d="M 20 15 L 80 15 L 85 5 H 15 Z" className="fill-gray-600" /><rect x="25" y="20" width="50" height="55" rx="2" className="fill-gray-900/40" /><rect x="40" y="45" width="20" height="30" rx="1" className="fill-indigo-500" /><rect x="42" y="47" width="16" height="20" rx="0.5" className="fill-purple-300" /></svg>);
+const ScenarioFranchiseDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fr-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient><g id="fr-store-icon"><circle cx="10" cy="10" r="10" className="fill-gray-700"/><BuildingStorefrontIcon className="w-4 h-4 text-gray-400" x="4" y="4"/></g><filter id="fr-glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 30 L 20 50" className="stroke-gray-600" strokeWidth="1.5"/><path d="M50 30 L 80 50" className="stroke-gray-600" strokeWidth="1.5"/><path d="M50 30 L 50 65" className="stroke-gray-600" strokeWidth="1.5"/><g filter="url(#fr-glow)"> <circle cx="50" cy="30" r="15" fill="url(#fr-grad)"/></g><ServerStackIcon className="w-6 h-6 text-white" x="42" y="22"/><use href="#fr-store-icon" x="10" y="50"/><use href="#fr-store-icon" x="70" y="50"/><use href="#fr-store-icon" x="40" y="65"/></svg>);
+const ScenarioB2bDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="b2b-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient></defs><path d="M10 75 L 30 10 H 70 L 90 75 Z" fill="none" className="stroke-gray-600" strokeWidth="2" /><rect x="40" y="20" width="20" height="40" rx="2" fill="url(#b2b-grad)" /><rect x="42" y="22" width="16" height="28" rx="1" className="fill-black/20" /><g transform="translate(75 25)" className="text-indigo-400"><ClipboardDocumentListIcon className="w-8 h-8 opacity-80" fill="currentColor"/></g><g transform="translate(15 45)" className="text-indigo-400"><UsersIcon className="w-8 h-8 opacity-80" fill="currentColor"/></g></svg>);
 
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
-    const { getFileUrl } = useAppContext();
+    const { getFileUrl, projectZipBlob } = useAppContext();
     const [isAvailable, setIsAvailable] = useState(false);
     const [zipUrl, setZipUrl] = useState('');
     const [isChecking, setIsChecking] = useState(true);
 
-    const checkZip = useCallback(async () => {
-        let isMounted = true;
-        setIsChecking(true);
-        try {
-            const url = await getFileUrl('project.zip');
-            if (url && isMounted) {
-                const response = await fetch(url, { method: 'HEAD' });
-                if (response.ok) {
-                    setIsAvailable(true);
-                    setZipUrl(url);
-                } else {
-                    setIsAvailable(false);
-                }
-            } else if (isMounted) {
-                setIsAvailable(false);
-            }
-        } catch (error) {
-            console.log('Project.zip not found:', error);
-            if (isMounted) setIsAvailable(false);
-        } finally {
-            if (isMounted) setIsChecking(false);
-        }
-        return () => { isMounted = false; };
-    }, [getFileUrl]);
-
     useEffect(() => {
-        checkZip();
-    }, [checkZip]);
+        let isMounted = true;
+        let objectUrlToRevoke: string | null = null;
+    
+        const checkAvailability = async () => {
+            setIsChecking(true);
+            if (projectZipBlob) {
+                objectUrlToRevoke = URL.createObjectURL(projectZipBlob);
+                if (isMounted) {
+                    setZipUrl(objectUrlToRevoke); setIsAvailable(true); setIsChecking(false);
+                }
+                return;
+            }
+            try {
+                const url = await getFileUrl('project.zip');
+                if (!url) { if (isMounted) setIsAvailable(false); return; }
+                const response = await fetch(url, { method: 'HEAD' });
+                if (isMounted) {
+                    if (response.ok) { setIsAvailable(true); setZipUrl(url); } else { setIsAvailable(false); }
+                }
+            } catch (error) { if (isMounted) setIsAvailable(false); } 
+            finally { if (isMounted) setIsChecking(false); }
+        };
+        checkAvailability();
+        return () => { isMounted = false; if (objectUrlToRevoke) { URL.revokeObjectURL(objectUrlToRevoke); } };
+    }, [getFileUrl, projectZipBlob]);
     
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100">About the System</h2>
-                {onBack && (
-                     <button onClick={onBack} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 !py-1.5 !px-3">
+        <div className="w-full h-full bg-slate-900 text-gray-300 relative">
+            {(onBack && !isDashboard) && (
+                <div className="sticky top-0 left-0 right-0 p-4 bg-slate-900/80 backdrop-blur-sm z-10 flex justify-between items-center">
+                    <h2 className="text-xl font-bold section-heading text-gray-100">About The System</h2>
+                    <button onClick={onBack} className="btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 !py-1.5 !px-3">
                         <ChevronLeftIcon className="w-4 h-4 mr-1" />
                         Back
                     </button>
-                )}
-            </div>
-            <div className={`${!isDashboard ? 'max-h-[calc(100vh-220px)]' : ''} overflow-y-auto pr-2 -mr-2`}>
-                <div className="max-w-5xl mx-auto space-y-10 text-left text-gray-600 dark:text-gray-300 pr-2">
-                
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                       <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <SparklesIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>The Philosophy: Bridging Digital and Physical Retail</span>
-                       </h3>
-                       <div className="max-w-prose text-sm space-y-2">
-                           <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
-                           <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
+                </div>
+            )}
+            <div className={`w-full ${onBack && !isDashboard ? 'h-[calc(100%-68px)]' : 'h-full'} overflow-y-auto`}>
+                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
+                    <motion.section variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
+                        <div className="w-full max-w-4xl"><HeroDiagram /></div>
+                        <h1 className="text-3xl md:text-5xl font-bold section-heading text-white mt-8">The Retail OS</h1>
+                        <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
+                        <div className="mt-6 max-w-prose mx-auto text-sm space-y-3 text-gray-400">
+                           <p>This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.** It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
-                    </div>
+                    </motion.section>
 
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading">How It Works: The Offline-First Core</h3>
-                        <div className="grid md:grid-cols-2 gap-6 items-center">
-                             <div className="max-w-prose text-sm space-y-2">
-                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data—products, settings, and media paths—locally on the device in an IndexedDB database. This **offline-first architecture** means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
-                                <p>For multi-device setups or centralized management, it uses an **optional sync provider** (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability and speed of an offline app with the powerful scalability and convenience of the cloud.</p>
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                             <div className="max-w-prose text-sm space-y-3">
+                                <h3 className="font-bold text-2xl text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
+                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
+                                <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
                             </div>
-                            <SystemEcosystemDiagram />
+                            <div><SystemEcosystemDiagram /></div>
                         </div>
-                    </div>
-                     <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading">Why You Need This System: Turning Browsing into Insight</h3>
-                        <div className="grid md:grid-cols-2 gap-6 items-center">
-                            <WhyYouNeedThisSystemDiagram />
-                             <div className="max-w-prose text-sm space-y-2">
+                    </motion.section>
+                    
+                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                             <div><ValueLoopDiagram /></div>
+                             <div className="max-w-prose text-sm space-y-3 md:text-right">
+                                <h3 className="font-bold text-2xl text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
                                 <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
-                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2">
-                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk, turning it into a powerful, interactive sales tool that bridges the gap between browsing and buying.</li>
-                                    <li><strong>Gain Actionable Insights:</strong> The built-in analytics provide a clear, visual picture of in-store customer behavior, helping you make smarter decisions about product placement, promotions, and inventory.</li>
-                                    <li><strong>Enhance Customer Experience:</strong> Offer your customers a modern, self-service way to explore your entire product catalogue in rich detail, with videos, documents, and high-resolution images.</li>
-                                    <li><strong>Reduce Perceived Wait Times:</strong> An engaging interactive display keeps customers occupied and informed, improving their overall in-store experience.</li>
+                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2 text-left">
+                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk.</li>
+                                    <li><strong>Gain Actionable Insights:</strong> Built-in analytics provide a clear picture of in-store customer behavior.</li>
+                                    <li><strong>Enhance Customer Experience:</strong> Offer customers a modern, self-service way to explore your entire catalogue.</li>
                                 </ul>
                             </div>
                         </div>
-                    </div>
+                    </motion.section>
 
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">Key Features at a Glance</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-                            <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">The kiosk runs flawlessly with or without an internet connection, ensuring 100% uptime in your store.</FeatureItem>
-                            <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Choose between a local network folder for simple setups or a cloud API for multi-location franchises.</FeatureItem>
-                            <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data, promotions, and settings from a single admin panel and sync changes everywhere.</FeatureItem>
-                            <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful product catalogues, promotional pamphlets, and full-screen video ads.</FeatureItem>
-                            <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views per-kiosk to understand what's popular in different locations.</FeatureItem>
-                            <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface, complete with product details and quantities.</FeatureItem>
-                            <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout and transition effects.</FeatureItem>
-                            <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access allows you to delegate management tasks with specific permissions.</FeatureItem>
-                        </div>
-                    </div>
-
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">Perfect For Any Environment</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="text-center">
-                                <ScenarioBoutiqueDiagram />
-                                <h4 className="font-semibold mt-2">High-End Boutiques</h4>
-                                <p className="text-xs">Provide a sophisticated, interactive catalogue that complements your premium products.</p>
-                            </div>
-                            <div className="text-center">
-                                <ScenarioFranchiseDiagram />
-                                <h4 className="font-semibold mt-2">Multi-Location Franchises</h4>
-                                <p className="text-xs">Ensure brand consistency and manage product data centrally across all stores.</p>
-                            </div>
-                            <div className="text-center">
-                                <ScenarioB2bDiagram />
-                                <h4 className="font-semibold mt-2">B2B & Trade Shows</h4>
-                                <p className="text-xs">Capture leads, generate quotes instantly, and showcase your full range without physical stock.</p>
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                        <div className="max-w-5xl mx-auto">
+                            <h3 className="font-bold text-2xl text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
+                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Runs flawlessly with or without an internet connection, ensuring 100% uptime.</FeatureItem>
+                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder or a cloud API for multi-location franchises.</FeatureItem>
+                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data from a single admin panel and sync changes everywhere.</FeatureItem>
+                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful catalogues, pamphlets, and full-screen video ads.</FeatureItem>
+                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views to understand what's popular.</FeatureItem>
+                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface.</FeatureItem>
+                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout.</FeatureItem>
+                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access with specific permissions.</FeatureItem>
                             </div>
                         </div>
-                    </div>
+                    </motion.section>
 
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <ArrowDownTrayIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>Project Source Code</span>
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                           This application is designed to be fully self-hostable. For developers wanting to customize functionality or host the entire system on their own infrastructure, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section of the admin dashboard.
-                        </p>
-                        {isChecking ? (
-                            <button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>
-                        ) : isAvailable ? (
-                            <a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">
-                                Download Full Project (.zip)
-                            </a>
-                        ) : (
-                            <button className="btn btn-primary w-full sm:w-auto" disabled>
-                                Download Unavailable
-                            </button>
-                        )}
-                        {!isAvailable && !isChecking && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>
-                        )}
-                    </div>
-                </div>
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                        <div className="max-w-5xl mx-auto">
+                            <h3 className="font-bold text-2xl text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-white">High-End Boutiques</h4><p className="text-xs text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                            </div>
+                        </div>
+                    </motion.section>
+
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                        <div className="max-w-3xl mx-auto text-center">
+                            <h3 className="font-bold text-2xl text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
+                            <p className="text-sm text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
+                            {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
+                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
+                        </div>
+                    </motion.section>
+                </motion.div>
             </div>
         </div>
     );
@@ -752,7 +497,7 @@ const SetupWizard: React.FC = () => {
                 );
              case 'info':
                 return (
-                    <MotionDiv key="step-info" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                    <MotionDiv key="step-info" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="h-full">
                         <AboutSystem onBack={() => setStep(1)} />
                     </MotionDiv>
                 );
@@ -761,13 +506,15 @@ const SetupWizard: React.FC = () => {
         }
     };
     
+    const isInfoStep = step === 'info';
+
     return (
-        <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className={`fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center ${isInfoStep ? '' : 'p-4'}`}>
             <MotionDiv 
                 initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 30 }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full ${step === 'guides' || step === 'info' ? 'max-w-3xl' : 'max-w-xl'} min-h-[450px] flex flex-col p-8 overflow-hidden transition-all duration-300`}
+                className={`bg-white dark:bg-gray-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${isInfoStep ? 'w-full h-full rounded-none p-0' : 'rounded-2xl w-full max-w-xl min-h-[450px] p-8'} ${step === 'guides' ? '!max-w-3xl' : ''}`}
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}

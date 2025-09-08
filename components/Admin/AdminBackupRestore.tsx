@@ -62,7 +62,8 @@ const AdminBackupRestore: React.FC = () => {
         uploadProjectZip,
         createZipBackup,
         restoreZipBackup,
-        uploadApk
+        uploadApk,
+        uploadProjectZipToLocalDB
     } = useAppContext();
 
     const [fileName, setFileName] = useState<string>('');
@@ -76,6 +77,11 @@ const AdminBackupRestore: React.FC = () => {
     const [apkFile, setApkFile] = useState<File | null>(null);
     const [isUploadingApk, setIsUploadingApk] = useState(false);
     const [uploadApkMessage, setUploadApkMessage] = useState('');
+    
+    // Project ZIP (Offline) State
+    const [localUploadFile, setLocalUploadFile] = useState<File | null>(null);
+    const [isLocalUploading, setIsLocalUploading] = useState(false);
+    const [localUploadMessage, setLocalUploadMessage] = useState('');
 
     const isSuperAdmin = loggedInUser?.isMainAdmin ?? false;
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSystem;
@@ -102,7 +108,6 @@ const AdminBackupRestore: React.FC = () => {
     const handleRestore = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const fileInput = fileInputRef.current;
-        // FIX: Corrected boolean comparison from `!fileInput.files.length === 0` to `fileInput.files.length === 0`.
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             alert('Please select a backup file to restore.');
             return;
@@ -200,6 +205,35 @@ const AdminBackupRestore: React.FC = () => {
             setUploadMessage(`Upload failed: ${message}`);
         } finally {
             setIsUploading(false);
+        }
+    };
+    
+    const handleLocalProjectFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.name.endsWith('.zip')) {
+                setLocalUploadFile(file);
+                setLocalUploadMessage('');
+            } else {
+                alert('Please select a .zip file.');
+                e.target.value = '';
+            }
+        }
+    };
+
+    const handleLocalProjectUpload = async () => {
+        if (!localUploadFile) return;
+        setIsLocalUploading(true);
+        setLocalUploadMessage('Uploading to local database...');
+        try {
+            await uploadProjectZipToLocalDB(localUploadFile);
+            setLocalUploadMessage('Upload successful! The download link is now active in the "About System" section.');
+            setLocalUploadFile(null);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setLocalUploadMessage(`Upload failed: ${message}`);
+        } finally {
+            setIsLocalUploading(false);
         }
     };
     
@@ -399,9 +433,27 @@ const AdminBackupRestore: React.FC = () => {
                 </div>
 
                 <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
-                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">Project Source Code Distribution</h4>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">Project Source Code (for Offline Download)</h4>
                     <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                        Upload the <code>project.zip</code> file to make it available for download from the "About System" page. This will overwrite any existing version.
+                        Upload a <code>project.zip</code> file to be stored within the app's local database. This makes it available for download on the "About System" page, even when offline.
+                    </p>
+                     <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                        <label htmlFor="local-project-zip-upload" className="flex-grow btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 justify-center">
+                            <UploadIcon className="h-4 w-4" />
+                            <span className="ml-2 truncate">{localUploadFile ? localUploadFile.name : 'Select project.zip file'}</span>
+                        </label>
+                        <input id="local-project-zip-upload" type="file" className="sr-only" accept=".zip,application/zip" onChange={handleLocalProjectFileSelect} />
+                        <button onClick={handleLocalProjectUpload} className="w-full sm:w-auto btn btn-primary" disabled={!localUploadFile || isLocalUploading}>
+                            {isLocalUploading ? 'Uploading...' : 'Upload for Download'}
+                        </button>
+                    </div>
+                    {localUploadMessage && <p className="text-sm mt-2">{localUploadMessage}</p>}
+                </div>
+
+                <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">Project Source Code (via Storage Provider)</h4>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                        Upload the <code>project.zip</code> file to your connected storage provider. This will overwrite any existing version.
                     </p>
                     {!canUploadSystemFiles && (
                         <p className="mt-2 text-sm p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg">
@@ -416,7 +468,7 @@ const AdminBackupRestore: React.FC = () => {
                             </label>
                             <input id="project-zip-upload" type="file" className="sr-only" accept=".zip,application/zip" onChange={handleProjectFileSelect} />
                             <button onClick={handleProjectUpload} className="w-full sm:w-auto btn btn-primary" disabled={!uploadFile || isUploading}>
-                                {isUploading ? 'Uploading...' : 'Upload'}
+                                {isUploading ? 'Uploading...' : 'Upload to Provider'}
                             </button>
                         </div>
                     )}

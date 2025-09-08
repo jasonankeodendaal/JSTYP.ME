@@ -20,7 +20,6 @@ import AdminRemoteControl from './AdminRemoteControl.tsx';
 import { AboutSystem } from '../SetupWizard.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
-// FIX: Export SubTab type to allow it to be imported in other components.
 export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
 
 // Keep old type name `Tab` for minimal changes inside the render function
@@ -558,10 +557,10 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </header>
             
-            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
-                <div className="w-full max-w-6xl mx-auto">
+            <main className={`flex-grow ${activeSubTab !== 'about' ? 'p-4 sm:p-6 lg:p-8' : ''} pt-0 overflow-y-auto`} style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
+                <div className={`w-full ${activeSubTab !== 'about' ? 'max-w-6xl mx-auto' : 'h-full'}`}>
                     {renderSecondaryNav()}
-                    <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl">
+                    <div className={activeSubTab !== 'about' ? "bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl" : "h-full"}>
                         {renderSubTabContent()}
                     </div>
                 </div>
