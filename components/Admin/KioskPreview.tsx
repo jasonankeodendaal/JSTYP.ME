@@ -5,11 +5,12 @@ import { SearchIcon, SunIcon, MoonIcon, UserCircleIcon, CubeIcon } from '../Icon
 
 interface KioskPreviewProps {
     settings: Settings;
+    previewPage: 'home' | 'login';
 }
 
 // --- SUB-COMPONENTS FOR PREVIEW ---
 
-const PreviewHeader: React.FC<KioskPreviewProps & { theme: 'light' | 'dark' }> = ({ settings, theme }) => {
+const PreviewHeader: React.FC<{ settings: Settings; theme: 'light' | 'dark' }> = ({ settings, theme }) => {
     const themeColors = theme === 'light' ? settings.lightTheme : settings.darkTheme;
     const headerSettings = settings.header;
 
@@ -55,7 +56,7 @@ const PreviewHeader: React.FC<KioskPreviewProps & { theme: 'light' | 'dark' }> =
     );
 };
 
-const PreviewFooter: React.FC<KioskPreviewProps & { theme: 'light' | 'dark' }> = ({ settings, theme }) => {
+const PreviewFooter: React.FC<{ settings: Settings; theme: 'light' | 'dark' }> = ({ settings, theme }) => {
     const themeColors = theme === 'light' ? settings.lightTheme : settings.darkTheme;
     const footerSettings = settings.footer;
     const creator = settings.creatorProfile;
@@ -111,7 +112,7 @@ const PreviewFooter: React.FC<KioskPreviewProps & { theme: 'light' | 'dark' }> =
     );
 };
 
-const PreviewProductCard: React.FC<KioskPreviewProps> = ({ settings }) => (
+const PreviewProductCard: React.FC<{ settings: Settings }> = ({ settings }) => (
     <div style={{boxShadow: settings.cardStyle.shadow}} className={`relative bg-gray-500 aspect-square overflow-hidden ${settings.cardStyle.cornerRadius}`}>
         <div className="w-full h-full bg-gray-300 dark:bg-gray-600"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -128,24 +129,20 @@ const PreviewProductCard: React.FC<KioskPreviewProps> = ({ settings }) => (
     </div>
 );
 
-
-const KioskPreview: React.FC<KioskPreviewProps> = ({ settings }) => {
-    const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('dark');
-
-    const theme = previewTheme === 'light' ? settings.lightTheme : settings.darkTheme;
-    const oppositeTheme = previewTheme === 'light' ? 'dark' : 'light';
+const PreviewHomePage: React.FC<{ settings: Settings; theme: 'light' | 'dark' }> = ({ settings, theme }) => {
+    const themeColors = theme === 'light' ? settings.lightTheme : settings.darkTheme;
 
     const appStyle: React.CSSProperties = {
-        backgroundColor: theme.appBg,
-        backgroundImage: theme.appBgImage,
+        backgroundColor: themeColors.appBg,
+        backgroundImage: themeColors.appBgImage,
         fontFamily: `'${settings.typography.body.fontFamily}', sans-serif`,
         fontWeight: settings.typography.body.fontWeight,
         fontStyle: settings.typography.body.fontStyle,
     };
 
     const mainStyle: React.CSSProperties = {
-        backgroundColor: theme.mainBg,
-        color: theme.mainText,
+        backgroundColor: themeColors.mainBg,
+        color: themeColors.mainText,
         padding: '2rem',
     };
     
@@ -155,8 +152,111 @@ const KioskPreview: React.FC<KioskPreviewProps> = ({ settings }) => {
         fontStyle: settings.typography.headings.fontStyle,
         fontSize: '1.5rem',
         marginBottom: '1rem',
-        color: theme.mainText
+        color: themeColors.mainText
     };
+
+    return (
+        <div style={appStyle} className="w-full h-full flex flex-col">
+            <PreviewHeader settings={settings} theme={theme} />
+            <div className="flex-grow overflow-y-auto">
+                <div style={mainStyle} className="space-y-12">
+                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl flex items-center gap-6 text-white">
+                        <CubeIcon className="w-16 h-16 flex-shrink-0" />
+                        <div>
+                            <h3 style={{...headingStyle, color: 'white', fontSize: '1.5rem', marginBottom: '0.25rem'}}>Create Client Quote</h3>
+                            <p className="text-indigo-200 text-sm">Start a new quote by selecting products for a client.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 style={headingStyle}>Latest Offers</h2>
+                        <div className="py-8 px-4 bg-gray-100 dark:bg-gray-900/40 rounded-xl flex items-center justify-center gap-4">
+                            {[...Array(2)].map((_, i) => (
+                                <div key={i} className={`relative bg-black aspect-[3/4] w-40 ${settings.cardStyle.cornerRadius} ${settings.cardStyle.shadow} overflow-hidden`}>
+                                    <div className="w-full h-full bg-gray-500"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                                    <h3 style={{fontFamily: `'${settings.typography.itemTitles.fontFamily}', sans-serif`, position: 'absolute', bottom: '0.75rem', left: '0.75rem', color: 'white'}}>Promotion</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h2 style={headingStyle}>Shop by Brand</h2>
+                        <div className="grid grid-cols-4 gap-4">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="bg-gray-200 dark:bg-gray-700 aspect-square rounded-lg flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">Brand</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div>
+                        <h2 style={headingStyle}>Featured Products</h2>
+                        <div className="grid grid-cols-3 gap-6">
+                            {[...Array(6)].map((_, i) => (
+                                <PreviewProductCard key={i} settings={settings} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <PreviewFooter settings={settings} theme={theme} />
+        </div>
+    );
+};
+
+const PreviewLoginPage: React.FC<{ settings: Settings }> = ({ settings }) => {
+    const loginSettings = settings.loginScreen;
+
+    const pageStyle: React.CSSProperties = {
+        backgroundImage: loginSettings.backgroundImageUrl ? `url(${loginSettings.backgroundImageUrl})` : 'none',
+        backgroundColor: loginSettings.backgroundColor,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+    };
+
+    const boxStyle: React.CSSProperties = {
+        background: loginSettings.boxBackgroundColor,
+    };
+
+    const textStyle: React.CSSProperties = {
+        color: loginSettings.textColor,
+    };
+
+    return (
+        <div style={pageStyle} className="w-full h-full flex flex-col justify-center items-center p-12">
+            <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto mx-auto mb-8" />
+            <div style={boxStyle} className="w-full max-w-md py-12 px-10 rounded-2xl shadow-2xl">
+                <div className="mb-8 text-center">
+                    <h2 className="text-3xl font-extrabold tracking-tight" style={{ ...textStyle, fontFamily: `'${settings.typography.headings.fontFamily}', sans-serif` }}>
+                        ADMIN LOGIN
+                    </h2>
+                </div>
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-left" style={textStyle}>User</label>
+                        <select className="mt-1 appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm bg-white text-gray-900" disabled>
+                            <option>Main Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-left" style={textStyle}>PIN</label>
+                        <input type="password" value="••••" className="mt-1 appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm bg-white text-gray-900" disabled />
+                    </div>
+                    <div>
+                        <button type="button" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-blue-600 bg-white" disabled>
+                            Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+const KioskPreview: React.FC<KioskPreviewProps> = ({ settings, previewPage }) => {
+    const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('dark');
+    const oppositeTheme = previewTheme === 'light' ? 'dark' : 'light';
 
     return (
         <div className="w-full bg-gray-200 dark:bg-gray-900 p-2 md:p-4 rounded-2xl h-full">
@@ -177,60 +277,11 @@ const KioskPreview: React.FC<KioskPreviewProps> = ({ settings }) => {
             </div>
             <div className="w-full aspect-[9/16] max-h-[70vh] lg:max-h-[600px] overflow-hidden rounded-lg shadow-2xl border-4 border-gray-300 dark:border-gray-700">
                  <div className="w-full h-full scale-[0.5] origin-top-left" style={{ transform: 'scale(0.5)', width: '200%', height: '200%' }}>
-                    <div style={appStyle} className="w-full h-full flex flex-col">
-                        <PreviewHeader settings={settings} theme={previewTheme} />
-
-                        <div className="flex-grow overflow-y-auto">
-                            <div style={mainStyle} className="space-y-12">
-                                {/* CTA */}
-                                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 rounded-2xl flex items-center gap-6 text-white">
-                                    <CubeIcon className="w-16 h-16 flex-shrink-0" />
-                                    <div>
-                                        <h3 style={{...headingStyle, color: 'white', fontSize: '1.5rem', marginBottom: '0.25rem'}}>Create Client Quote</h3>
-                                        <p className="text-indigo-200 text-sm">Start a new quote by selecting products for a client.</p>
-                                    </div>
-                                </div>
-                                
-                                {/* Pamphlets */}
-                                <div>
-                                    <h2 style={headingStyle}>Latest Offers</h2>
-                                    <div className="py-8 px-4 bg-gray-100 dark:bg-gray-900/40 rounded-xl flex items-center justify-center gap-4">
-                                        {[...Array(2)].map((_, i) => (
-                                            <div key={i} className={`relative bg-black aspect-[3/4] w-40 ${settings.cardStyle.cornerRadius} ${settings.cardStyle.shadow} overflow-hidden`}>
-                                                <div className="w-full h-full bg-gray-500"></div>
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                                                <h3 style={{fontFamily: `'${settings.typography.itemTitles.fontFamily}', sans-serif`, position: 'absolute', bottom: '0.75rem', left: '0.75rem', color: 'white'}}>Promotion</h3>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Brands */}
-                                <div>
-                                    <h2 style={headingStyle}>Shop by Brand</h2>
-                                    <div className="grid grid-cols-4 gap-4">
-                                        {[...Array(8)].map((_, i) => (
-                                            <div key={i} className="bg-gray-200 dark:bg-gray-700 aspect-square rounded-lg flex items-center justify-center">
-                                                <span className="text-xs text-gray-500">Brand</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Products */}
-                                <div>
-                                    <h2 style={headingStyle}>Featured Products</h2>
-                                    <div className="grid grid-cols-3 gap-6">
-                                        {[...Array(6)].map((_, i) => (
-                                            <PreviewProductCard key={i} settings={settings} />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <PreviewFooter settings={settings} theme={previewTheme} />
-                    </div>
+                    {previewPage === 'login' ? (
+                        <PreviewLoginPage settings={settings} />
+                    ) : (
+                        <PreviewHomePage settings={settings} theme={previewTheme} />
+                    )}
                 </div>
             </div>
         </div>

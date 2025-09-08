@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon, MoonIcon, SunIcon, SearchIcon, ArrowPathIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
@@ -13,10 +13,15 @@ const FormSection: React.FC<{
     title: string;
     description?: string;
     children: React.ReactNode;
-    defaultOpen?: boolean;
-}> = ({ title, description, children, defaultOpen = false }) => (
-    <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50" open={defaultOpen}>
-        <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+    name: string;
+    isOpen: boolean;
+    onToggle: (name: string) => void;
+}> = ({ title, description, children, name, isOpen, onToggle }) => (
+    <details className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50" open={isOpen}>
+        <summary
+            className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            onClick={(e) => { e.preventDefault(); onToggle(name); }}
+        >
             <div>
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">{title}</h3>
                 {description && <p className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-w-2xl">{description}</p>}
@@ -151,12 +156,39 @@ const AdminSettings: React.FC = () => {
     const [saved, setSaved] = useState(false);
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [showReloadNotice, setShowReloadNotice] = useState(false);
+    
+    // State for controlled accordion and context-aware preview
+    const [openSection, setOpenSection] = useState('branding');
+    const [previewPage, setPreviewPage] = useState<'home' | 'login'>('home');
 
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSettings;
 
     useEffect(() => {
         setFormData(settings);
     }, [settings]);
+
+    const handleSectionToggle = (sectionName: string) => {
+        const newOpenSection = openSection === sectionName ? '' : sectionName;
+        setOpenSection(newOpenSection);
+    
+        // Update preview based on which section is being opened
+        switch (newOpenSection) {
+            case 'loginPage':
+                setPreviewPage('login');
+                break;
+            case 'branding':
+            case 'theme':
+            case 'typography':
+            case 'navigation':
+            case 'kioskBehavior':
+            case 'pamphletPlaceholder':
+            case 'creatorProfile':
+                setPreviewPage('home');
+                break;
+            default:
+                setPreviewPage('home');
+        }
+    };
 
     const handleNestedChange = (path: string, value: any) => {
         setFormData(prev => {
@@ -210,14 +242,14 @@ const AdminSettings: React.FC = () => {
                 {/* Left Column: Form Controls */}
                 <div className="lg:col-span-2">
                     <form onSubmit={handleSave} className="space-y-8">
-                        <BrandingAndIdentitySection formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
-                        <ThemeAndAppearanceSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                        <CreatorProfileSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                        <LoginPageStyleSection formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
-                        <PamphletPlaceholderSection formData={formData} onNestedChange={handleNestedChange} />
-                        <TypographySection formData={formData} onNestedChange={handleNestedChange} />
-                        <NavigationSection navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
-                        <KioskBehaviorSection formData={formData} onNestedChange={handleNestedChange} />
+                        <BrandingAndIdentitySection name="branding" isOpen={openSection === 'branding'} onToggle={handleSectionToggle} formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
+                        <ThemeAndAppearanceSection name="theme" isOpen={openSection === 'theme'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <CreatorProfileSection name="creatorProfile" isOpen={openSection === 'creatorProfile'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <LoginPageStyleSection name="loginPage" isOpen={openSection === 'loginPage'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <PamphletPlaceholderSection name="pamphletPlaceholder" isOpen={openSection === 'pamphletPlaceholder'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
+                        <TypographySection name="typography" isOpen={openSection === 'typography'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
+                        <NavigationSection name="navigation" isOpen={openSection === 'navigation'} onToggle={handleSectionToggle} navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
+                        <KioskBehaviorSection name="kioskBehavior" isOpen={openSection === 'kioskBehavior'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
 
                         <div className="pt-8 border-t border-gray-200 dark:border-gray-700 space-y-4">
                              <AnimatePresence>
@@ -256,7 +288,7 @@ const AdminSettings: React.FC = () => {
                         <ComputerDesktopIcon className="w-5 h-5"/>
                         <h3 className="text-lg font-semibold section-heading">Live Preview</h3>
                     </div>
-                    <KioskPreview settings={formData} />
+                    <KioskPreview settings={formData} previewPage={previewPage} />
                 </div>
             </div>
 
@@ -296,7 +328,7 @@ const AdminSettings: React.FC = () => {
                                 </button>
                             </header>
                             <div className="flex-grow overflow-y-auto bg-gray-200 dark:bg-gray-900 rounded-b-2xl">
-                               <KioskPreview settings={formData} />
+                               <KioskPreview settings={formData} previewPage={previewPage} />
                             </div>
                         </motion.div>
                     </motion.div>
@@ -307,8 +339,8 @@ const AdminSettings: React.FC = () => {
 };
 
 // --- SECTION SUB-COMPONENTS ---
-const BrandingAndIdentitySection: React.FC<{formData: Settings, onFileChange: any, onNestedChange: any, kioskId: string, setKioskId: (newId: string) => void, loggedInUser: any}> = ({formData, onFileChange, onNestedChange, kioskId, setKioskId, loggedInUser}) => (
-    <FormSection title="Brand & Kiosk Identity" description="Basic branding and identification for this specific device." defaultOpen>
+const BrandingAndIdentitySection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onFileChange: any, onNestedChange: any, kioskId: string, setKioskId: (newId: string) => void, loggedInUser: any}> = ({name, isOpen, onToggle, formData, onFileChange, onNestedChange, kioskId, setKioskId, loggedInUser}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Brand & Kiosk Identity" description="Basic branding and identification for this specific device.">
          <ImageUpload
             label="Logo"
             value={formData.logoUrl}
@@ -334,8 +366,8 @@ const BrandingAndIdentitySection: React.FC<{formData: Settings, onFileChange: an
     </FormSection>
 );
 
-const ThemeAndAppearanceSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => (
-    <FormSection title="Theme & Appearance" description="Define color palettes and global styles for the public-facing kiosk.">
+const ThemeAndAppearanceSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any, onFileChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange, onFileChange}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Theme & Appearance" description="Define color palettes and global styles for the public-facing kiosk.">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ThemeEditor title="Light Theme" theme="light" themeData={formData.lightTheme} onNestedChange={onNestedChange} onFileChange={onFileChange} />
             <ThemeEditor title="Dark Theme" theme="dark" themeData={formData.darkTheme} onNestedChange={onNestedChange} onFileChange={onFileChange} />
@@ -476,10 +508,10 @@ const ElementStyleEditor: React.FC<{title: string, element: 'header' | 'footer',
     </div>
 );
 
-const CreatorProfileSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => {
+const CreatorProfileSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any, onFileChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange, onFileChange}) => {
     const creator = formData.creatorProfile;
     return (
-        <FormSection title="Creator Profile" description="Edit the details shown in the 'JSTYP.me' contact popup in the footer.">
+        <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Creator Profile" description="Edit the details shown in the 'JSTYP.me' contact popup in the footer.">
             <div className="py-5 grid grid-cols-3 gap-4 items-center border-b border-gray-200 dark:border-gray-700">
                 <div className="col-span-2">
                     <label htmlFor="creatorProfile-enabled" className={`${labelStyle} cursor-pointer`}>Enable Creator Popup</label>
@@ -535,8 +567,8 @@ const CreatorProfileSection: React.FC<{formData: Settings, onNestedChange: any, 
     );
 }
 
-const LoginPageStyleSection: React.FC<{formData: Settings, onNestedChange: any, onFileChange: any}> = ({formData, onNestedChange, onFileChange}) => (
-    <FormSection title="Login Page Style" description="Customize the appearance of the admin login screen.">
+const LoginPageStyleSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any, onFileChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange, onFileChange}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Login Page Style" description="Customize the appearance of the admin login screen.">
         <ImageUpload
             label="Background Image"
             value={formData.loginScreen.backgroundImageUrl}
@@ -555,8 +587,8 @@ const LoginPageStyleSection: React.FC<{formData: Settings, onNestedChange: any, 
     </FormSection>
 );
 
-const PamphletPlaceholderSection: React.FC<{formData: Settings, onNestedChange: any}> = ({formData, onNestedChange}) => (
-    <FormSection title="Pamphlet Placeholder" description="Customize the 'empty state' on the home screen when no promotions are active.">
+const PamphletPlaceholderSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Pamphlet Placeholder" description="Customize the 'empty state' on the home screen when no promotions are active.">
         <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2 mb-4">
             Even an empty promotion slot should look designed and intentional. Customize the text, font, and create a beautiful linear-gradient text effect.
         </p>
@@ -578,8 +610,8 @@ const PamphletPlaceholderSection: React.FC<{formData: Settings, onNestedChange: 
 );
 
 
-const TypographySection: React.FC<{formData: Settings, onNestedChange: any}> = ({formData, onNestedChange}) => (
-    <FormSection title="Typography" description="Customize fonts for different elements of the app.">
+const TypographySection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Typography" description="Customize fonts for different elements of the app.">
         <p className="text-sm text-gray-600 dark:text-gray-400 -mt-2 mb-4">
             Typography is the core of your brand's personality. Establish a professional typographic hierarchy with independent control over three key text styles: Body Text, Section Headings, and Item Titles. This allows for immense creative freedom, like pairing a classic serif for headings with a clean sans-serif for body text to create a sophisticated, editorial feel.
         </p>
@@ -590,7 +622,7 @@ const TypographySection: React.FC<{formData: Settings, onNestedChange: any}> = (
     </FormSection>
 );
 
-const NavigationSection: React.FC<{navLinks: NavLink[], onNavLinksChange: (links: NavLink[])=>void}> = ({navLinks, onNavLinksChange}) => {
+const NavigationSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, navLinks: NavLink[], onNavLinksChange: (links: NavLink[])=>void}> = ({name, isOpen, onToggle, navLinks, onNavLinksChange}) => {
     const [newLink, setNewLink] = useState({label: '', path: ''});
     const handleUpdate = (index: number, field: keyof NavLink, value: any) => { const newLinks = [...navLinks]; (newLinks[index] as any)[field] = value; onNavLinksChange(newLinks); };
     const handleMove = (index: number, direction: 'up' | 'down') => { const newLinks = [...navLinks]; const targetIndex = direction === 'up' ? index - 1 : index + 1; if (targetIndex < 0 || targetIndex >= newLinks.length) return; [newLinks[index], newLinks[targetIndex]] = [newLinks[targetIndex], newLinks[index]]; onNavLinksChange(newLinks); };
@@ -598,7 +630,7 @@ const NavigationSection: React.FC<{navLinks: NavLink[], onNavLinksChange: (links
     const handleAdd = () => { if (!newLink.label || !newLink.path) return alert("Label and path are required."); onNavLinksChange([...navLinks, { ...newLink, id: `nav_${Date.now()}`, enabled: true }]); setNewLink({label: '', path: ''}); };
 
     return (
-        <FormSection title="Header Navigation" description="Manage the links that appear in the main header.">
+        <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Header Navigation" description="Manage the links that appear in the main header.">
             <div className="space-y-3">{navLinks.map((link, index) => (<div key={link.id} className="grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 dark:bg-gray-900/40 rounded-lg">
                 <div className="col-span-1 flex flex-col"><button type="button" onClick={() => handleMove(index, 'up')} disabled={index === 0} className="p-1 disabled:opacity-30"><ChevronUpIcon className="w-4 h-4" /></button><button type="button" onClick={() => handleMove(index, 'down')} disabled={index === navLinks.length - 1} className="p-1 disabled:opacity-30"><ChevronDownIcon className="w-4 h-4"/></button></div>
                 <div className="col-span-4"><input type="text" value={link.label} onChange={e => handleUpdate(index, 'label', e.target.value)} className={inputStyle} /></div><div className="col-span-5"><input type="text" value={link.path} onChange={e => handleUpdate(index, 'path', e.target.value)} className={inputStyle} /></div><div className="col-span-1 text-center"><input type="checkbox" checked={link.enabled} onChange={e => handleUpdate(index, 'enabled', e.target.checked)} className="h-5 w-5 rounded" /></div><div className="col-span-1 text-right"><button type="button" onClick={() => handleDelete(link.id)} className="p-2 text-red-500"><TrashIcon className="w-4 h-4" /></button></div></div>))}</div>
@@ -609,8 +641,8 @@ const NavigationSection: React.FC<{navLinks: NavLink[], onNavLinksChange: (links
     );
 };
 
-const KioskBehaviorSection: React.FC<{formData: Settings, onNestedChange: any}> = ({formData, onNestedChange}) => (
-    <FormSection title="Kiosk Behavior" description="Settings for unattended public use, including screensaver and audio.">
+const KioskBehaviorSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange}) => (
+    <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Kiosk Behavior" description="Settings for unattended public use, including screensaver and audio.">
         
         {/* Screensaver Sub-section */}
         <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900/30">

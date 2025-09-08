@@ -537,7 +537,7 @@ const AdminDashboard: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+        <div className="h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col">
             <header className="p-4 sm:p-6 lg:p-8 shrink-0">
                  <div className="w-full max-w-6xl mx-auto flex justify-between items-center">
                     <div>
@@ -556,7 +556,7 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </header>
             
-            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto pb-56">
+            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto">
                 <div className="w-full max-w-6xl mx-auto">
                     {renderSecondaryNav()}
                     <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl">
@@ -566,7 +566,7 @@ const AdminDashboard: React.FC = () => {
             </main>
 
             <footer
-                className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 pt-4"
+                className="shrink-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 pt-4"
                 style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
             >
                 <nav className="max-w-md mx-auto flex items-center justify-around">

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, Squares2X2Icon, EnterFullScreenIcon, ExitFullScreenIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon } from './Icons.tsx';
-// FIX: Switched to a namespace import to resolve module resolution errors.
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.js';
+// FIX: Switched to named imports to resolve module resolution errors.
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf.js';
 import { usePanZoom } from './usePanZoom.tsx';
 
 interface PdfModalProps {
@@ -11,8 +11,8 @@ interface PdfModalProps {
     onClose: () => void;
 }
 
-// FIX: Set workerSrc on the pdfjsLib namespace.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+// FIX: Set workerSrc on the GlobalWorkerOptions import.
+GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
 
 const MIN_SCALE = 0.8;
 const MAX_SCALE = 8;
@@ -35,8 +35,8 @@ const PdfModal: React.FC<PdfModalProps> = ({ title, url, onClose }) => {
         const renderPdfToImages = async () => {
             setIsLoading(true); setProgress('');
             try {
-                // FIX: Use getDocument from the pdfjsLib namespace.
-                const pdf = await pdfjsLib.getDocument(url).promise;
+                // FIX: Use the named getDocument import.
+                const pdf = await getDocument(url).promise;
                 const urls: string[] = [];
                 for (let i = 1; i <= pdf.numPages; i++) {
                     setProgress(`Rendering page ${i} of ${pdf.numPages}...`);

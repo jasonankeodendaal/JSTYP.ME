@@ -132,6 +132,7 @@ const Footer: React.FC = () => {
   
   const footerSettings = settings.footer;
   const creatorProfile = settings.creatorProfile;
+  const footerWidthClass = settings.layout.width === 'standard' ? 'max-w-7xl mx-auto' : '';
 
   const footerStyle: React.CSSProperties = {
     backgroundColor: footerSettings?.effect === 'glassmorphism' ? 'transparent' : footerSettings?.backgroundColor,
@@ -155,7 +156,7 @@ const Footer: React.FC = () => {
   };
 
    const footerClasses = [
-    'border-t border-gray-200/50 dark:border-white/10 mt-auto',
+    'border-t border-gray-200/50 dark:border-white/10 mt-24',
     footerSettings?.effect === 'glassmorphism' ? 'effect-glassmorphism' : '',
     footerSettings?.effect === '3d-shadow' ? 'effect-3d-shadow' : '',
   ].filter(Boolean).join(' ');
@@ -165,7 +166,7 @@ const Footer: React.FC = () => {
     <>
       <footer className={footerClasses} style={footerStyle}>
         <div style={backgroundStyle}></div>
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
+        <div className={`w-full px-4 sm:px-6 lg:px-8 py-3 ${footerWidthClass}`}>
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                   {creatorProfile.enabled && (
