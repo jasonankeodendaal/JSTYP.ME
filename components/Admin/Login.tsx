@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 

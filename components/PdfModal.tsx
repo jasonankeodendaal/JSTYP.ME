@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, DocumentArrowDownIcon, ChevronLeftIcon, ChevronRightIcon, Squares2X2Icon, EnterFullScreenIcon, ExitFullScreenIcon, MagnifyingGlassPlusIcon, MagnifyingGlassMinusIcon } from './Icons.tsx';
-// FIX: Switched to named import for pdfjsLib to resolve module resolution errors.
+// FIX: Switched to named imports for pdfjsLib to resolve module resolution errors.
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf.js';
 import { usePanZoom } from './usePanZoom.tsx';
 

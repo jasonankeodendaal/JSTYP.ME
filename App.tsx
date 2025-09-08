@@ -1,7 +1,7 @@
 /// <reference path="./swiper.d.ts" />
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { HashRouter } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';

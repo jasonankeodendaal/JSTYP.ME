@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router';
-import { Link, NavLink } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { SearchIcon, VolumeUpIcon, VolumeOffIcon, Bars3Icon, XIcon, EnterFullScreenIcon, ExitFullScreenIcon, VolumeLowIcon, SunIcon, MoonIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';
 import LocalMedia from './LocalMedia.tsx';

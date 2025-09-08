@@ -40,12 +40,12 @@ const itemVariants: Variants = {
 
 const FeatureItem: React.FC<{icon: React.ReactNode, title: string, children: React.ReactNode}> = ({ icon, title, children }) => (
     <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-500">
+        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
             {icon}
         </div>
         <div>
-            <h4 className="font-semibold text-gray-100">{title}</h4>
-            <p className="text-sm text-gray-400">{children}</p>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h4>
+            <p className="text-sm">{children}</p>
         </div>
     </div>
 );
@@ -57,20 +57,37 @@ interface AboutSystemProps {
 }
 
 const HeroDiagram: React.FC = () => (
-    <svg viewBox="0 0 800 400" className="w-full h-auto rounded-lg" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 800 400" className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-            <linearGradient id="hero-kiosk-screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient>
-            <linearGradient id="hero-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="rgba(15, 23, 42, 0)" /><stop offset="100%" stopColor="rgba(15, 23, 42, 1)" /></linearGradient>
-            <filter id="hero-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="15" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+            <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#1e293b" />
+                <stop offset="100%" stopColor="#0f172a" />
+            </linearGradient>
+            <linearGradient id="hero-kiosk-screen" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#3b82f6" />
+            </linearGradient>
+            <linearGradient id="hero-floor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(30, 41, 59, 0)" />
+                <stop offset="100%" stopColor="rgba(30, 41, 59, 1)" />
+            </linearGradient>
+            <filter id="hero-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="15" result="coloredBlur" />
+                <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
         </defs>
+
         <rect width="800" height="400" fill="url(#hero-bg-grad)" />
+
+        {/* Floor and reflection */}
         <path d="M 0 300 C 200 280, 600 280, 800 300 L 800 400 L 0 400 Z" fill="url(#hero-floor)" />
         <g opacity="0.2" transform="translate(0, 560) scale(1, -1)">
              <path d="M 270 235 L 250 255 L 550 255 L 530 235 Z" fill="#475569" />
              <path d="M 325 50 L 270 235 L 530 235 L 475 50 Z" fill="#334155" />
              <rect x="330" y="55" width="140" height="170" fill="url(#hero-kiosk-screen)" />
         </g>
+        
+        {/* Central Kiosk */}
         <g transform="translate(400, 200)">
             <path d="M -130 135 L -150 155 L 150 155 L 130 135 Z" fill="#475569" />
             <path d="M -75 -150 L -130 135 L 130 135 L 75 -150 Z" fill="#334155" />
@@ -78,14 +95,37 @@ const HeroDiagram: React.FC = () => (
             <g filter="url(#hero-glow)" opacity="0.4"><rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" /></g>
             <rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" />
             <g className="fill-white opacity-80">
-                <rect x="-60" y="-135" width="120" height="40" rx="4" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="-125" width="50" height="4" rx="2" fill="rgba(255,255,255,0.4)" /><rect x="-60" y="-85" width="120" height="190" rx="4" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="-75" width="100" height="120" rx="2" fill="rgba(255,255,255,0.1)" /><rect x="-50" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" /><rect x="5" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+                <rect x="-60" y="-135" width="120" height="40" rx="4" fill="rgba(255,255,255,0.1)" />
+                <rect x="-50" y="-125" width="50" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
+                <rect x="-60" y="-85" width="120" height="190" rx="4" fill="rgba(255,255,255,0.1)" />
+                <rect x="-50" y="-75" width="100" height="120" rx="2" fill="rgba(255,255,255,0.1)" />
+                <rect x="-50" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+                <rect x="5" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
             </g>
         </g>
+
+        {/* Surrounding UI elements */}
         <g className="text-white">
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}><circle cx="150" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><CloudSlashIcon className="w-10 h-10 text-white/70" x="130" y="130" /><text x="150" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Offline-First</text></motion.g>
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}><circle cx="650" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><ArrowPathIcon className="w-10 h-10 text-white/70" x="630" y="130" /><text x="650" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Cloud Sync</text></motion.g>
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}><circle cx="100" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><ChartBarIcon className="w-10 h-10 text-white/70" x="80" y="280" /><text x="100" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Analytics</text></motion.g>
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}><circle cx="700" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" /><PaintBrushIcon className="w-10 h-10 text-white/70" x="680" y="280" /><text x="700" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Customizable</text></motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}>
+                <circle cx="150" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                
+                <text x="150" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Offline-First</text>
+            </motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}>
+                <circle cx="650" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                
+                <text x="650" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Cloud Sync</text>
+            </motion.g>
+             <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}>
+                <circle cx="100" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                
+                <text x="100" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Analytics</text>
+            </motion.g>
+            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}>
+                <circle cx="700" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                
+                <text x="700" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Customizable</text>
+            </motion.g>
         </g>
     </svg>
 );
@@ -96,29 +136,48 @@ const SystemEcosystemDiagram: React.FC = () => (
             <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
             <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
             <linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.05)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
-            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-500"/></marker>
+            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
             <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset in="blur" dy="4" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
+        
+        {/* Kiosk Node */}
         <g transform="translate(120 140)" filter="url(#card-shadow)">
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-slate-800/80 stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <circle cx="-50" cy="-50" r="25" fill="url(#eco-kiosk-grad)"/><ComputerDesktopIcon className="w-8 h-8 text-white" x="-62" y="-62" />
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-100 section-heading">Kiosk Device</text>
-            <foreignObject x="-90" y="-20" width="180" height="100"><div className="text-center text-sm text-gray-300 font-semibold">Offline-First Core</div><div className="text-center text-xs text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div><div className="mt-4 text-center text-xs font-bold text-green-400 bg-green-900/50 rounded-full px-3 py-1 inline-block">FAST &amp; RELIABLE</div></foreignObject>
+            <circle cx="-50" cy="-50" r="25" fill="url(#eco-kiosk-grad)"/>
+            <ComputerDesktopIcon className="w-8 h-8 text-white" x="-62" y="-62" />
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Kiosk Device</text>
+            <foreignObject x="-90" y="-20" width="180" height="100">
+                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Offline-First Core</div>
+                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div>
+                <div className="mt-4 text-center text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1 inline-block">FAST & RELIABLE</div>
+            </foreignObject>
         </g>
+        
+        {/* Cloud Node */}
         <g transform="translate(380 140)" filter="url(#card-shadow)">
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-slate-800/80 stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <circle cx="-50" cy="-50" r="25" fill="url(#eco-cloud-grad)"/><ServerStackIcon className="w-8 h-8 text-white" x="-62" y="-62" />
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-100 section-heading">Sync Provider</text>
-            <foreignObject x="-90" y="-20" width="180" height="100"><div className="text-center text-sm text-gray-300 font-semibold">Optional &amp; Flexible</div><div className="text-center text-xs text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div><div className="mt-4 text-center text-xs font-bold text-purple-400 bg-purple-900/50 rounded-full px-3 py-1 inline-block">CENTRALIZED</div></foreignObject>
+            <circle cx="-50" cy="-50" r="25" fill="url(#eco-cloud-grad)"/>
+            <ServerStackIcon className="w-8 h-8 text-white" x="-62" y="-62" />
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Sync Provider</text>
+            <foreignObject x="-90" y="-20" width="180" height="100">
+                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Optional & Flexible</div>
+                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div>
+                <div className="mt-4 text-center text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1 inline-block">CENTRALIZED</div>
+            </foreignObject>
         </g>
-        <g className="text-gray-500">
-            <path d="M 215 110 C 245 80, 295 80, 325 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/><path d="M 325 170 C 295 200, 245 200, 215 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
-            <text x="270" y="75" textAnchor="middle" className="text-xs font-semibold fill-gray-300">Push Changes (Sync)</text><text x="270" y="210" textAnchor="middle" className="text-xs font-semibold fill-gray-300">Pull Updates</text>
+
+        {/* Connection Arrows */}
+        <g className="text-gray-400 dark:text-gray-500">
+            <path d="M 215 110 C 245 80, 295 80, 325 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <path d="M 325 170 C 295 200, 245 200, 215 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <text x="270" y="75" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
+            <text x="270" y="210" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
         </g>
     </svg>
 );
+
 
 const ValueLoopDiagram: React.FC = () => (
     <svg viewBox="0 0 300 300" className="w-full h-auto max-w-sm mx-auto" xmlns="http://www.w3.org/2000/svg">
@@ -126,23 +185,79 @@ const ValueLoopDiagram: React.FC = () => (
             <linearGradient id="val-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a5b4fc"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
             <linearGradient id="val-grad-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c4b5fd"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
             <linearGradient id="val-grad-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f9a8d4"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
-            <marker id="val-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-gray-500"/></marker>
+            <marker id="val-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-gray-400 dark:fill-gray-500"/></marker>
             <filter id="val-shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/><feOffset dy="3" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-        <circle cx="150" cy="150" r="120" strokeDasharray="8 8" className="stroke-gray-600" strokeWidth="1.5" fill="none" marker-end="url(#val-arrowhead)" marker-start="url(#val-arrowhead)"/>
-        <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-1)"/><UserCircleIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
-        <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-100">Customer Interaction</text>
-        <g transform="translate(260, 150)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-2)"/><ChartBarIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
-        <text x="260" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-100">Actionable Analytics</text>
-        <g transform="translate(40, 150)" className="cursor-pointer" filter="url(#val-shadow)"><circle r="32" className="fill-gray-700"/><circle r="28" fill="url(#val-grad-3)"/><BuildingStorefrontIcon className="w-10 h-10 text-white" x="-20" y="-20" /></g>
-        <text x="40" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-100">Smarter Decisions</text>
+
+        <circle cx="150" cy="150" r="120" strokeDasharray="8 8" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5" fill="none" marker-end="url(#val-arrowhead)" marker-start="url(#val-arrowhead)"/>
+        
+        <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)">
+            <circle r="32" className="fill-white dark:fill-gray-700"/>
+            <circle r="28" fill="url(#val-grad-1)"/>
+            
+        </g>
+        <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Customer Interaction</text>
+
+        <g transform="translate(260, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+            <circle r="32" className="fill-white dark:fill-gray-700"/>
+            <circle r="28" fill="url(#val-grad-2)"/>
+            
+        </g>
+        <text x="260" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
+
+        <g transform="translate(40, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+            <circle r="32" className="fill-white dark:fill-gray-700"/>
+            <circle r="28" fill="url(#val-grad-3)"/>
+            
+        </g>
+        <text x="40" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
     </svg>
 );
 
-const ScenarioBoutiqueDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><path d="M5 75 L 20 15 H 80 L 95 75 Z" className="fill-gray-700/50" /><path d="M 15 15 H 85" className="fill-gray-600" /><path d="M 20 15 L 80 15 L 85 5 H 15 Z" className="fill-gray-600" /><rect x="25" y="20" width="50" height="55" rx="2" className="fill-gray-900/40" /><rect x="40" y="45" width="20" height="30" rx="1" className="fill-indigo-500" /><rect x="42" y="47" width="16" height="20" rx="0.5" className="fill-purple-300" /></svg>);
-const ScenarioFranchiseDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fr-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient><g id="fr-store-icon"><circle cx="10" cy="10" r="10" className="fill-gray-700"/><BuildingStorefrontIcon className="w-4 h-4 text-gray-400" x="4" y="4"/></g><filter id="fr-glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M50 30 L 20 50" className="stroke-gray-600" strokeWidth="1.5"/><path d="M50 30 L 80 50" className="stroke-gray-600" strokeWidth="1.5"/><path d="M50 30 L 50 65" className="stroke-gray-600" strokeWidth="1.5"/><g filter="url(#fr-glow)"> <circle cx="50" cy="30" r="15" fill="url(#fr-grad)"/></g><ServerStackIcon className="w-6 h-6 text-white" x="42" y="22"/><use href="#fr-store-icon" x="10" y="50"/><use href="#fr-store-icon" x="70" y="50"/><use href="#fr-store-icon" x="40" y="65"/></svg>);
-const ScenarioB2bDiagram: React.FC = () => ( <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="b2b-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient></defs><path d="M10 75 L 30 10 H 70 L 90 75 Z" fill="none" className="stroke-gray-600" strokeWidth="2" /><rect x="40" y="20" width="20" height="40" rx="2" fill="url(#b2b-grad)" /><rect x="42" y="22" width="16" height="28" rx="1" className="fill-black/20" /><g transform="translate(75 25)" className="text-indigo-400"><ClipboardDocumentListIcon className="w-8 h-8 opacity-80" fill="currentColor"/></g><g transform="translate(15 45)" className="text-indigo-400"><UsersIcon className="w-8 h-8 opacity-80" fill="currentColor"/></g></svg>);
 
+const ScenarioBoutiqueDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 75 L 20 15 H 80 L 95 75 Z" className="fill-gray-200/50 dark:fill-gray-700/50" />
+        <path d="M 15 15 H 85" className="fill-gray-300 dark:fill-gray-600" />
+        <path d="M 20 15 L 80 15 L 85 5 H 15 Z" className="fill-gray-300 dark:fill-gray-600" />
+        <rect x="25" y="20" width="50" height="55" rx="2" className="fill-gray-50/50 dark:fill-gray-900/40" />
+        <rect x="40" y="45" width="20" height="30" rx="1" className="fill-indigo-500" />
+        <rect x="42" y="47" width="16" height="20" rx="0.5" className="fill-purple-300" />
+    </svg>
+);
+
+const ScenarioFranchiseDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="fr-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
+            <g id="fr-store-icon"><circle cx="10" cy="10" r="10" className="fill-gray-200 dark:fill-gray-700"/><BuildingStorefrontIcon className="w-4 h-4 text-gray-500" x="4" y="4"/></g>
+            <filter id="fr-glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <path d="M50 30 L 20 50" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
+        <path d="M50 30 L 80 50" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
+        <path d="M50 30 L 50 65" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
+        <g filter="url(#fr-glow)"> <circle cx="50" cy="30" r="15" fill="url(#fr-grad)"/></g>
+        <ServerStackIcon className="w-6 h-6 text-white" x="42" y="22"/>
+        <use href="#fr-store-icon" x="10" y="50"/>
+        <use href="#fr-store-icon" x="70" y="50"/>
+        <use href="#fr-store-icon" x="40" y="65"/>
+    </svg>
+);
+
+const ScenarioB2bDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="b2b-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient></defs>
+        <path d="M10 75 L 30 10 H 70 L 90 75 Z" fill="none" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="2" />
+        <rect x="40" y="20" width="20" height="40" rx="2" fill="url(#b2b-grad)" />
+        <rect x="42" y="22" width="16" height="28" rx="1" className="fill-white/50 dark:fill-black/20" />
+        <g transform="translate(75 25)" className="text-indigo-400">
+            <ClipboardDocumentListIcon className="w-8 h-8 opacity-80" fill="currentColor"/>
+        </g>
+        <g transform="translate(15 45)" className="text-indigo-400">
+            <UsersIcon className="w-8 h-8 opacity-80" fill="currentColor"/>
+        </g>
+    </svg>
+);
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
     const { getFileUrl, projectZipBlob } = useAppContext();
@@ -178,7 +293,7 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
     }, [getFileUrl, projectZipBlob]);
     
     return (
-        <div className="w-full h-full bg-slate-900 text-gray-300 relative">
+        <div className={`w-full h-full ${isDashboard ? 'bg-transparent' : 'bg-slate-900 text-gray-300'} relative`}>
             {(onBack && !isDashboard) && (
                 <div className="sticky top-0 left-0 right-0 p-4 bg-slate-900/80 backdrop-blur-sm z-10 flex justify-between items-center">
                     <h2 className="text-xl font-bold section-heading text-gray-100">About The System</h2>
@@ -192,17 +307,18 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                 <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
                     <motion.section variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
                         <div className="w-full max-w-4xl"><HeroDiagram /></div>
-                        <h1 className="text-3xl md:text-5xl font-bold section-heading text-white mt-8">The Retail OS</h1>
-                        <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
-                        <div className="mt-6 max-w-prose mx-auto text-sm space-y-3 text-gray-400">
-                           <p>This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.** It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
+                        <h1 className="text-3xl md:text-5xl font-bold section-heading text-gray-800 dark:text-white mt-8">The Retail OS</h1>
+                        <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
+                        <div className="mt-6 max-w-prose mx-auto text-sm space-y-3 text-gray-500 dark:text-gray-400">
+                           <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
+                           <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
                              <div className="max-w-prose text-sm space-y-3">
-                                <h3 className="font-bold text-2xl text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
+                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
                                 <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
                                 <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
                             </div>
@@ -214,7 +330,7 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
                              <div><ValueLoopDiagram /></div>
                              <div className="max-w-prose text-sm space-y-3 md:text-right">
-                                <h3 className="font-bold text-2xl text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
+                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
                                 <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
                                 <ul className="list-disc list-outside pl-5 mt-2 space-y-2 text-left">
                                     <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk.</li>
@@ -225,9 +341,9 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-2xl text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
                                 <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Runs flawlessly with or without an internet connection, ensuring 100% uptime.</FeatureItem>
                                 <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder or a cloud API for multi-location franchises.</FeatureItem>
@@ -243,21 +359,21 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
 
                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-2xl text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-white">High-End Boutiques</h4><p className="text-xs text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-slate-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-xs text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
                             </div>
                         </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-slate-800/50">
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-3xl mx-auto text-center">
-                            <h3 className="font-bold text-2xl text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
-                            <p className="text-sm text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
                             {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
-                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
+                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
                         </div>
                     </motion.section>
                 </motion.div>

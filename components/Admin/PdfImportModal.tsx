@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-// FIX: Switched to named import for pdfjsLib to resolve module resolution errors.
+// FIX: Switched to named imports for pdfjsLib to resolve module resolution errors.
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf.js';
 
 interface ConvertedPage {

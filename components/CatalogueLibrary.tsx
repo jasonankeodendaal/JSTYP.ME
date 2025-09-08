@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon } from './Icons.tsx';

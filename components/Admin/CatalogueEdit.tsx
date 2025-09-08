@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Catalogue } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';

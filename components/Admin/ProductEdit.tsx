@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Product, ProductDocument } from '../../types';
 import { ChevronLeftIcon, TrashIcon, UploadIcon, SaveIcon, PlusIcon, DocumentArrowRightIcon, SparklesIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';

@@ -1173,7 +1173,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const backupData: BackupData = JSON.parse(dbContent);
             const assetsFolder = zip.folder('assets');
             if (assetsFolder) {
-                const assetFiles: JSZip.JSZipObject[] = Object.values(assetsFolder.files).filter((f) => !f.dir);
+                // FIX: Explicitly type parameter 'f' as 'any' to resolve type inference issue with Object.values.
+                const assetFiles: any[] = Object.values(assetsFolder.files).filter((f: any) => !f.dir);
                 let uploadedCount = 0;
                 for (const assetFile of assetFiles) {
                     try {
