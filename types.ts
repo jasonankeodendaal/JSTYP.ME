@@ -311,3 +311,9 @@ export type RemoteCommand =
   | { type: 'logout' }
   | { type: 'startScreensaver' }
   | { type: 'stopScreensaver' };
+  
+export interface BackupProgress {
+  active: boolean;
+  message: string;
+  percent: number;
+}

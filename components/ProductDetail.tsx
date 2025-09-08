@@ -1,5 +1,6 @@
 
 
+
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, useLocation } from 'react-router';
@@ -65,7 +66,7 @@ const ProductDetail: React.FC = () => {
             <ChevronLeftIcon className="h-5 w-5 mr-1" />
             {backLabel}
         </button>
-        <div className="grid grid-cols-2 gap-x-12 gap-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Media */}
           <div className="space-y-6">
             <swiper-container

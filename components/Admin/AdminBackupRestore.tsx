@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import type { BackupData } from '../../types.ts';
 import { Link } from 'react-router-dom';
-import { CheckIcon } from '../Icons.tsx';
+import { CheckIcon, UploadIcon, AndroidIcon } from '../Icons.tsx';
 
 const SyncStatusIndicator: React.FC = () => {
     const { syncStatus, storageProvider } = useAppContext();
@@ -56,18 +56,26 @@ const AdminBackupRestore: React.FC = () => {
     const { 
         storageProvider, 
         loggedInUser,
-        brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, restoreBackup, showConfirmation, categories, viewCounts,
+        restoreBackup, showConfirmation,
         saveDatabaseToLocal, loadDatabaseFromLocal,
-        pushToCloud, pullFromCloud, syncStatus
+        pushToCloud, pullFromCloud, syncStatus,
+        uploadProjectZip,
+        createZipBackup,
+        restoreZipBackup,
+        uploadApk
     } = useAppContext();
 
     const [fileName, setFileName] = useState<string>('');
-    const [isRestoring, setIsRestoring] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isPushing, setIsPushing] = useState(false);
     const [isPulling, setIsPulling] = useState(false);
+    
+    // APK State
+    const [apkFile, setApkFile] = useState<File | null>(null);
+    const [isUploadingApk, setIsUploadingApk] = useState(false);
+    const [uploadApkMessage, setUploadApkMessage] = useState('');
 
     const isSuperAdmin = loggedInUser?.isMainAdmin ?? false;
     const canManage = loggedInUser?.isMainAdmin || loggedInUser?.permissions.canManageSystem;
@@ -83,16 +91,6 @@ const AdminBackupRestore: React.FC = () => {
     }
     
     // --- Local File Handlers ---
-    const handleCreateBackup = () => {
-        const backupData: BackupData = { brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, viewCounts };
-        const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(backupData, null, 2))}`;
-        const link = document.createElement("a");
-        link.href = jsonString;
-        const date = new Date().toISOString().split('T')[0];
-        link.download = `kiosk-backup-${date}.json`;
-        link.click();
-    };
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setFileName(e.target.files[0].name);
@@ -104,36 +102,16 @@ const AdminBackupRestore: React.FC = () => {
     const handleRestore = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const fileInput = fileInputRef.current;
+        // FIX: Corrected boolean comparison from `!fileInput.files.length === 0` to `fileInput.files.length === 0`.
         if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             alert('Please select a backup file to restore.');
             return;
         }
         const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const result = event.target?.result;
-                if (typeof result !== 'string') throw new Error("Failed to read file.");
-                const data = JSON.parse(result);
-                if (!data.brands || !data.products || !data.settings) throw new Error("Invalid backup file format.");
-                
-                showConfirmation("Are you sure you want to restore? This will overwrite all current data.", () => {
-                    setIsRestoring(true);
-                    restoreBackup(data);
-                    setTimeout(() => {
-                        alert("Restore successful!");
-                        setFileName('');
-                        if (fileInputRef.current) fileInputRef.current.value = "";
-                        setIsRestoring(false);
-                    }, 100);
-                });
-
-            } catch (error) {
-                alert(`Error restoring backup: ${error instanceof Error ? error.message : "Unknown error"}`);
-                setIsRestoring(false);
-            }
-        };
-        reader.readAsText(file);
+        
+        showConfirmation("Are you sure you want to restore? This will overwrite all current data and assets.", () => {
+            restoreZipBackup(file);
+        });
     };
 
     // --- Provider-Specific Handlers ---
@@ -191,6 +169,70 @@ const AdminBackupRestore: React.FC = () => {
             setIsPulling(false);
         });
     };
+    
+    const [uploadFile, setUploadFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadMessage, setUploadMessage] = useState('');
+
+    const handleProjectFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.name.endsWith('.zip')) {
+                setUploadFile(file);
+                setUploadMessage('');
+            } else {
+                alert('Please select a .zip file.');
+                e.target.value = '';
+            }
+        }
+    };
+
+    const handleProjectUpload = async () => {
+        if (!uploadFile) return;
+        setIsUploading(true);
+        setUploadMessage('Uploading, please wait...');
+        try {
+            await uploadProjectZip(uploadFile);
+            setUploadMessage('Upload successful!');
+            setUploadFile(null);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setUploadMessage(`Upload failed: ${message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
+    const handleApkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            if (file.name.endsWith('.apk')) {
+                setApkFile(file);
+                setUploadApkMessage('');
+            } else {
+                alert('Please select an .apk file.');
+                e.target.value = '';
+            }
+        }
+    };
+
+    const handleApkUpload = async () => {
+        if (!apkFile) return;
+        setIsUploadingApk(true);
+        setUploadApkMessage('Uploading APK...');
+        try {
+            await uploadApk(apkFile);
+            setUploadApkMessage('Upload successful! The download link on the home page is now active.');
+            setApkFile(null);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setUploadApkMessage(`Upload failed: ${message}`);
+        } finally {
+            setIsUploadingApk(false);
+        }
+    };
+
+    const canUploadSystemFiles = storageProvider === 'local' || storageProvider === 'customApi';
 
     const renderProviderSync = () => {
         switch (storageProvider) {
@@ -286,25 +328,25 @@ const AdminBackupRestore: React.FC = () => {
     const renderLocalFileUI = () => (
          <div className="space-y-4">
             <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Create Local Backup File</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Create Full Backup (.zip)</h4>
                 <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                    Download a complete `.json` backup file of all data. Store this file in a safe place.
+                    Download a complete <code>.zip</code> file containing your <code>database.json</code> and all media assets.
                 </p>
                 <div className="mt-3">
-                    <button type="button" onClick={handleCreateBackup} className="btn btn-primary !text-sm !py-2 w-full">Download Backup File</button>
+                    <button type="button" onClick={createZipBackup} className="btn btn-primary !text-sm !py-2 w-full">Download Full Backup</button>
                 </div>
             </div>
             <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-100">Restore from Backup File</h4>
                 <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-                    <strong className="text-yellow-600 dark:text-yellow-400">Warning:</strong> This will overwrite all current data.
+                    <strong className="text-yellow-600 dark:text-yellow-400">Warning:</strong> Restoring from a <code>.zip</code> will re-upload all its assets to your currently connected storage provider.
                 </p>
                 <form onSubmit={handleRestore} className="mt-3 space-y-3">
                      <label htmlFor="restore-file-upload" className="w-full cursor-pointer flex items-center justify-center p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-gray-400">
-                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{fileName || 'Click to select .json file'}</span>
-                        <input ref={fileInputRef} id="restore-file-upload" type="file" className="sr-only" accept=".json" onChange={handleFileChange} />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{fileName || 'Click to select .zip file'}</span>
+                        <input ref={fileInputRef} id="restore-file-upload" type="file" className="sr-only" accept=".zip,application/zip" onChange={handleFileChange} />
                     </label>
-                    <button type="submit" className="btn btn-destructive !text-sm !py-2 w-full" disabled={isRestoring || !fileName}>{isRestoring ? 'Restoring...' : 'Restore from Backup'}</button>
+                    <button type="submit" className="btn btn-destructive !text-sm !py-2 w-full" disabled={!fileName}>Restore from Backup</button>
                 </form>
             </div>
         </div>
@@ -324,6 +366,63 @@ const AdminBackupRestore: React.FC = () => {
             )}
             
             {renderLocalFileUI()}
+
+            <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-gray-300 dark:border-gray-600" /></div>
+                <div className="relative flex justify-center"><span className="bg-gray-100/50 dark:bg-gray-800/20 px-3 text-sm font-medium text-gray-700 dark:text-gray-300">Advanced Distribution</span></div>
+            </div>
+
+            <div className="space-y-4">
+                 <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">Android APK Distribution</h4>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                        Upload a <code>kiosk-app.apk</code> file to make it available for download on the public home screen.
+                    </p>
+                    {!canUploadSystemFiles && (
+                        <p className="mt-2 text-sm p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg">
+                            This feature requires a "Local Folder" or "Custom API" storage provider to be connected in the Storage tab.
+                        </p>
+                    )}
+                    {canUploadSystemFiles && (
+                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <label htmlFor="apk-upload" className="flex-grow btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 justify-center">
+                                <AndroidIcon className="h-4 w-4" />
+                                <span className="ml-2 truncate">{apkFile ? apkFile.name : 'Select kiosk-app.apk'}</span>
+                            </label>
+                            <input id="apk-upload" type="file" className="sr-only" accept=".apk" onChange={handleApkFileSelect} />
+                            <button onClick={handleApkUpload} className="w-full sm:w-auto btn btn-primary" disabled={!apkFile || isUploadingApk}>
+                                {isUploadingApk ? 'Uploading...' : 'Upload APK'}
+                            </button>
+                        </div>
+                    )}
+                    {uploadApkMessage && <p className="text-sm mt-2">{uploadApkMessage}</p>}
+                </div>
+
+                <div className="bg-white dark:bg-gray-800/50 p-4 rounded-xl shadow-xl border dark:border-gray-700/50">
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-100">Project Source Code Distribution</h4>
+                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                        Upload the <code>project.zip</code> file to make it available for download from the "About System" page. This will overwrite any existing version.
+                    </p>
+                    {!canUploadSystemFiles && (
+                        <p className="mt-2 text-sm p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-lg">
+                            This feature requires a "Local Folder" or "Custom API" storage provider to be connected in the Storage tab.
+                        </p>
+                    )}
+                    {canUploadSystemFiles && (
+                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <label htmlFor="project-zip-upload" className="flex-grow btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 justify-center">
+                                <UploadIcon className="h-4 w-4" />
+                                <span className="ml-2 truncate">{uploadFile ? uploadFile.name : 'Select project.zip file'}</span>
+                            </label>
+                            <input id="project-zip-upload" type="file" className="sr-only" accept=".zip,application/zip" onChange={handleProjectFileSelect} />
+                            <button onClick={handleProjectUpload} className="w-full sm:w-auto btn btn-primary" disabled={!uploadFile || isUploading}>
+                                {isUploading ? 'Uploading...' : 'Upload'}
+                            </button>
+                        </div>
+                    )}
+                    {uploadMessage && <p className="text-sm mt-2">{uploadMessage}</p>}
+                </div>
+            </div>
         </div>
     );
 };

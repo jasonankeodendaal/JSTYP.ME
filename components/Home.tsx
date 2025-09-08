@@ -2,7 +2,7 @@ import React from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
-import { EyeIcon, EyeOffIcon, PlusIcon, CubeIcon } from './Icons.tsx';
+import { EyeIcon, EyeOffIcon, PlusIcon, CubeIcon, AndroidIcon } from './Icons.tsx';
 import PamphletDisplay from './PamphletCarousel.tsx';
 import LocalMedia from './LocalMedia.tsx';
 
@@ -66,7 +66,29 @@ const ClientStockPickCTA: React.FC = () => {
     );
 };
 
-const ScreensaverToggle: React.FC = () => {
+const ApkDownloadCTA: React.FC = () => {
+    const { apkDownloadUrl } = useAppContext();
+
+    if (!apkDownloadUrl) {
+        return null;
+    }
+
+    return (
+        <div className="mt-6">
+            <a 
+                href={apkDownloadUrl} 
+                download="kiosk-app.apk"
+                className="btn btn-secondary !py-1.5 !px-3 text-xs"
+            >
+                <AndroidIcon className="h-4 w-4" />
+                <span>Download Android App</span>
+            </a>
+        </div>
+    );
+};
+
+
+const KioskControls: React.FC = () => {
     const { isScreensaverEnabled, toggleScreensaver } = useAppContext();
     
     const baseClasses = "inline-flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:ring-offset-gray-800 transition-all";
@@ -102,6 +124,7 @@ const ScreensaverToggle: React.FC = () => {
                     : "Screensaver is disabled."
                 }
             </p>
+            <ApkDownloadCTA />
         </div>
     );
 };
@@ -113,7 +136,7 @@ const Home: React.FC = () => {
       <ClientStockPickCTA />
       <PamphletDisplay />
       <BrandGrid />
-      <ScreensaverToggle />
+      <KioskControls />
     </div>
   );
 };

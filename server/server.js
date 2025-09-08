@@ -1,4 +1,3 @@
-
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -41,7 +40,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' })); // Increase limit for potentially large data blobs
 app.use('/files', express.static(uploadsDir)); // Serve uploaded files statically
 
-// Multer storage config
+// Multer storage config for general file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadsDir);
@@ -53,6 +52,28 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage });
+
+// Multer storage config for project.zip
+const projectZipStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir); // Save it to the statically served folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, 'project.zip'); // Always name it project.zip, overwriting existing
+    }
+});
+const projectUpload = multer({ storage: projectZipStorage });
+
+// Multer storage config for kiosk-app.apk
+const apkStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, 'kiosk-app.apk'); // Always name it kiosk-app.apk
+    }
+});
+const apkUpload = multer({ storage: apkStorage });
 
 
 // API Key Auth Middleware
@@ -68,6 +89,8 @@ const authenticateKey = (req, res, next) => {
 // Apply auth to all data-mutating or sensitive endpoints
 app.use('/data', authenticateKey);
 app.use('/upload', authenticateKey);
+app.use('/upload-project', authenticateKey);
+app.use('/upload-apk', authenticateKey);
 
 // Utility functions
 const readData = () => {
@@ -122,6 +145,22 @@ app.post('/upload', upload.single('file'), (req, res) => {
     }
     // Return the generated filename so the client can reference it
     res.status(200).json({ filename: req.file.filename });
+});
+
+// POST /upload-project - Upload the project.zip file
+app.post('/upload-project', projectUpload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file provided.' });
+    }
+    res.status(200).json({ filename: 'project.zip' });
+});
+
+// POST /upload-apk - Upload the kiosk-app.apk file
+app.post('/upload-apk', apkUpload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file provided.' });
+    }
+    res.status(200).json({ filename: 'kiosk-app.apk' });
 });
 
 // Add a public status route to check if the server is live

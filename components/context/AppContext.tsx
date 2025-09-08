@@ -1,3 +1,4 @@
+
 /// <reference path="../../swiper.d.ts" />
 
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
@@ -16,8 +17,9 @@ import {
     viewCounts as initialViewCounts,
     activityLogs as initialActivityLogs
 } from '../../data/mockData.ts';
-import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog, KioskSession, RemoteCommand } from '../../types.ts';
+import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog, KioskSession, RemoteCommand, BackupProgress } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
+import JSZip from 'jszip';
 
 
 // --- UTILITY FUNCTIONS ---
@@ -197,6 +199,15 @@ interface AppContextType {
   playTouchSound: () => void;
   isScreensaverPinModalOpen: boolean;
   setIsScreensaverPinModalOpen: (isOpen: boolean) => void;
+  uploadProjectZip: (file: File) => Promise<void>;
+  // FIX: Add missing property `apkDownloadUrl` to satisfy the ApkDownloadCTA component.
+  apkDownloadUrl: string;
+  // FIX: Add missing backup properties
+  backupProgress: BackupProgress;
+  setBackupProgress: (progress: Partial<BackupProgress>) => void;
+  createZipBackup: () => Promise<void>;
+  restoreZipBackup: (file: File) => Promise<void>;
+  uploadApk: (file: File) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -225,6 +236,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [viewCounts, setViewCounts] = useState<ViewCounts>(initialViewCounts);
     const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(initialActivityLogs);
     const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
+    // FIX: Add state for the APK download URL.
+    const [apkDownloadUrl, setApkDownloadUrl] = useState<string>('');
+    const [backupProgress, setBackupProgressState] = useState<BackupProgress>({ active: false, message: '', percent: 0 });
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(null);
@@ -699,7 +713,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
 
     const connectToCloudProvider = useCallback((provider: StorageProvider) => {
-        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'firebase', 'xano', 'backendless'];
+        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'xano', 'backendless'];
         if (apiLikeProviders.includes(provider)) {
             if (!settings.customApiUrl) {
                 alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
@@ -809,6 +823,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         return fileToBase64(file);
     }, [storageProvider, directoryHandle, settings]);
+    
+    const uploadProjectZip = useCallback(async (file: File): Promise<void> => {
+        if (storageProvider === 'local' && directoryHandle) {
+            try {
+                const fileHandle = await directoryHandle.getFileHandle('project.zip', { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(file);
+                await writable.close();
+                addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip to Local Folder.' });
+                return;
+            } catch (error) {
+                console.error('Error saving project.zip to local directory:', error);
+                throw new Error('Failed to save project.zip to local directory.');
+            }
+        }
+
+        if (storageProvider === 'customApi') {
+            const url = settings.customApiUrl;
+            if (!url) throw new Error("API URL is not configured for upload.");
+            
+            const uploadUrl = new URL(url);
+            uploadUrl.pathname = uploadUrl.pathname.replace(/\/data$/, '/upload-project');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await fetch(uploadUrl.toString(), {
+                method: 'POST',
+                headers: { 'x-api-key': settings.customApiKey },
+                body: formData,
+            });
+            if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
+            addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip to Custom API.' });
+            return;
+        }
+
+        throw new Error('No compatible storage provider (Local Folder or Custom API) is connected for this operation.');
+    }, [storageProvider, directoryHandle, settings, addActivityLog]);
 
     const getFileUrl = useCallback(async (fileName: string): Promise<string> => {
         if (!fileName || fileName.startsWith('http') || fileName.startsWith('data:')) {
@@ -817,8 +868,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         if (storageProvider === 'local' && directoryHandle) {
             try {
-                const assetsDir = await directoryHandle.getDirectoryHandle('assets');
-                const fileHandle = await assetsDir.getFileHandle(fileName);
+                // For project.zip, check the root. For others, check assets.
+                const dir = fileName === 'project.zip' ? directoryHandle : await directoryHandle.getDirectoryHandle('assets');
+                const fileHandle = await dir.getFileHandle(fileName);
                 const file = await fileHandle.getFile();
                 return URL.createObjectURL(file);
             } catch (error) {
@@ -836,7 +888,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 if (!baseUrlString) return fileName;
     
                 const baseUrl = new URL(baseUrlString);
-                const fileUrl = new URL(`/files/${fileName}`, baseUrl.origin);
+                // For project.zip, it's served from /files/project.zip.
+                const filePath = fileName === 'project.zip' || fileName === 'kiosk-app.apk' ? `/files/${fileName}` : `/files/${fileName}`;
+                const fileUrl = new URL(filePath, baseUrl.origin);
                 
                 return fileUrl.toString();
             } catch (error) {
@@ -848,6 +902,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return fileName;
     }, [storageProvider, directoryHandle, settings]);
     
+    // FIX: Check for APK availability and update state.
+    useEffect(() => {
+        const checkApk = async () => {
+            if (storageProvider === 'none') {
+                setApkDownloadUrl('');
+                return;
+            }
+            try {
+                const url = await getFileUrl('kiosk-app.apk');
+                if (!url || url === 'kiosk-app.apk') { // getFileUrl might return the filename if it fails
+                    setApkDownloadUrl('');
+                    return;
+                }
+                const response = await fetch(url, { method: 'HEAD' });
+                if (response.ok) {
+                    setApkDownloadUrl(url);
+                } else {
+                    setApkDownloadUrl('');
+                }
+            } catch (e) {
+                console.warn("Could not check for kiosk-app.apk, download link will be hidden.", e);
+                setApkDownloadUrl('');
+            }
+        };
+
+        checkApk();
+    }, [storageProvider, settings.customApiUrl, settings.sharedUrl, getFileUrl]);
+
     // --- APP LIFECYCLE & AUTO-SYNC ---
     const trackBrandView = useCallback((brandId: string) => {
         setViewCounts(prev => {
@@ -1005,6 +1087,131 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem('kioskTheme', theme);
         idbSet('kioskTheme', theme);
     }, [theme]);
+    
+    const setBackupProgress = (progressUpdate: Partial<BackupProgress>) => {
+        setBackupProgressState(prev => ({...prev, ...progressUpdate}));
+    };
+    
+    const createZipBackup = useCallback(async () => {
+        setBackupProgress({ active: true, message: 'Starting backup...', percent: 0 });
+        try {
+            const zip = new JSZip();
+            const updatedSettings = { ...settings, lastUpdated: Date.now() };
+            const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
+            zip.file('database.json', JSON.stringify(backupData, null, 2));
+            setBackupProgress({ message: 'Database backed up.', percent: 10 });
+            const assetsFolder = zip.folder('assets');
+            if (!assetsFolder) throw new Error("Could not create assets folder in zip.");
+            const allAssetPaths = new Set<string>();
+            const addAsset = (url?: string) => url && !url.startsWith('http') && !url.startsWith('data:') && allAssetPaths.add(url);
+            
+            brands.forEach(b => addAsset(b.logoUrl));
+            products.forEach(p => { p.images.forEach(addAsset); addAsset(p.video); p.documents?.forEach(d => { if (d.type === 'image') d.imageUrls.forEach(addAsset); else addAsset(d.url); }); });
+            catalogues.forEach(c => { addAsset(c.thumbnailUrl); c.imageUrls.forEach(addAsset); });
+            pamphlets.forEach(p => { addAsset(p.imageUrl); p.imageUrls.forEach(addAsset); });
+            screensaverAds.forEach(a => a.media.forEach(m => addAsset(m.url)));
+            adminUsers.forEach(u => addAsset(u.imageUrl));
+            tvContent.forEach(t => t.media.forEach(m => addAsset(m.url)));
+            addAsset(settings.logoUrl); addAsset(settings.pwaIconUrl); addAsset(settings.header.backgroundImageUrl); addAsset(settings.footer.backgroundImageUrl); addAsset(settings.loginScreen.backgroundImageUrl); addAsset(settings.lightTheme.appBgImage); addAsset(settings.darkTheme.appBgImage); addAsset(settings.creatorProfile.imageUrl); addAsset(settings.creatorProfile.logoUrlLight); addAsset(settings.creatorProfile.logoUrlDark); addAsset(settings.backgroundMusicUrl); addAsset(settings.touchSoundUrl);
+
+            const assetPathsArray = Array.from(allAssetPaths);
+            for (let i = 0; i < assetPathsArray.length; i++) {
+                const path = assetPathsArray[i];
+                try {
+                    const url = await getFileUrl(path);
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+                    assetsFolder.file(path, blob);
+                    const percent = 10 + Math.round(((i + 1) / assetPathsArray.length) * 85);
+                    setBackupProgress({ message: `Backing up asset: ${path}`, percent });
+                } catch (e) { console.warn(`Could not back up asset ${path}:`, e); }
+            }
+            
+            setBackupProgress({ message: 'Generating zip file...', percent: 95 });
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = `kiosk_backup_${new Date().toISOString().split('T')[0]}.zip`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            setBackupProgress({ message: 'Backup complete!', percent: 100 });
+        } catch (error) {
+            console.error("Error creating zip backup:", error);
+            alert(`Backup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setBackupProgress({ active: false, message: 'Backup failed', percent: 0 });
+        } finally {
+            setTimeout(() => setBackupProgress({ active: false, message: '', percent: 0 }), 3000);
+        }
+    }, [brands, products, catalogues, pamphlets, settings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs, getFileUrl]);
+
+    const restoreZipBackup = useCallback(async (file: File) => {
+        setBackupProgress({ active: true, message: 'Starting restore...', percent: 0 });
+        try {
+            const zip = await JSZip.loadAsync(file);
+            const dbFile = zip.file('database.json');
+            if (!dbFile) throw new Error('database.json not found in zip file.');
+            setBackupProgress({ message: 'Reading database...', percent: 5 });
+            const dbContent = await dbFile.async('string');
+            const backupData: BackupData = JSON.parse(dbContent);
+            const assetsFolder = zip.folder('assets');
+            if (assetsFolder) {
+                const assetFiles = Object.values(assetsFolder.files).filter(f => !f.dir);
+                let uploadedCount = 0;
+                for (const assetFile of assetFiles) {
+                    try {
+                        const blob = await assetFile.async('blob');
+                        const file = new File([blob], assetFile.name);
+                        await saveFileToStorage(file);
+                        uploadedCount++;
+                        const percent = 5 + Math.round((uploadedCount / assetFiles.length) * 90);
+                        setBackupProgress({ message: `Restoring asset: ${assetFile.name}`, percent });
+                    } catch (e) { console.warn(`Could not restore asset ${assetFile.name}:`, e); }
+                }
+            }
+            setBackupProgress({ message: 'Applying data...', percent: 95 });
+            restoreBackup(backupData);
+            setBackupProgress({ message: 'Restore complete!', percent: 100 });
+            alert("Restore successful! The application will now reload.");
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (error) {
+            console.error("Error restoring from zip backup:", error);
+            alert(`Restore failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            setBackupProgress({ active: false, message: 'Restore failed', percent: 0 });
+        }
+    }, [saveFileToStorage, restoreBackup]);
+    
+    const uploadApk = useCallback(async (file: File): Promise<void> => {
+        if (storageProvider === 'local' && directoryHandle) {
+            try {
+                const fileHandle = await directoryHandle.getFileHandle('kiosk-app.apk', { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(file);
+                await writable.close();
+                addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded kiosk-app.apk to Local Folder.' });
+                return;
+            } catch (error) {
+                console.error('Error saving kiosk-app.apk to local directory:', error);
+                throw new Error('Failed to save kiosk-app.apk to local directory.');
+            }
+        }
+        if (storageProvider === 'customApi') {
+            const url = settings.customApiUrl;
+            if (!url) throw new Error("API URL is not configured for upload.");
+            const uploadUrl = new URL(url);
+            uploadUrl.pathname = uploadUrl.pathname.replace(/\/data$/, '/upload-apk');
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await fetch(uploadUrl.toString(), {
+                method: 'POST',
+                headers: { 'x-api-key': settings.customApiKey },
+                body: formData,
+            });
+            if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
+            addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded kiosk-app.apk to Custom API.' });
+            return;
+        }
+        throw new Error('No compatible storage provider (Local Folder or Custom API) is connected for this operation.');
+    }, [storageProvider, directoryHandle, settings, addActivityLog]);
 
     const contextValue: AppContextType = {
         isSetupComplete,
@@ -1110,6 +1317,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         playTouchSound,
         isScreensaverPinModalOpen,
         setIsScreensaverPinModalOpen,
+        uploadProjectZip,
+        apkDownloadUrl,
+        backupProgress,
+        setBackupProgress,
+        createZipBackup,
+        restoreZipBackup,
+        uploadApk,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
-import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, SparklesIcon, CubeIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, SignalIcon, CircleStackIcon, UsersIcon, PlayIcon, PauseIcon, StopIcon, ComputerDesktopIcon, ShieldCheckIcon, CodeBracketIcon } from './Icons.tsx';
+import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, SparklesIcon, CubeIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, SignalIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon } from './Icons.tsx';
 import { useNavigate } from 'react-router-dom';
 import SetupInstruction from './Admin/SetupInstruction.tsx';
 import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent } from './Admin/SetupGuides.tsx';
@@ -372,6 +372,40 @@ const ScenarioB2bDiagram: React.FC = () => (
 
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
+    const { getFileUrl } = useAppContext();
+    const [isAvailable, setIsAvailable] = useState(false);
+    const [zipUrl, setZipUrl] = useState('');
+    const [isChecking, setIsChecking] = useState(true);
+
+    const checkZip = useCallback(async () => {
+        let isMounted = true;
+        setIsChecking(true);
+        try {
+            const url = await getFileUrl('project.zip');
+            if (url && isMounted) {
+                const response = await fetch(url, { method: 'HEAD' });
+                if (response.ok) {
+                    setIsAvailable(true);
+                    setZipUrl(url);
+                } else {
+                    setIsAvailable(false);
+                }
+            } else if (isMounted) {
+                setIsAvailable(false);
+            }
+        } catch (error) {
+            console.log('Project.zip not found:', error);
+            if (isMounted) setIsAvailable(false);
+        } finally {
+            if (isMounted) setIsChecking(false);
+        }
+        return () => { isMounted = false; };
+    }, [getFileUrl]);
+
+    useEffect(() => {
+        checkZip();
+    }, [checkZip]);
+    
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -391,139 +425,96 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                             <SparklesIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
                             <span>The Philosophy: Bridging Digital and Physical Retail</span>
                        </h3>
-                       <div className="max-w-prose text-sm">
+                       <div className="max-w-prose text-sm space-y-2">
                            <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
-                           <p className="mt-2">It's more than a digital sign—it's a strategic platform designed to digitize your in-store customer journey, empowering you with the tools to create a seamless brand experience and capture actionable data that was previously invisible.</p>
-                       </div>
-                    </div>
-
-                     <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                       <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <ChartBarIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>Why This System is a Game-Changer</span>
-                       </h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                            <div className="space-y-4 max-w-prose">
-                                <p>This platform fundamentally transforms the in-store customer experience from a passive walkthrough into an active, engaging exploration. By empowering customers with information and sales staff with powerful tools, it directly addresses core retail challenges and unlocks new opportunities for growth.</p>
-                                <ul className="list-disc list-inside text-sm space-y-2">
-                                    <li><strong>Solve the "Endless Aisle" Problem:</strong> Showcase your entire catalog, even items not physically in stock. Never lose a sale because a specific color or size isn't on the floor.</li>
-                                    <li><strong>Capture Actionable In-Store Insights:</strong> For the first time, understand what your customers are *really* interested in. The analytics engine reveals which products and brands get the most attention, providing invaluable data for merchandising and inventory decisions.</li>
-                                    <li><strong>Elevate Your Brand Perception:</strong> Deliver a modern, high-tech, and premium experience that impresses customers, builds brand value, and sets you apart from the competition.</li>
-                                    <li><strong>Empower Your Sales Team:</strong> Equip your staff with a powerful, mobile tool for instant quoting, product lookup, and information access, turning them into expert consultants on the sales floor.</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <WhyYouNeedThisSystemDiagram />
-                            </div>
+                           <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
                     </div>
 
                     <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <CodeBracketIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>The Core Architecture: Speed, Reliability, & Offline Power</span>
-                        </h3>
-                        <div className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
-                            <p className="mb-4 text-sm max-w-prose">The system is built on a powerful <strong>"Local-First"</strong> architecture. This means every kiosk is a self-sufficient powerhouse, ensuring maximum speed and 100% offline functionality. All data and assets are stored directly on the device, eliminating reliance on a constant internet connection. Syncing is an optional, powerful layer used to keep multiple devices consistent, not a requirement for operation.</p>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading">How It Works: The Offline-First Core</h3>
+                        <div className="grid md:grid-cols-2 gap-6 items-center">
+                             <div className="max-w-prose text-sm space-y-2">
+                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data—products, settings, and media paths—locally on the device in an IndexedDB database. This **offline-first architecture** means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
+                                <p>For multi-device setups or centralized management, it uses an **optional sync provider** (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability and speed of an offline app with the powerful scalability and convenience of the cloud.</p>
+                            </div>
                             <SystemEcosystemDiagram />
                         </div>
-                        <div className="mt-6">
-                            <h4 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">Technology Deep Dive: The 'Why' Behind the Stack</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                   <h4 className="font-semibold">React + Vite</h4>
-                                   <p className="text-xs">
-                                       <strong>Why:</strong> To deliver a blazing-fast, modern, and fluid user interface. React's component-based architecture ensures the UI is maintainable and scalable, while Vite provides an incredibly fast development and build process. The result is an application that feels as responsive and polished as a native app.
-                                   </p>
-                                </div>
-                                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                   <h4 className="font-semibold">IndexedDB Database</h4>
-                                   <p className="text-xs">
-                                       <strong>Why:</strong> For true offline capability. Unlike simple caching, IndexedDB is an industrial-strength database that lives inside the browser. It allows the entire product catalog, settings, and media assets to be stored locally, ensuring instantaneous data access and full functionality, even if the internet goes down.
-                                   </p>
-                                </div>
-                                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                   <h4 className="font-semibold">Progressive Web App (PWA)</h4>
-                                   <p className="text-xs">
-                                       <strong>Why:</strong> To provide a reliable, native app-like experience without the complexity of app stores. The kiosk can be "installed" on any device (Windows, Android, macOS), enabling fullscreen, offline-capable operation from a simple desktop shortcut, giving it a professional, locked-down feel.
-                                   </p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-
-                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <ClipboardDocumentListIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>A Comprehensive Feature Tour</span>
-                        </h3>
-                        <div className="space-y-6 max-w-prose">
-                             <FeatureItem icon={<CubeIcon className="w-5 h-5"/>} title="The 'Endless Aisle' Product Showcase">
-                                <span>Overcome the limitations of physical floor space. Go beyond static displays by presenting products with stunning image galleries, engaging product videos, full technical specifications, and downloadable PDF documents. For example, a furniture store can showcase a sofa in every available fabric option, even if only one is physically on the floor, preventing lost sales due to lack of variety.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Dynamic Marketing Engine">
-                                <span>Transition your costly print marketing into a dynamic, engaging digital format. Upload entire product catalogues with an elegant page-turning effect. Use the built-in scheduler to automate promotional pamphlets for specific date ranges, saving thousands in printing costs and ensuring your marketing is always timely and relevant without manual intervention.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Unbreakable Offline-First Reliability">
-                                <span>Engineered for the demanding realities of retail environments where Wi-Fi can be unstable or non-existent. The kiosk operates flawlessly offline, ensuring a consistently smooth and professional customer experience at all times. This makes it perfect for high-stakes environments like trade shows, pop-up shops, or large stores with inconsistent internet connectivity.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Total Brand Customization">
-                                <span>Your brand is unique, and your digital touchpoints should be too. Exercise granular control over the entire user interface, from color palettes and Google Fonts to layout styles, card roundness, and shadow depth. The result is a kiosk that looks and feels like a bespoke, high-end application, perfectly aligned with your brand's visual identity.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="In-Store Analytics Engine">
-                                <span>Unlock invaluable, previously invisible insights into what's popular in your physical store. The system tracks which brands and products receive the most interactions, providing you with hard data to optimize store layouts, inform inventory decisions, justify product placement, and refine your marketing strategies for maximum real-world impact.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales & Quoting Workflow">
-                                <span>Seamlessly turn browsing interest into a concrete sales lead. An admin-protected workflow allows your staff to build a quote with a client, enter their details, and immediately print a professional, branded document on the spot. This streamlines the sales process for high-value items or B2B clients, enhancing professionalism and closing deals faster.</span>
-                            </FeatureItem>
-                             <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Multi-Kiosk Sync & Remote Control">
-                                <span>Manage a fleet of devices from a single, central admin panel. Whether using a simple shared folder on your local network or a powerful cloud server, you can push updates to all kiosks simultaneously. The Remote Control feature lets you monitor the real-time status of each kiosk and issue commands like navigation or refresh.</span>
-                            </FeatureItem>
-                        </div>
-                    </div>
-
                      <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <ComputerDesktopIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>Deployment Scenarios & Kiosk Setups</span>
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Scenario 1: The Standalone Boutique (Offline-First)</h4>
-                                <p className="text-sm mt-1 max-w-prose">Perfect for a single store, pop-up shop, or trade show booth where simplicity and reliability are paramount. All data and media assets are stored directly on the device (e.g., a touchscreen PC or tablet). No internet or external server is required for day-to-day operation after the initial setup, guaranteeing a fast, responsive, and completely self-contained experience.</p>
-                                 <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-700/50">
-                                    <ScenarioBoutiqueDiagram />
-                                </div>
-                            </div>
-                            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Scenario 2: The Multi-Location Franchise (Central Sync)</h4>
-                                <p className="text-sm mt-1 max-w-prose">Ideal for retail chains or businesses with multiple kiosks that require brand consistency. A main PC (in an office or back room) acts as the central server, holding the master copy of the data. All other kiosks across different locations sync their data with this main PC over the internet, ensuring that any update to products or promotions is instantly reflected everywhere.</p>
-                                 <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-700/50">
-                                    <ScenarioFranchiseDiagram />
-                                </div>
-                            </div>
-                             <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600/50">
-                                <h4 className="font-semibold text-gray-800 dark:text-gray-100">Scenario 3: The B2B Supplier (Mobile & On-the-Go)</h4>
-                                <p className="text-sm mt-1 max-w-prose">Equip your sales team with a powerful, portable tool for trade shows and client visits. The kiosk runs on a tablet or laptop, works fully offline for generating quotes and browsing products on the spot, and then syncs all new quotes and analytics data back to a central folder or cloud server when reconnected to the internet.</p>
-                                 <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-gray-200 dark:border-gray-700/50">
-                                    <ScenarioB2bDiagram />
-                                </div>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading">Why You Need This System: Turning Browsing into Insight</h3>
+                        <div className="grid md:grid-cols-2 gap-6 items-center">
+                            <WhyYouNeedThisSystemDiagram />
+                             <div className="max-w-prose text-sm space-y-2">
+                                <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
+                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2">
+                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk, turning it into a powerful, interactive sales tool that bridges the gap between browsing and buying.</li>
+                                    <li><strong>Gain Actionable Insights:</strong> The built-in analytics provide a clear, visual picture of in-store customer behavior, helping you make smarter decisions about product placement, promotions, and inventory.</li>
+                                    <li><strong>Enhance Customer Experience:</strong> Offer your customers a modern, self-service way to explore your entire product catalogue in rich detail, with videos, documents, and high-resolution images.</li>
+                                    <li><strong>Reduce Perceived Wait Times:</strong> An engaging interactive display keeps customers occupied and informed, improving their overall in-store experience.</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                       <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-2 section-heading flex items-center gap-3">
-                            <ShieldCheckIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>Security & Data Privacy</span>
-                       </h3>
-                       <div className="max-w-prose">
-                            <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="You Control Your Data">
-                                <span>Your data is your most valuable asset. The "Local-First" architecture means all your product information, analytics, and media are stored on **your** devices by default. You are never forced to upload sensitive business data to a third-party cloud. When you choose to use a sync provider, you control the server and the data remains within your infrastructure, protected by a secret API key that only you and your server know, ensuring complete data sovereignty.</span>
-                            </FeatureItem>
-                       </div>
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">Key Features at a Glance</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+                            <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">The kiosk runs flawlessly with or without an internet connection, ensuring 100% uptime in your store.</FeatureItem>
+                            <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Choose between a local network folder for simple setups or a cloud API for multi-location franchises.</FeatureItem>
+                            <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data, promotions, and settings from a single admin panel and sync changes everywhere.</FeatureItem>
+                            <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful product catalogues, promotional pamphlets, and full-screen video ads.</FeatureItem>
+                            <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views per-kiosk to understand what's popular in different locations.</FeatureItem>
+                            <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface, complete with product details and quantities.</FeatureItem>
+                            <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout and transition effects.</FeatureItem>
+                            <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access allows you to delegate management tasks with specific permissions.</FeatureItem>
+                        </div>
                     </div>
 
+                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">Perfect For Any Environment</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="text-center">
+                                <ScenarioBoutiqueDiagram />
+                                <h4 className="font-semibold mt-2">High-End Boutiques</h4>
+                                <p className="text-xs">Provide a sophisticated, interactive catalogue that complements your premium products.</p>
+                            </div>
+                            <div className="text-center">
+                                <ScenarioFranchiseDiagram />
+                                <h4 className="font-semibold mt-2">Multi-Location Franchises</h4>
+                                <p className="text-xs">Ensure brand consistency and manage product data centrally across all stores.</p>
+                            </div>
+                            <div className="text-center">
+                                <ScenarioB2bDiagram />
+                                <h4 className="font-semibold mt-2">B2B & Trade Shows</h4>
+                                <p className="text-xs">Capture leads, generate quotes instantly, and showcase your full range without physical stock.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
+                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
+                            <ArrowDownTrayIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
+                            <span>Project Source Code</span>
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                           This application is designed to be fully self-hostable. For developers wanting to customize functionality or host the entire system on their own infrastructure, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section of the admin dashboard.
+                        </p>
+                        {isChecking ? (
+                            <button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>
+                        ) : isAvailable ? (
+                            <a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">
+                                Download Full Project (.zip)
+                            </a>
+                        ) : (
+                            <button className="btn btn-primary w-full sm:w-auto" disabled>
+                                Download Unavailable
+                            </button>
+                        )}
+                        {!isAvailable && !isChecking && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
@@ -601,7 +592,7 @@ const SetupWizard: React.FC = () => {
         completeSetup();
         navigate('/login');
     };
-
+    
     const renderStepContent = () => {
         switch (step) {
             case 1:

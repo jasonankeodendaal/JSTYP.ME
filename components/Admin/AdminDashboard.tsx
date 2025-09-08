@@ -5,7 +5,7 @@ import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon, IdentificationIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon, IdentificationIcon, ArrowLeftOnRectangleIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -20,6 +20,7 @@ import AdminRemoteControl from './AdminRemoteControl.tsx';
 import { AboutSystem } from '../SetupWizard.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
+// FIX: Export SubTab type to allow it to be imported in other components.
 export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
 
 // Keep old type name `Tab` for minimal changes inside the render function
@@ -481,6 +482,7 @@ const AdminDashboard: React.FC = () => {
             { id: 'storage' as SubTab, label: 'Storage', icon: <ServerStackIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'backup' as SubTab, label: backupTabLabel, icon: <RestoreIcon className="h-4 w-4"/>, perm: canManageSystem },
             { id: 'settings' as SubTab, label: 'Appearance & Settings', icon: <PencilIcon className="h-4 w-4"/>, perm: canManageSettings },
+            { id: 'about' as SubTab, label: 'About', icon: <IdentificationIcon className="h-4 w-4"/>, perm: canManageSystem },
         ];
 
         const adminTabs = [
@@ -491,7 +493,6 @@ const AdminDashboard: React.FC = () => {
             { id: 'remoteControl' as SubTab, label: 'Remote Control', icon: <ComputerDesktopIcon className="h-4 w-4" />, perm: loggedInUser?.isMainAdmin },
             { id: 'activityLog' as SubTab, label: 'Activity Log', icon: <DocumentTextIcon className="h-4 w-4" />, perm: true },
             { id: 'users' as SubTab, label: 'Users', icon: <UsersIcon className="h-4 w-4"/>, perm: loggedInUser?.isMainAdmin },
-            { id: 'about' as SubTab, label: 'About', icon: <IdentificationIcon className="h-4 w-4"/>, perm: true },
         ];
 
         let tabsToShow: { id: SubTab, label: string, icon: React.ReactNode, perm?: boolean }[] = [];
@@ -537,26 +538,27 @@ const AdminDashboard: React.FC = () => {
 
 
     return (
-        <div className="h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <header className="p-4 sm:p-6 lg:p-8 shrink-0">
                  <div className="w-full max-w-6xl mx-auto flex justify-between items-center">
                     <div>
-                        <h1 className="text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Admin Dashboard</h1>
-                        {loggedInUser && <p className="text-gray-600 dark:text-gray-400 mt-1">Signed in as {loggedInUser.firstName} {loggedInUser.lastName}</p>}
+                        <h1 className="text-3xl sm:text-4xl tracking-tight text-gray-900 dark:text-gray-100 section-heading">Admin Dashboard</h1>
+                        {loggedInUser && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Signed in as {loggedInUser.firstName} {loggedInUser.lastName}</p>}
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Link to="/" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
-                            <BuildingStorefrontIcon className="h-4 w-4" />
-                            <span>View Kiosk</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Link to="/" className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 !py-2.5 !px-3 sm:!px-4" title="View Kiosk">
+                            <BuildingStorefrontIcon className="h-5 w-5" />
+                            <span className="hidden sm:inline">View Kiosk</span>
                         </Link>
-                        <button type="button" onClick={handleLogout} className="btn btn-destructive">
-                            Logout
+                        <button type="button" onClick={handleLogout} className="btn btn-destructive !py-2.5 !px-3 sm:!px-4" title="Logout">
+                            <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                            <span className="hidden sm:inline">Logout</span>
                         </button>
                     </div>
                 </div>
             </header>
             
-            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto">
+            <main className="flex-grow p-4 sm:p-6 lg:p-8 pt-0 overflow-y-auto" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
                 <div className="w-full max-w-6xl mx-auto">
                     {renderSecondaryNav()}
                     <div className="bg-gray-100/50 dark:bg-gray-800/20 p-6 rounded-2xl shadow-xl">
@@ -566,8 +568,13 @@ const AdminDashboard: React.FC = () => {
             </main>
 
             <footer
-                className="shrink-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 pt-4"
-                style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+                className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700"
+                style={{
+                    paddingTop: '0.5rem',
+                    paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
+                    paddingLeft: 'calc(0.5rem + env(safe-area-inset-left))',
+                    paddingRight: 'calc(0.5rem + env(safe-area-inset-right))',
+                }}
             >
                 <nav className="max-w-md mx-auto flex items-center justify-around">
                     <FooterButton tab="admin" label="Admin" icon={<UsersIcon />} />
