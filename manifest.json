@@ -1,3 +1,4 @@
+
 {
   "short_name": "Product Catalogue",
   "name": "Interactive Product Catalogue",
@@ -16,7 +17,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/index.html",
   "scope": "/",
   "id": "/",
   "display": "standalone",

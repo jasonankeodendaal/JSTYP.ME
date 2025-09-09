@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -260,156 +261,121 @@ const ScenarioB2bDiagram: React.FC = () => (
 );
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
-    const { getFileUrl } = useAppContext();
+    const { getFileUrl, projectZipBlob } = useAppContext();
     const [isAvailable, setIsAvailable] = useState(false);
     const [zipUrl, setZipUrl] = useState('');
     const [isChecking, setIsChecking] = useState(true);
 
-    const checkZip = useCallback(async () => {
-        let isMounted = true;
-        setIsChecking(true);
-        try {
-            const url = await getFileUrl('project.zip');
-            if (url && isMounted) {
-                const response = await fetch(url, { method: 'HEAD' });
-                if (response.ok) {
-                    setIsAvailable(true);
-                    setZipUrl(url);
-                } else {
-                    setIsAvailable(false);
-                }
-            } else if (isMounted) {
-                setIsAvailable(false);
-            }
-        } catch (error) {
-            console.log('Project.zip not found:', error);
-            if (isMounted) setIsAvailable(false);
-        } finally {
-            if (isMounted) setIsChecking(false);
-        }
-        return () => { isMounted = false; };
-    }, [getFileUrl]);
-
     useEffect(() => {
-        checkZip();
-    }, [checkZip]);
+        let isMounted = true;
+        let objectUrlToRevoke: string | null = null;
+    
+        const checkAvailability = async () => {
+            setIsChecking(true);
+            if (projectZipBlob) {
+                objectUrlToRevoke = URL.createObjectURL(projectZipBlob);
+                if (isMounted) {
+                    setZipUrl(objectUrlToRevoke); setIsAvailable(true); setIsChecking(false);
+                }
+                return;
+            }
+            try {
+                const url = await getFileUrl('project.zip');
+                if (!url) { if (isMounted) setIsAvailable(false); return; }
+                const response = await fetch(url, { method: 'HEAD' });
+                if (isMounted) {
+                    if (response.ok) { setIsAvailable(true); setZipUrl(url); } else { setIsAvailable(false); }
+                }
+            } catch (error) { if (isMounted) setIsAvailable(false); } 
+            finally { if (isMounted) setIsChecking(false); }
+        };
+        checkAvailability();
+        return () => { isMounted = false; if (objectUrlToRevoke) { URL.revokeObjectURL(objectUrlToRevoke); } };
+    }, [getFileUrl, projectZipBlob]);
     
     return (
-        <div>
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold section-heading text-gray-800 dark:text-gray-100">About the System</h2>
-                {onBack && !isDashboard && (
-                     <button onClick={onBack} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 !py-1.5 !px-3">
+        <div className={`w-full h-full ${isDashboard ? 'bg-transparent' : 'bg-slate-900 text-gray-300'} relative`}>
+            {(onBack && !isDashboard) && (
+                <div className="sticky top-0 left-0 right-0 p-4 bg-slate-900/80 backdrop-blur-sm z-10 flex justify-between items-center">
+                    <h2 className="text-xl font-bold section-heading text-gray-100">About The System</h2>
+                    <button onClick={onBack} className="btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 !py-1.5 !px-3">
                         <ChevronLeftIcon className="w-4 h-4 mr-1" />
                         Back
                     </button>
-                )}
-            </div>
-            <div className={`${!isDashboard ? 'max-h-[calc(100vh-220px)]' : ''} overflow-y-auto pr-2 -mr-2`}>
-                <motion.div
-                    className="max-w-5xl mx-auto space-y-12 text-gray-600 dark:text-gray-300 pr-2"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                >
-                
-                    <motion.section variants={itemVariants} className="text-center">
-                        <HeroDiagram />
-                        <h1 className="text-3xl md:text-4xl font-bold section-heading text-gray-800 dark:text-gray-100 mt-4">The Retail OS</h1>
-                        <p className="max-w-3xl mx-auto mt-2 text-lg">Bridging Your Physical Space with Digital Intelligence</p>
-                        <div className="mt-6 max-w-prose mx-auto text-sm space-y-2">
+                </div>
+            )}
+            <div className={`w-full ${onBack && !isDashboard ? 'h-[calc(100%-68px)]' : 'h-full'} overflow-y-auto`}>
+                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
+                    <motion.section variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
+                        <div className="w-full max-w-4xl"><HeroDiagram /></div>
+                        <h1 className="text-3xl md:text-5xl font-bold section-heading text-gray-800 dark:text-white mt-8">The Retail OS</h1>
+                        <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
+                        <div className="mt-6 max-w-prose mx-auto text-sm space-y-3 text-gray-500 dark:text-gray-400">
                            <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
                            <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">How It Works: The Offline-First Core</h3>
-                        <div className="flex flex-col md:flex-row gap-6 items-center">
-                            <div className="md:flex-1 w-full">
-                                <SystemEcosystemDiagram />
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                             <div className="max-w-prose text-sm space-y-3">
+                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
+                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
+                                <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
                             </div>
-                             <div className="md:flex-1 w-full min-w-0 max-w-prose text-sm space-y-2">
-                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data—products, settings, and media paths—locally on the device in an IndexedDB database. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
-                                <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability and speed of an offline app with the powerful scalability and convenience of the cloud.</p>
-                            </div>
+                            <div><SystemEcosystemDiagram /></div>
                         </div>
                     </motion.section>
-                     <motion.section variants={itemVariants} className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-4 section-heading text-center">The Value Loop: Turning Browsing into Insight</h3>
-                        <div className="flex flex-col md:flex-row-reverse gap-6 items-center">
-                            <div className="md:flex-1 w-full">
-                                <ValueLoopDiagram />
-                            </div>
-                            <div className="md:flex-1 w-full min-w-0 max-w-prose text-sm space-y-2">
+                    
+                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                             <div><ValueLoopDiagram /></div>
+                             <div className="max-w-prose text-sm space-y-3 md:text-right">
+                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
                                 <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
-                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2">
-                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk, turning it into a powerful, interactive sales tool that bridges the gap between browsing and buying.</li>
-                                    <li><strong>Gain Actionable Insights:</strong> The built-in analytics provide a clear, visual picture of in-store customer behavior, helping you make smarter decisions about product placement, promotions, and inventory.</li>
-                                    <li><strong>Enhance Customer Experience:</strong> Offer your customers a modern, self-service way to explore your entire product catalogue in rich detail, with videos, documents, and high-resolution images.</li>
-                                    <li><strong>Reduce Perceived Wait Times:</strong> An engaging interactive display keeps customers occupied and informed, improving their overall in-store experience.</li>
+                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2 text-left">
+                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk.</li>
+                                    <li><strong>Gain Actionable Insights:</strong> Built-in analytics provide a clear picture of in-store customer behavior.</li>
+                                    <li><strong>Enhance Customer Experience:</strong> Offer customers a modern, self-service way to explore your entire catalogue.</li>
                                 </ul>
                             </div>
                         </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-6 section-heading text-center">Key Features at a Glance</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
-                            <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">The kiosk runs flawlessly with or without an internet connection, ensuring 100% uptime in your store.</FeatureItem>
-                            <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Choose between a local network folder for simple setups or a cloud API for multi-location franchises.</FeatureItem>
-                            <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data, promotions, and settings from a single admin panel and sync changes everywhere.</FeatureItem>
-                            <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful product catalogues, promotional pamphlets, and full-screen video ads.</FeatureItem>
-                            <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views per-kiosk to understand what's popular in different locations.</FeatureItem>
-                            <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface, complete with product details and quantities.</FeatureItem>
-                            <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout and transition effects.</FeatureItem>
-                            <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access allows you to delegate management tasks with specific permissions.</FeatureItem>
-                        </div>
-                    </motion.section>
-
-                    <motion.section variants={itemVariants} className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-6 section-heading text-center">Perfect For Any Environment</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="text-center">
-                                <ScenarioBoutiqueDiagram />
-                                <h4 className="font-semibold mt-2 text-gray-800 dark:text-gray-100">High-End Boutiques</h4>
-                                <p className="text-xs">Provide a sophisticated, interactive catalogue that complements your premium products.</p>
-                            </div>
-                            <div className="text-center">
-                                <ScenarioFranchiseDiagram />
-                                <h4 className="font-semibold mt-2 text-gray-800 dark:text-gray-100">Multi-Location Franchises</h4>
-                                <p className="text-xs">Ensure brand consistency and manage product data centrally across all stores.</p>
-                            </div>
-                            <div className="text-center">
-                                <ScenarioB2bDiagram />
-                                <h4 className="font-semibold mt-2 text-gray-800 dark:text-gray-100">B2B & Trade Shows</h4>
-                                <p className="text-xs">Capture leads, generate quotes instantly, and showcase your full range without physical stock.</p>
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                        <div className="max-w-5xl mx-auto">
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
+                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Runs flawlessly with or without an internet connection, ensuring 100% uptime.</FeatureItem>
+                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder or a cloud API for multi-location franchises.</FeatureItem>
+                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data from a single admin panel and sync changes everywhere.</FeatureItem>
+                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful catalogues, pamphlets, and full-screen video ads.</FeatureItem>
+                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views to understand what's popular.</FeatureItem>
+                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface.</FeatureItem>
+                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout.</FeatureItem>
+                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access with specific permissions.</FeatureItem>
                             </div>
                         </div>
                     </motion.section>
 
-                    <motion.section variants={itemVariants} className="p-6 bg-gray-50 dark:bg-gray-700/30 rounded-lg border dark:border-gray-600/50">
-                        <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 mb-4 section-heading flex items-center gap-3">
-                            <ArrowDownTrayIcon className="w-6 h-6 text-indigo-500 flex-shrink-0" />
-                            <span>Project Source Code</span>
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                           This application is designed to be fully self-hostable. For developers wanting to customize functionality or host the entire system on their own infrastructure, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section of the admin dashboard.
-                        </p>
-                        {isChecking ? (
-                            <button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>
-                        ) : isAvailable ? (
-                            <a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">
-                                Download Full Project (.zip)
-                            </a>
-                        ) : (
-                            <button className="btn btn-primary w-full sm:w-auto" disabled>
-                                Download Unavailable
-                            </button>
-                        )}
-                        {!isAvailable && !isChecking && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>
-                        )}
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                        <div className="max-w-5xl mx-auto">
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-xs text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                            </div>
+                        </div>
+                    </motion.section>
+
+                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                        <div className="max-w-3xl mx-auto text-center">
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
+                            {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
+                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
+                        </div>
                     </motion.section>
                 </motion.div>
             </div>
@@ -648,7 +614,7 @@ const SetupWizard: React.FC = () => {
                 );
              case 'info':
                 return (
-                    <MotionDiv key="step-info" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                    <MotionDiv key="step-info" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="h-full">
                         <AboutSystem onBack={() => setStep(1)} />
                     </MotionDiv>
                 );
@@ -657,13 +623,15 @@ const SetupWizard: React.FC = () => {
         }
     };
     
+    const isInfoStep = step === 'info';
+
     return (
-        <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className={`fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center ${isInfoStep ? '' : 'p-4'}`}>
             <MotionDiv 
                 initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 30 }}
-                className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full ${step === 'guides' || step === 'info' ? 'max-w-3xl' : 'max-w-xl'} min-h-[450px] flex flex-col p-8 overflow-hidden transition-all duration-300`}
+                className={`bg-white dark:bg-gray-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${isInfoStep ? 'w-full h-full rounded-none p-0' : 'rounded-2xl w-full max-w-xl min-h-[450px] p-8'} ${step === 'guides' ? '!max-w-3xl' : ''}`}
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}

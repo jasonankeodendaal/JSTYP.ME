@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import type { ScreensaverAd, AdLink } from '../../types.ts';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';

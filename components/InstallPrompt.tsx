@@ -1,3 +1,4 @@
+
 import React from 'react';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';

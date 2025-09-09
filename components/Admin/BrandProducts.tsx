@@ -1,5 +1,7 @@
+
 import React, { useMemo, useState, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import type { Brand, Product } from '../../types';
 import { ChevronLeftIcon, PlusIcon, TrashIcon, PencilIcon, CubeIcon, EyeIcon, EyeOffIcon, ChevronDownIcon } from '../Icons';
 import { useAppContext } from '../context/AppContext.tsx';

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'product-catalogue-cache-v7'; // Incremented version
-const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v7'; // Incremented version
 
-// Use relative paths for the app shell to avoid issues in sandboxed/nested environments.
+const CACHE_NAME = 'product-catalogue-cache-v8'; // Incremented version
+const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v8'; // Incremented version
+
+// Use explicit paths for the app shell to ensure reliability.
 const APP_SHELL_URLS = [
-  './',
+  './index.html',
   './index.css',
 ];
 
@@ -69,7 +70,6 @@ self.addEventListener('install', event => {
     Promise.all([
         caches.open(CACHE_NAME).then(cache => {
             console.log('Service Worker: Caching App Shell');
-            // Add manifest.json to the app shell so we have a template
             const urlsToCache = [...APP_SHELL_URLS, './manifest.json'];
             const requests = urlsToCache.map(url => new Request(url, { cache: 'reload' }));
             return cache.addAll(requests);
@@ -101,18 +101,14 @@ self.addEventListener('activate', event => {
 
 async function generateManifestResponse() {
     try {
-        // Fetch the base manifest from cache first
         const cache = await caches.open(CACHE_NAME);
         let baseManifestResponse = await cache.match('./manifest.json');
 
-        // If not in cache, fetch from network
         if (!baseManifestResponse) {
             baseManifestResponse = await fetch('./manifest.json');
         }
 
         const baseManifest = await baseManifestResponse.json();
-        
-        // Get dynamic data from IndexedDB
         const dynamicData = await idbGet('dynamic-manifest-data');
 
         if (dynamicData) {
@@ -142,73 +138,57 @@ async function generateManifestResponse() {
         });
     } catch (error) {
         console.error('Error generating manifest:', error);
-        // Fallback to cached or network manifest if IDB fails
         return caches.match('./manifest.json') || fetch('./manifest.json');
     }
 }
 
-
 self.addEventListener('fetch', event => {
-    const { request } = event;
-    const url = new URL(request.url);
+  const { request } = event;
+  const url = new URL(request.url);
 
-    // Only handle GET requests
-    if (request.method !== 'GET') {
-        return;
-    }
-    
-    // Special handling for manifest.json
-    if (url.pathname.endsWith('/manifest.json')) {
-        event.respondWith(generateManifestResponse());
-        return;
-    }
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+  
+  // Special handling for manifest.json
+  if (url.pathname.endsWith('/manifest.json')) {
+    event.respondWith(generateManifestResponse());
+    return;
+  }
 
-    // Strategy 1: Cache-first for immutable assets (CDNs, fonts)
-    const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
-    if (isImmutable) {
-        event.respondWith(
-            caches.open(IMMUTABLE_CACHE_NAME).then(cache => {
-                return cache.match(request).then(response => {
-                    return response || fetch(request).then(networkResponse => {
-                        if (networkResponse.ok) {
-                            cache.put(request, networkResponse.clone());
-                        }
-                        return networkResponse;
-                    });
-                });
-            })
-        );
-        return;
-    }
-
-    // Strategy 2: Network-first, bypassing browser cache, for everything else.
+  // Network-first strategy for navigation requests (the app launch)
+  if (request.mode === 'navigate') {
     event.respondWith(
-        (async () => {
-            try {
-                const networkRequest = new Request(request, { cache: 'reload' });
-                const networkResponse = await fetch(networkRequest);
-
-                if (networkResponse.ok) {
-                    const cache = await caches.open(CACHE_NAME);
-                    cache.put(request, networkResponse.clone());
-                }
-                return networkResponse;
-            } catch (error) {
-                console.log('Network request failed, trying cache for:', request.url);
-                const cachedResponse = await caches.match(request);
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-                if (request.mode === 'navigate') {
-                    const rootCache = await caches.match('./');
-                    if (rootCache) return rootCache;
-                }
-                return new Response("Network error: The resource is not available in the cache.", {
-                    status: 408,
-                    statusText: "Request Timeout",
-                    headers: { "Content-Type": "text/plain" },
-                });
-            }
-        })()
+      fetch(request).catch(() => {
+        console.log('Network failed for navigation, serving app shell from cache.');
+        return caches.match('./index.html');
+      })
     );
+    return;
+  }
+
+  // Cache-first strategy for all other assets (CSS, images, etc.)
+  event.respondWith(
+    caches.match(request).then(cachedResponse => {
+      // Return the cached response if it exists.
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      // If not in cache, fetch from the network.
+      return fetch(request).then(networkResponse => {
+        if (networkResponse.ok) {
+          // Check if it's an immutable asset and cache it in the right place.
+          const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
+          const cacheName = isImmutable ? IMMUTABLE_CACHE_NAME : CACHE_NAME;
+          
+          caches.open(cacheName).then(cache => {
+            cache.put(request, networkResponse.clone());
+          });
+        }
+        return networkResponse;
+      });
+    })
+  );
 });
