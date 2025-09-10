@@ -225,48 +225,62 @@ const ValueLoopDiagramSVG: React.FC = () => (
     </svg>
 );
 
-
 const ScenarioBoutiqueDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 75 L 20 15 H 80 L 95 75 Z" className="fill-gray-200/50 dark:fill-gray-700/50" />
-        <path d="M 15 15 H 85" className="fill-gray-300 dark:fill-gray-600" />
-        <path d="M 20 15 L 80 15 L 85 5 H 15 Z" className="fill-gray-300 dark:fill-gray-600" />
-        <rect x="25" y="20" width="50" height="55" rx="2" className="fill-gray-50/50 dark:fill-gray-900/40" />
-        <rect x="40" y="45" width="20" height="30" rx="1" className="fill-indigo-500" />
-        <rect x="42" y="47" width="16" height="20" rx="0.5" className="fill-purple-300" />
+        <defs>
+            <linearGradient id="boutique-glow-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#3b82f6" />
+            </linearGradient>
+            <filter id="boutique-glow-filter">
+                <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <path d="M25 75 V 25 C 25 10, 75 10, 75 25 V 75" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="6" strokeLinecap="round" />
+        <g filter="url(#boutique-glow-filter)">
+            <rect x="42" y="50" width="16" height="25" rx="2" fill="url(#boutique-glow-grad)" />
+        </g>
     </svg>
 );
 
 const ScenarioFranchiseDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="fr-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-            <g id="fr-store-icon"><circle cx="10" cy="10" r="10" className="fill-gray-200 dark:fill-gray-700"/><BuildingStorefrontIcon className="w-4 h-4 text-gray-500" x="4" y="4"/></g>
-            <filter id="fr-glow"><feGaussianBlur stdDeviation="1.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
         </defs>
-        <path d="M50 30 L 20 50" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
-        <path d="M50 30 L 80 50" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
-        <path d="M50 30 L 50 65" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5"/>
-        <g filter="url(#fr-glow)"> <circle cx="50" cy="30" r="15" fill="url(#fr-grad)"/></g>
-        <ServerStackIcon className="w-6 h-6 text-white" x="42" y="22"/>
-        <use href="#fr-store-icon" x="10" y="50"/>
-        <use href="#fr-store-icon" x="70" y="50"/>
-        <use href="#fr-store-icon" x="40" y="65"/>
+        <path d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <path d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <path d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <circle cx="50" cy="25" r="12" fill="url(#franchise-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
+        <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
+        <g transform="translate(18, 60)">
+             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+        </g>
+        <g transform="translate(42.5, 60)">
+             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+        </g>
+        <g transform="translate(67.5, 60)">
+             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+        </g>
     </svg>
 );
 
 const ScenarioB2bDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs><linearGradient id="b2b-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#818cf8"/><stop offset="100%" stopColor="#c084fc"/></linearGradient></defs>
-        <path d="M10 75 L 30 10 H 70 L 90 75 Z" fill="none" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="2" />
-        <rect x="40" y="20" width="20" height="40" rx="2" fill="url(#b2b-grad)" />
-        <rect x="42" y="22" width="16" height="28" rx="1" className="fill-white/50 dark:fill-black/20" />
-        <g transform="translate(75 25)" className="text-indigo-400">
-            <ClipboardDocumentListIcon className="w-8 h-8 opacity-80" fill="currentColor"/>
-        </g>
-        <g transform="translate(15 45)" className="text-indigo-400">
-            <UsersIcon className="w-8 h-8 opacity-80" fill="currentColor"/>
-        </g>
+        <defs>
+            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500" />
+            </marker>
+        </defs>
+        <UserCircleIcon x="15" y="45" className="w-10 h-10 text-slate-400 dark:text-slate-500"/>
+        <rect x="42" y="30" width="16" height="25" rx="2" className="fill-indigo-500" />
+        <rect x="43" y="32" width="14" height="18" rx="1" className="fill-purple-300" />
+        <path d="M58 42 C 68 42, 68 32, 78 32" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
+        <ClipboardDocumentListIcon x="75" y="15" className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
     </svg>
 );
 
