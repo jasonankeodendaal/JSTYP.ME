@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from '@google/genai';
+// FIX: Add GenerateContentResponse to import
+import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SparklesIcon, XIcon } from '../Icons';
 
@@ -60,7 +61,8 @@ const DescriptionAssistantModal: React.FC<DescriptionAssistantModalProps> = ({
                 ${specsString ? `- Key Specifications: ${specsString}` : ''}
             `;
 
-            const response = await ai.models.generateContent({
+            // FIX: Add GenerateContentResponse type annotation
+            const response: GenerateContentResponse = await ai.models.generateContent({
               model: 'gemini-2.5-flash',
               contents: prompt,
             });

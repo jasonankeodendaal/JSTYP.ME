@@ -1065,6 +1065,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             performSync();
         }
     }, [isDataLoaded, initialSyncStatus, storageProvider, settings.sync.autoSyncEnabled, performSync]);
+
+    useEffect(() => {
+        // This effect runs after initial data has been loaded from IDB
+        // and the storage provider has been identified.
+        const syncOnLoad = async () => {
+            if (isDataLoaded && storageProvider !== 'none' && storageProvider !== 'local') {
+                console.log("Attempting to pull latest data from cloud on app load...");
+                await pullFromCloud();
+            }
+        };
+        syncOnLoad();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDataLoaded, storageProvider]);
     
     useEffect(() => {
         if (!isDataLoaded || syncStatus !== 'pending' || !settings.sync.autoSyncEnabled || storageProvider === 'none') {

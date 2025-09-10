@@ -40,15 +40,18 @@ const FormSection: React.FC<{
 const inputStyle = "block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2 px-3 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 sm:text-sm";
 const labelStyle = "block text-sm font-medium text-gray-800 dark:text-gray-200";
 
-const ColorInput: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, value, onChange }) => (
-    <div>
-        <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</label>
-        <div className="mt-1 flex items-center gap-2">
-            <input type="color" value={value || '#000000'} onChange={onChange} className="p-1 h-10 w-10 block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 cursor-pointer rounded-lg" />
-            <input type="text" value={value} onChange={onChange} className={`${inputStyle} !py-2`} />
+const ColorInput: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, value, onChange }) => {
+    const colorPickerValue = (value && value.startsWith('#')) ? value : '#000000';
+    return (
+        <div>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300">{label}</label>
+            <div className="mt-1 flex items-center gap-2">
+                <input type="color" value={colorPickerValue} onChange={onChange} className="p-1 h-10 w-10 block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 cursor-pointer rounded-lg" />
+                <input type="text" value={value} onChange={onChange} className={`${inputStyle} !py-2`} />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const ImageUpload: React.FC<{
     label: string;
@@ -199,6 +202,12 @@ const AdminSettings: React.FC = () => {
                 currentLevel = currentLevel[keys[i]];
             }
             currentLevel[keys[keys.length - 1]] = value;
+            
+            // If logoUrl is being changed, also change pwaIconUrl
+            if (path === 'logoUrl') {
+                newFormData.pwaIconUrl = value;
+            }
+            
             return newFormData;
         });
     };
@@ -342,20 +351,13 @@ const AdminSettings: React.FC = () => {
 const BrandingAndIdentitySection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onFileChange: any, onNestedChange: any, kioskId: string, setKioskId: (newId: string) => void, loggedInUser: any}> = ({name, isOpen, onToggle, formData, onFileChange, onNestedChange, kioskId, setKioskId, loggedInUser}) => (
     <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Brand & Kiosk Identity" description="Basic branding and identification for this specific device.">
          <ImageUpload
-            label="Logo"
+            label="App Logo & PWA Icon"
             value={formData.logoUrl}
             onTextChange={(e) => onNestedChange('logoUrl', e.target.value)}
             onFileChange={(e) => onFileChange(e, 'logoUrl')}
             onRemove={() => onNestedChange('logoUrl', '')}
         />
-        <ImageUpload
-            label="PWA & Shortcut Icon"
-            value={formData.pwaIconUrl || ''}
-            onTextChange={(e) => onNestedChange('pwaIconUrl', e.target.value)}
-            onFileChange={(e) => onFileChange(e, 'pwaIconUrl')}
-            onRemove={() => onNestedChange('pwaIconUrl', '')}
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-4">Used for the homescreen icon when the app is installed on a device. Should be a square image, at least 512x512px. If left empty, the main logo will be used.</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-4">This logo is used in the header and for the homescreen icon when the app is installed. Should be a square image, at least 512x512px for best results.</p>
         <div>
             <label htmlFor="kioskId" className={labelStyle}>Unique Kiosk ID</label>
             <input id="kioskId" type="text" readOnly={!loggedInUser?.isMainAdmin} value={kioskId} onChange={(e) => setKioskId(e.target.value)}

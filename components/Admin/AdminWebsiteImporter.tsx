@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { GoogleGenAI, Type } from "@google/genai";
+// FIX: Add GenerateContentResponse to import
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { useAppContext } from '../context/AppContext.tsx';
 import type { Brand, Product } from '../../types';
 import { SparklesIcon, LinkIcon } from '../Icons.tsx';
@@ -88,7 +89,8 @@ const AdminWebsiteImporter: React.FC = () => {
                  prompt = `Analyze the website at ${url}. Extract the main brand name, a URL to its logo, and 3-5 key products. For each product, find its name, a short description, its SKU (or generate one), and a direct image URL. Respond ONLY with a JSON object matching the schema.`;
             }
 
-            const response = await ai.models.generateContent({
+            // FIX: Add GenerateContentResponse type annotation
+            const response: GenerateContentResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: {

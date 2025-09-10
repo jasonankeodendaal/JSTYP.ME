@@ -103,7 +103,7 @@ const Clock: React.FC = () => {
 const TouchPromptSlide: React.FC<{ text: string }> = ({ text }) => (
     <div className="w-full h-full flex items-center justify-center">
         <MotionH2
-            className="text-7xl md:text-8xl text-white font-serif tracking-wide"
+            className="text-6xl sm:text-7xl md:text-8xl text-white font-serif tracking-wide text-center"
             style={{ fontFamily: "'Playfair Display', serif", textShadow: '0 4px 20px rgba(0, 0, 0, 0.5)' }}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ 
@@ -126,19 +126,19 @@ const ProductInfoOverlay: React.FC<{product: Product, style: 'overlay' | 'banner
          return (
              <MotionDiv 
                 initial={{y: '100%'}} animate={{y: '0%'}} exit={{y: '100%'}} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1]}}
-                className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-6 border-t border-white/10"
+                className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-4 md:p-6 border-t border-white/10"
              >
                  <div className="flex justify-between items-start gap-6">
                     <div>
-                        <h3 className="text-3xl font-bold text-white section-heading">{product.name}</h3>
-                        <p className="text-md text-white/80 mt-1">{shortDesc}</p>
+                        <h3 className="text-xl md:text-3xl font-bold text-white section-heading">{product.name}</h3>
+                        <p className="text-sm md:text-md text-white/80 mt-1">{shortDesc}</p>
                     </div>
                     {specs.length > 0 && (
-                        <div className="flex-shrink-0 text-right">
+                        <div className="flex-shrink-0 text-right hidden sm:block">
                              {specs.map(spec => (
                                  <div key={spec.id}>
-                                    <span className="text-sm text-white/60">{spec.key}: </span>
-                                    <span className="text-sm font-semibold text-white">{spec.value}</span>
+                                    <span className="text-xs md:text-sm text-white/60">{spec.key}: </span>
+                                    <span className="text-xs md:text-sm font-semibold text-white">{spec.value}</span>
                                  </div>
                              ))}
                         </div>
@@ -155,13 +155,13 @@ const ProductInfoOverlay: React.FC<{product: Product, style: 'overlay' | 'banner
                 visible: { transition: { staggerChildren: 0.1, delayChildren: 0.8 } },
                 hidden: { transition: { staggerChildren: 0.05, staggerDirection: -1 } }
             }}
-            className="absolute bottom-10 right-10 w-full max-w-sm bg-black/50 backdrop-blur-xl rounded-2xl p-6 border border-white/10 text-white"
+            className="absolute bottom-4 right-4 sm:bottom-10 sm:right-10 w-[calc(100%-2rem)] max-w-sm bg-black/50 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/10 text-white"
             style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}
         >
-            <h3 className="text-2xl font-bold section-heading">{product.name}</h3>
+            <h3 className="text-lg sm:text-2xl font-bold section-heading">{product.name}</h3>
             <div className="mt-4 space-y-2">
                  {specs.map(spec => (
-                     <motion.div key={spec.id} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition:{ duration: 0.6, ease: 'easeOut'}}}} className="flex justify-between text-sm">
+                     <motion.div key={spec.id} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition:{ duration: 0.6, ease: 'easeOut'}}}} className="flex justify-between text-xs sm:text-sm">
                         <span className="text-white/60">{spec.key}</span>
                         <span className="font-semibold">{spec.value}</span>
                      </motion.div>
@@ -468,7 +468,7 @@ const Screensaver: React.FC = () => {
                                 src={currentItem.url}
                                 alt={currentItem.title}
                                 type="image"
-                                className="w-full h-full object-contain"
+                                className="w-full h-full object-cover"
                                 onError={goToNextItem}
                             />
                         </MotionDiv>
@@ -477,7 +477,7 @@ const Screensaver: React.FC = () => {
                             ref={videoRefCallback}
                             src={currentItem.url}
                             type="video"
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-cover"
                             playsInline
                             preload="auto"
                         />
@@ -503,13 +503,13 @@ const Screensaver: React.FC = () => {
                         exit="exit"
                     >
                         <div className="overflow-hidden">
-                             <MotionH2 variants={textLineVariants} className="section-heading text-4xl md:text-5xl font-bold text-white" style={{ textShadow: '0 3px 8px rgba(0,0,0,0.7)' }}>
+                             <MotionH2 variants={textLineVariants} className="section-heading text-3xl md:text-5xl font-bold text-white" style={{ textShadow: '0 3px 8px rgba(0,0,0,0.7)' }}>
                                 {currentItem.title}
                             </MotionH2>
                         </div>
                         {currentItem.brandName && (
                             <div className="overflow-hidden">
-                                <MotionP variants={textLineVariants} className="item-title text-xl text-white/80" style={{ textShadow: '0 2px 5px rgba(0,0,0,0.7)' }}>
+                                <MotionP variants={textLineVariants} className="item-title text-lg md:text-xl text-white/80" style={{ textShadow: '0 2px 5px rgba(0,0,0,0.7)' }}>
                                     {currentItem.brandName}
                                 </MotionP>
                             </div>

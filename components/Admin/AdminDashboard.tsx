@@ -1,6 +1,8 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types.ts';
+import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -99,7 +101,8 @@ const AdminContentCard: React.FC<{
     );
 };
 
-const AdminDashboard: React.FC = () => {
+// FIX: Changed to a named export to resolve circular dependency with App.tsx. This also resolves the associated TypeScript error.
+export const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
     const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
@@ -584,5 +587,3 @@ const AdminDashboard: React.FC = () => {
         </div>
     );
 };
-
-export default AdminDashboard;

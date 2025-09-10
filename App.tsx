@@ -27,7 +27,8 @@ import ProductDetail from './components/ProductDetail.tsx';
 import SearchResults from './components/SearchResults.tsx';
 import CatalogueLibrary from './components/CatalogueLibrary.tsx';
 import AdminLogin from './components/Admin/Login.tsx';
-import AdminDashboard from './components/Admin/AdminDashboard.tsx';
+// FIX: Changed import to be a named import as AdminDashboard is not a default export. This resolves a circular dependency issue.
+import { AdminDashboard } from './components/Admin/AdminDashboard.tsx';
 import ProtectedRoute from './components/Admin/ProtectedRoute.tsx';
 import ProductEdit from './components/Admin/ProductEdit.tsx';
 import AdminBrandProducts from './components/Admin/BrandProducts.tsx';

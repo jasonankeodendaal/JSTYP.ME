@@ -247,27 +247,27 @@ const ScenarioBoutiqueDiagram: React.FC = () => (
     </svg>
 );
 
-const ScenarioFranchiseDiagram: React.FC = () => (
-    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-        </defs>
-        <path d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <path d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <path d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <circle cx="50" cy="25" r="12" fill="url(#franchise-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
-        <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
-        <g transform="translate(18, 60)">
-             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-        </g>
-        <g transform="translate(42.5, 60)">
-             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-        </g>
-        <g transform="translate(67.5, 60)">
-             <BuildingStorefrontIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-        </g>
-    </svg>
-);
+const ScenarioFranchiseDiagram: React.FC = () => {
+    const storeIcon = <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" />;
+    const iconStyle = "fill-none text-slate-500 dark:text-slate-400";
+    
+    return (
+        <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
+            </defs>
+            <path d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+            <path d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+            <path d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+            <circle cx="50" cy="25" r="12" fill="url(#franchise-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
+            <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
+            
+            <g transform="translate(18, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
+            <g transform="translate(42.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
+            <g transform="translate(67.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
+        </svg>
+    );
+};
 
 const ScenarioB2bDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">

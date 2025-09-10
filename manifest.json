@@ -53,28 +53,24 @@
   "screenshots": [
     {
       "src": "https://i.imgur.com/gK1qL6g.png",
-      "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Catalogue Home Screen"
     },
     {
       "src": "https://i.imgur.com/8Q9o9fV.png",
-      "sizes": "1280x800",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Product Details Page"
     },
     {
       "src": "https://i.imgur.com/A6mN1nB.png",
-      "sizes": "414x896",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Mobile Catalogue View"
     },
     {
       "src": "https://i.imgur.com/tL7mG9B.png",
-      "sizes": "414x896",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Mobile Product Listing"
