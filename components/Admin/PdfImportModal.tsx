@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
-// FIX: Switched to named imports for pdfjsLib to resolve module resolution errors.
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/build/pdf.js';
+// FIX: Standardize pdfjs-dist import to resolve build errors and align versions.
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 
 interface ConvertedPage {
     pageNumber: number;
@@ -19,8 +19,8 @@ interface PdfImportModalProps {
 const MotionDiv = motion.div as any;
 
 // Set the worker source once for all PDF operations in this module.
-// FIX: Set workerSrc on the GlobalWorkerOptions object.
-GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.js`;
+// FIX: Align workerSrc version with main package and use modern .mjs worker.
+GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^5.4.149/build/pdf.worker.mjs`;
 
 const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete }) => {
     const { saveFileToStorage } = useAppContext();
@@ -65,7 +65,6 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         setProgress('Reading PDF...');
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
-            // FIX: Use the getDocument method directly.
             const pdf = await getDocument({ data: arrayBuffer }).promise;
             const numPages = pdf.numPages;
             const newPages: ConvertedPage[] = [];
@@ -133,7 +132,6 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
         try {
             const savedPaths: string[] = [];
             const arrayBuffer = await file!.arrayBuffer();
-            // FIX: Use the getDocument method directly.
             const pdf = await getDocument({ data: arrayBuffer }).promise;
             const pagesToProcess = Array.from(selectedPages).sort((a,b) => a-b);
             let processedCount = 0;
