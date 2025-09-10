@@ -134,7 +134,7 @@ const SystemEcosystemDiagram: React.FC = () => (
 );
 
 const SystemEcosystemDiagramSVG: React.FC = () => (
-    <svg viewBox="0 0 500 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 550 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
             <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
@@ -147,8 +147,7 @@ const SystemEcosystemDiagramSVG: React.FC = () => (
         <g transform="translate(120 140)" filter="url(#card-shadow)">
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <circle cx="-50" cy="-50" r="25" fill="url(#eco-kiosk-grad)"/>
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Kiosk Device</text>
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Kiosk Device</text>
             <foreignObject x="-90" y="-20" width="180" height="100">
                 <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Offline-First Core</div>
                 <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div>
@@ -157,11 +156,10 @@ const SystemEcosystemDiagramSVG: React.FC = () => (
         </g>
         
         {/* Cloud Node */}
-        <g transform="translate(380 140)" filter="url(#card-shadow)">
+        <g transform="translate(430 140)" filter="url(#card-shadow)">
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <circle cx="-50" cy="-50" r="25" fill="url(#eco-cloud-grad)"/>
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Sync Provider</text>
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Sync Provider</text>
             <foreignObject x="-90" y="-20" width="180" height="100">
                 <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Optional & Flexible</div>
                 <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div>
@@ -171,10 +169,10 @@ const SystemEcosystemDiagramSVG: React.FC = () => (
 
         {/* Connection Arrows */}
         <g className="text-gray-400 dark:text-gray-500">
-            <path d="M 215 110 C 245 80, 295 80, 325 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
-            <path d="M 325 170 C 295 200, 245 200, 215 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
-            <text x="270" y="75" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
-            <text x="270" y="210" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
+            <path d="M 210 110 C 250 75, 330 75, 370 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <path d="M 370 170 C 330 205, 250 205, 210 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <text x="290" y="70" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
+            <text x="290" y="215" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
         </g>
     </svg>
 );
@@ -213,17 +211,17 @@ const ValueLoopDiagramSVG: React.FC = () => (
         </g>
         <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Customer Interaction</text>
 
-        <g transform="translate(250, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+        <g transform="translate(230, 150)" className="cursor-pointer" filter="url(#val-shadow)">
             <circle r="32" className="fill-white dark:fill-gray-700"/>
             <circle r="28" fill="url(#val-grad-2)"/>
         </g>
-        <text x="250" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
+        <text x="230" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
 
-        <g transform="translate(50, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+        <g transform="translate(70, 150)" className="cursor-pointer" filter="url(#val-shadow)">
             <circle r="32" className="fill-white dark:fill-gray-700"/>
             <circle r="28" fill="url(#val-grad-3)"/>
         </g>
-        <text x="50" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
+        <text x="70" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
     </svg>
 );
 

@@ -128,4 +128,24 @@ export const ImageBookletModal: React.FC<{
                 </AnimatePresence>
             </main>
 
-            <footer className="w-full flex-shrink-0 flex flex-col items-center justify-
+            <footer className="w-full flex-shrink-0 flex flex-col items-center justify-center p-2 gap-3" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                    <button onClick={prevPage} className="p-2 rounded-full text-white hover:bg-white/20 disabled:opacity-30" disabled={currentPage === 0}><ChevronLeftIcon className="w-6 h-6"/></button>
+                    <span className="text-white font-semibold text-sm px-2">{currentPage + 1} / {imageUrls.length}</span>
+                    <button onClick={nextPage} className="p-2 rounded-full text-white hover:bg-white/20 disabled:opacity-30" disabled={currentPage >= imageUrls.length - 1}><ChevronRightIcon className="w-6 h-6"/></button>
+                </div>
+                <div className="bg-white/90 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-lg p-2 flex items-center justify-center gap-2 border border-white/20">
+                    <button onClick={zoomOut} className={btnClass(transform.scale <= MIN_SCALE)} disabled={transform.scale <= MIN_SCALE} title="Zoom Out"><MagnifyingGlassMinusIcon className="w-5 h-5"/></button>
+                    <button onClick={resetZoom} className={btnClass()} title="Reset Zoom"><Squares2X2Icon className="w-5 h-5"/></button>
+                    <button onClick={zoomIn} className={btnClass(transform.scale >= MAX_SCALE)} disabled={transform.scale >= MAX_SCALE} title="Zoom In"><MagnifyingGlassPlusIcon className="w-5 h-5"/></button>
+                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                    <button onClick={toggleFullScreen} className={btnClass()} title={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}>{isFullScreen ? <ExitFullScreenIcon className="w-5 h-5"/> : <EnterFullScreenIcon className="w-5 h-5"/>}</button>
+                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                    <button onClick={handleDownloadSingleImage} className={btnClass(isWorking)} disabled={isWorking} title="Download Current Page"><ArrowDownTrayIcon className="w-5 h-5"/></button>
+                    <button onClick={handleDownloadPdf} className={btnClass(isWorking)} disabled={isWorking} title="Download as PDF">{isGeneratingPdf ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <DocumentArrowDownIcon className="w-5 h-5"/>}</button>
+                    <button onClick={handleDownloadZip} className={btnClass(isWorking)} disabled={isWorking} title="Download All as ZIP">{isGeneratingZip ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <ArchiveBoxArrowDownIcon className="w-5 h-5"/>}</button>
+                </div>
+            </footer>
+        </MotionDiv>
+    );
+};
