@@ -107,30 +107,33 @@ const HeroDiagram: React.FC = () => (
         {/* Surrounding UI elements */}
         <g className="text-white">
             <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}>
-                <circle cx="150" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                
-                <text x="150" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Offline-First</text>
+                <text x="150" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Offline-First</text>
             </motion.g>
             <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}>
-                <circle cx="650" cy="150" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                
-                <text x="650" y="210" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Cloud Sync</text>
+                <text x="650" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Cloud Sync</text>
             </motion.g>
              <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}>
-                <circle cx="100" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                
-                <text x="100" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Analytics</text>
+                <text x="100" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Analytics</text>
             </motion.g>
             <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}>
-                <circle cx="700" cy="300" r="40" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
-                
-                <text x="700" y="360" textAnchor="middle" className="text-sm fill-white/80 font-semibold">Customizable</text>
+                <text x="700" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Customizable</text>
             </motion.g>
         </g>
     </svg>
 );
 
 const SystemEcosystemDiagram: React.FC = () => (
+    <div className="text-center">
+        <div className="max-w-prose mx-auto text-sm space-y-3">
+            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
+            <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
+            <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
+        </div>
+        <div className="mt-8"><SystemEcosystemDiagramSVG /></div>
+    </div>
+);
+
+const SystemEcosystemDiagramSVG: React.FC = () => (
     <svg viewBox="0 0 500 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
@@ -145,7 +148,6 @@ const SystemEcosystemDiagram: React.FC = () => (
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
             <circle cx="-50" cy="-50" r="25" fill="url(#eco-kiosk-grad)"/>
-            <ComputerDesktopIcon className="w-8 h-8 text-white" x="-62" y="-62" />
             <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Kiosk Device</text>
             <foreignObject x="-90" y="-20" width="180" height="100">
                 <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Offline-First Core</div>
@@ -159,7 +161,6 @@ const SystemEcosystemDiagram: React.FC = () => (
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
             <circle cx="-50" cy="-50" r="25" fill="url(#eco-cloud-grad)"/>
-            <ServerStackIcon className="w-8 h-8 text-white" x="-62" y="-62" />
             <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading">Sync Provider</text>
             <foreignObject x="-90" y="-20" width="180" height="100">
                 <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Optional & Flexible</div>
@@ -180,6 +181,21 @@ const SystemEcosystemDiagram: React.FC = () => (
 
 
 const ValueLoopDiagram: React.FC = () => (
+    <div className="text-center">
+        <div className="max-w-prose mx-auto text-sm space-y-3">
+            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
+            <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
+            <ul className="list-disc list-outside pl-5 mt-2 space-y-2 text-left">
+                <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk.</li>
+                <li><strong>Gain Actionable Insights:</strong> Built-in analytics provide a clear picture of in-store customer behavior.</li>
+                <li><strong>Enhance Customer Experience:</strong> Offer customers a modern, self-service way to explore your entire catalogue.</li>
+            </ul>
+        </div>
+        <div className="mt-8"><ValueLoopDiagramSVG /></div>
+    </div>
+);
+
+const ValueLoopDiagramSVG: React.FC = () => (
     <svg viewBox="0 0 300 300" className="w-full h-auto max-w-sm mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="val-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a5b4fc"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
@@ -194,23 +210,20 @@ const ValueLoopDiagram: React.FC = () => (
         <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)">
             <circle r="32" className="fill-white dark:fill-gray-700"/>
             <circle r="28" fill="url(#val-grad-1)"/>
-            
         </g>
         <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Customer Interaction</text>
 
-        <g transform="translate(260, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+        <g transform="translate(250, 150)" className="cursor-pointer" filter="url(#val-shadow)">
             <circle r="32" className="fill-white dark:fill-gray-700"/>
             <circle r="28" fill="url(#val-grad-2)"/>
-            
         </g>
-        <text x="260" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
+        <text x="250" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
 
-        <g transform="translate(40, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+        <g transform="translate(50, 150)" className="cursor-pointer" filter="url(#val-shadow)">
             <circle r="32" className="fill-white dark:fill-gray-700"/>
             <circle r="28" fill="url(#val-grad-3)"/>
-            
         </g>
-        <text x="40" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
+        <text x="50" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
     </svg>
 );
 
@@ -316,29 +329,11 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                     </motion.section>
 
                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
-                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-                             <div className="max-w-prose text-sm space-y-3">
-                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
-                                <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
-                                <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
-                            </div>
-                            <div><SystemEcosystemDiagram /></div>
-                        </div>
+                        <SystemEcosystemDiagram />
                     </motion.section>
                     
                      <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
-                        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-                             <div><ValueLoopDiagram /></div>
-                             <div className="max-w-prose text-sm space-y-3 md:text-right">
-                                <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
-                                <p>By turning passive browsing into active engagement, the kiosk transforms your physical space into a source of rich customer data. Track which products are most viewed, which brands are most popular, and understand what your customers are truly interested in—all before they even speak to a sales associate.</p>
-                                <ul className="list-disc list-outside pl-5 mt-2 space-y-2 text-left">
-                                    <li><strong>Empower Sales Staff:</strong> Use the "Create Quote" feature to build client orders directly from the kiosk.</li>
-                                    <li><strong>Gain Actionable Insights:</strong> Built-in analytics provide a clear picture of in-store customer behavior.</li>
-                                    <li><strong>Enhance Customer Experience:</strong> Offer customers a modern, self-service way to explore your entire catalogue.</li>
-                                </ul>
-                            </div>
-                        </div>
+                        <ValueLoopDiagram />
                     </motion.section>
 
                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">

@@ -65,6 +65,7 @@ const DescriptionAssistantModal: React.FC<DescriptionAssistantModalProps> = ({
               contents: prompt,
             });
             
+            // FIX: Correctly access the 'text' property on the response object.
             const text = response.text;
             setGeneratedDescription(text || '');
 

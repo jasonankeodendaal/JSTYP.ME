@@ -98,6 +98,7 @@ const AdminWebsiteImporter: React.FC = () => {
                 }
             });
 
+            // FIX: Correctly access the 'text' property on the response object.
             if (!response.text) {
                 throw new Error("The AI model returned an empty response.");
             }
