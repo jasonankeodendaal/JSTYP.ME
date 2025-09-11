@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// FIX: Consolidate react-router-dom import.
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import type { AdLink, Product } from '../types.ts';
@@ -14,6 +15,7 @@ type PlaylistItem = {
     productId?: string;
 };
 
+// FIX: Cast motion components to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
 const MotionH2 = motion.h2 as any;
 const MotionP = motion.p as any;
@@ -161,10 +163,10 @@ const ProductInfoOverlay: React.FC<{product: Product, style: 'overlay' | 'banner
             <h3 className="text-lg sm:text-2xl font-bold section-heading">{product.name}</h3>
             <div className="mt-4 space-y-2">
                  {specs.map(spec => (
-                     <motion.div key={spec.id} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition:{ duration: 0.6, ease: 'easeOut'}}}} className="flex justify-between text-xs sm:text-sm">
+                     <MotionDiv key={spec.id} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition:{ duration: 0.6, ease: 'easeOut'}}}} className="flex justify-between text-xs sm:text-sm">
                         <span className="text-white/60">{spec.key}</span>
                         <span className="font-semibold">{spec.value}</span>
-                     </motion.div>
+                     </MotionDiv>
                  ))}
             </div>
         </MotionDiv>
@@ -477,7 +479,7 @@ const Screensaver: React.FC = () => {
                             ref={videoRefCallback}
                             src={currentItem.url}
                             type="video"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             playsInline
                             preload="auto"
                         />

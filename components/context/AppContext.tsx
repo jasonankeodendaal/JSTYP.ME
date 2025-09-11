@@ -170,12 +170,15 @@ interface AppContextType {
   playTvContent: (content: TvContent) => void;
   stopTvContent: () => void;
   storageProvider: StorageProvider;
+  lastConnectedProvider: StorageProvider | null;
   isStorageConnected: boolean;
   directoryHandle: FileSystemDirectoryHandle | null;
   connectToLocalProvider: () => Promise<void>;
   connectToCloudProvider: (provider: StorageProvider) => void;
   connectToSharedUrl: (url: string) => void;
   disconnectFromStorage: () => void;
+  reconnectLastProvider: () => Promise<{ success: boolean; message: string; }>;
+  clearLastConnectedProvider: () => void;
   saveFileToStorage: (file: File) => Promise<string>;
   getFileUrl: (fileName: string) => Promise<string>;
   syncStatus: SyncStatus;
@@ -262,6 +265,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Storage and Sync state
     const [storageProvider, setStorageProvider] = useState<StorageProvider>('none');
+    const [lastConnectedProvider, setLastConnectedProvider] = useState<StorageProvider | null>(null);
     const [directoryHandle, setDirectoryHandle] = useState<FileSystemDirectoryHandle | null>(null);
     const [syncStatus, setSyncStatusState] = useState<SyncStatus>('idle');
     const [initialSyncStatus, setInitialSyncStatus] = useState<SyncStatus | null>(null);
@@ -704,6 +708,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 await idbSet('directoryHandle', handle);
                 setStorageProvider('local');
                 await idbSet('storageProvider', 'local');
+                setLastConnectedProvider('local');
+                await idbSet('lastConnectedProvider', 'local');
             } else {
                 alert("Permission to read/write to the folder was not granted.");
             }
@@ -717,7 +723,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, []);
 
     const connectToCloudProvider = useCallback((provider: StorageProvider) => {
-        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'xano', 'backendless'];
+        const apiLikeProviders: StorageProvider[] = ['customApi', 'supabase', 'vercel', 'netlify', 'aws', 'xano', 'backendless', 'ftp'];
         if (apiLikeProviders.includes(provider)) {
             if (!settings.customApiUrl) {
                 alert("Please set the Custom API URL in 'Sync & API Settings' before connecting.");
@@ -731,6 +737,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         setStorageProvider(provider);
         idbSet('storageProvider', provider);
+        setLastConnectedProvider(provider);
+        idbSet('lastConnectedProvider', provider);
     }, [settings.customApiUrl]);
 
     const connectToSharedUrl = useCallback((url: string) => {
@@ -741,6 +749,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateSettings({ sharedUrl: url });
         setStorageProvider('sharedUrl');
         idbSet('storageProvider', 'sharedUrl');
+        setLastConnectedProvider('sharedUrl');
+        idbSet('lastConnectedProvider', 'sharedUrl');
     }, [updateSettings]);
 
     const testAndConnectProvider = async (): Promise<{ success: boolean; message: string; }> => {
@@ -995,6 +1005,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
     }, [storageProvider, saveDatabaseToLocal, pushToCloud]);
     
+    const disconnectFromStorage = () => {
+        showConfirmation(
+            "Are you sure you want to disconnect? Auto-sync will be disabled.",
+            () => {
+                setLastConnectedProvider(storageProvider);
+                idbSet('lastConnectedProvider', storageProvider);
+                
+                setStorageProvider('none'); idbSet('storageProvider', 'none');
+                if (directoryHandle) { setDirectoryHandle(null); idbSet('directoryHandle', null); }
+            }
+        );
+    };
+
+    const reconnectLastProvider = async (): Promise<{ success: boolean; message: string; }> => {
+        const lastProvider = await idbGet<StorageProvider>('lastConnectedProvider');
+        if (!lastProvider || lastProvider === 'none') return { success: false, message: "No previous provider to reconnect to." };
+
+        if (lastProvider === 'local') {
+            await connectToLocalProvider(); // This re-prompts and handles state setting
+            const finalProvider = await idbGet<StorageProvider>('storageProvider');
+            if (finalProvider === 'local') {
+                return { success: true, message: "Successfully reconnected to Local Folder." };
+            }
+            return { success: false, message: "Connection to Local Folder was cancelled or failed." };
+        }
+
+        setStorageProvider(lastProvider);
+        idbSet('storageProvider', lastProvider);
+        const result = await testAndConnectProvider();
+
+        if (!result.success) {
+            setStorageProvider('none');
+            idbSet('storageProvider', 'none');
+        }
+        
+        return result;
+    };
+
+    const clearLastConnectedProvider = () => {
+        setLastConnectedProvider(null);
+        idbSet('lastConnectedProvider', null);
+    };
+
     useEffect(() => {
         const loadAndConnect = async () => {
              interface DataMapValue { setter: (value: any) => void; initial: any; merge?: boolean; }
@@ -1033,6 +1086,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 setInitialSyncStatus('idle');
             }
             
+            const lastProvider = await idbGet<StorageProvider | null>('lastConnectedProvider');
+            if(lastProvider) { setLastConnectedProvider(lastProvider); }
+
             const blob = await idbGet<Blob>('project-zip-blob');
             if (blob) {
                 setProjectZipBlob(blob);
@@ -1324,17 +1380,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         quoteStartModal, openQuoteStartModal, closeQuoteStartModal,
         openDocument,
         activeTvContent, playTvContent, stopTvContent,
-        storageProvider, isStorageConnected: storageProvider !== 'none', directoryHandle,
+        storageProvider, lastConnectedProvider, isStorageConnected: storageProvider !== 'none', directoryHandle,
         connectToLocalProvider, connectToCloudProvider, connectToSharedUrl,
-        disconnectFromStorage: () => {
-            showConfirmation(
-                "Are you sure you want to disconnect? Auto-sync will be disabled.",
-                () => {
-                    setStorageProvider('none'); idbSet('storageProvider', 'none');
-                    if (directoryHandle) { setDirectoryHandle(null); idbSet('directoryHandle', null); }
-                }
-            );
-        },
+        disconnectFromStorage,
+        reconnectLastProvider,
+        clearLastConnectedProvider,
         saveFileToStorage, getFileUrl, syncStatus,
         saveDatabaseToLocal, loadDatabaseFromLocal, pushToCloud, pullFromCloud,
         testAndConnectProvider,

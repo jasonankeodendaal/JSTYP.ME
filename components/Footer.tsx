@@ -1,10 +1,15 @@
+
 import React, { useState } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
+// FIX: Consolidate react-router-dom imports into a single line.
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
-import { UserCircleIcon, CheckIcon, CloudSlashIcon, XIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, WhatsAppIcon } from './Icons.tsx';
+import { UserCircleIcon, CheckIcon, CloudSlashIcon, XIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, WhatsAppIcon, QuestionMarkCircleIcon } from './Icons.tsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import LocalMedia from './LocalMedia.tsx';
+import { StorageProvider } from '../types';
+
+// FIX: Cast motion.div to any to resolve framer-motion prop type errors.
+const MotionDiv = motion.div as any;
 
 const SyncStatusIndicator: React.FC = () => {
     const { syncStatus, storageProvider, lastUpdated } = useAppContext();
@@ -18,13 +23,22 @@ const SyncStatusIndicator: React.FC = () => {
         );
     }
     
-    const providerName = {
+    const providerName: Record<StorageProvider, string> = {
         local: 'Local Folder',
         customApi: 'Custom API',
         sharedUrl: 'Shared URL',
-        googleDrive: 'Google Drive',
-        none: 'None'
-    }[storageProvider];
+        supabase: 'Supabase',
+        firebase: 'Firebase',
+        vercel: 'Vercel',
+        netlify: 'Netlify',
+        ftp: 'FTP',
+        none: 'None',
+        aws: 'AWS',
+        xano: 'Xano',
+        backendless: 'Backendless'
+    };
+
+    const currentProviderName = providerName[storageProvider] || 'Provider';
 
     const getStatusDetails = () => {
         switch (syncStatus) {
@@ -48,31 +62,35 @@ const SyncStatusIndicator: React.FC = () => {
     const formattedDate = lastUpdatedDate ? `${lastUpdatedDate.toLocaleDateString()} ${lastUpdatedDate.toLocaleTimeString()}` : 'N/A';
 
     return (
-        <div className="flex items-center gap-3 text-sm" title={`Provider: ${providerName}\nLast synced: ${formattedDate}`}>
+        <div className="flex items-center gap-3 text-sm" title={`Provider: ${currentProviderName}\nLast synced: ${formattedDate}`}>
             <div className="flex items-center gap-2">
                 {icon}
                 <span className={`font-semibold ${color}`}>{text}</span>
             </div>
              <div className="w-px h-5 bg-gray-300 dark:bg-gray-600 hidden sm:block" />
             <span className="hidden sm:block text-xs text-gray-500 dark:text-gray-400">
-                vs. {providerName}
+                vs. {currentProviderName}
             </span>
         </div>
     );
 };
 
-const CreatorPopup: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
+const CreatorPopup: React.FC<{ onClose: () => void; theme: 'light' | 'dark' }> = ({ onClose, theme }) => {
     const { settings } = useAppContext();
     const creator = settings.creatorProfile;
+
+    const whatsappUrl = creator.whatsapp.startsWith('http')
+        ? creator.whatsapp
+        : `https://wa.me/${creator.whatsapp}`;
     
     return (
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[60] overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-20">
             <XIcon className="h-4 w-4" />
@@ -93,6 +111,15 @@ const CreatorPopup: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
           <div className="pt-16 pb-6 px-6 text-center">
             <h3 className="text-2xl font-bold section-heading text-gray-900 dark:text-gray-100">{creator.name}</h3>
             <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{creator.title}</p>
+
+            <div className="my-4 flex justify-center">
+                <LocalMedia
+                    src={theme === 'light' ? (creator.logoUrlLight || creator.logoUrlDark || '') : (creator.logoUrlDark || creator.logoUrlLight || '')}
+                    alt="Creator Logo"
+                    type="image"
+                    className="h-10 w-auto"
+                />
+            </div>
             
             <div className="mt-4 text-left space-y-3 text-sm text-gray-700 dark:text-gray-300">
                 <a href={`tel:${creator.phone}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
@@ -111,7 +138,7 @@ const CreatorPopup: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
             
             <div className="mt-6">
                 <a 
-                    href={`https://wa.me/${creator.whatsapp}`}
+                    href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn w-full bg-[#25D366] hover:bg-[#1DAE53] text-white"
@@ -121,7 +148,7 @@ const CreatorPopup: React.FC<{ onClose: () => void; }> = ({ onClose }) => {
                 </a>
             </div>
           </div>
-        </motion.div>
+        </MotionDiv>
     );
 }
 
@@ -172,15 +199,10 @@ const Footer: React.FC = () => {
                   {creatorProfile.enabled && (
                     <button 
                         onClick={() => setIsCreatorPopupOpen(true)}
-                        className="group transition-all duration-300 ease-in-out hover:scale-110 hover:-translate-y-1"
+                        className="group transition-all text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
                         aria-label="Show creator details"
                     >
-                         <LocalMedia
-                            src={theme === 'light' ? (creatorProfile.logoUrlLight || creatorProfile.logoUrlDark || '') : (creatorProfile.logoUrlDark || creatorProfile.logoUrlLight || '')}
-                            alt="JSTYP.me Logo" 
-                            type="image"
-                            className="h-10 w-auto jstyp-logo transition-all duration-300 group-hover:drop-shadow-[0_5px_15px_rgba(255,255,255,0.2)]"
-                        />
+                         <QuestionMarkCircleIcon className="h-7 w-7"/>
                     </button>
                   )}
                   <p className="text-sm">
@@ -200,15 +222,15 @@ const Footer: React.FC = () => {
       </footer>
       <AnimatePresence>
         {isCreatorPopupOpen && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] flex items-center justify-center p-4"
             onClick={() => setIsCreatorPopupOpen(false)}
           >
-            <CreatorPopup onClose={() => setIsCreatorPopupOpen(false)} />
-          </motion.div>
+            <CreatorPopup onClose={() => setIsCreatorPopupOpen(false)} theme={theme} />
+          </MotionDiv>
         )}
       </AnimatePresence>
     </>

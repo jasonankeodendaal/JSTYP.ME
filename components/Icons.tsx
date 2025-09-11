@@ -325,16 +325,15 @@ export const CodeBracketIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) 
 );
 
 export const SupabaseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M2.41,12.52l9.08,5.13a.5.5,0,0,0,.43,0l9.08-5.13a.5.5,0,0,0,.25-.44V6.44a.5.5,0,0,0-.25-.44L12.75.87a.5.5,0,0,0-.43,0L3.25,6a.5.5,0,0,0-.25.44V12.1a.5.5,0,0,0,.25.44M12.09,2.2l8,4.45-3.69,2.12-8-4.51Zm-9,5.55,3.84,2.21,4.16,2.34v8.83l-8-4.55Zm10,13.38v-8.8l4.18-2.39,3.82-2.18v8.83Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 20" fill="currentColor" {...props}>
+      <path d="M7.025.132a2.417 2.417 0 00-2.417 2.417v4.322L0 9.897v4.908l4.608 2.66V12.56l2.417-1.395 2.417 1.395v4.908l4.608-2.66V9.897L9.442 6.871V2.55a2.417 2.417 0 00-2.417-2.417z"/>
+      <path d="M7.025 14.075L2.417 11.41l-.004-.002v.005l4.608 2.664 4.608-2.664v-.005l-.004.002-4.608 2.665z"/>
     </svg>
 );
 
 export const FirebaseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="m18.2,1.3-11.7,21c-.3.4,0,.9.4,1l.4.2c.4.1.8-.1.9-.5l11.7-21c.3-.4,0-.9-.4-1l-.4-.2c-.4-.1-.8.1-.9.5z" />
-        <path d="m5,15.1,6.5-11.3c.2-.4.7-.5,1-.3l.4.2c.4.2.5.7.3,1L6.7,16.1c-.2.4-.7.5-1,.3l-.4-.2c-.4-.2-.5-.7-.3-1z" />
-        <path d="m20.9,16.5-11.7-4.1c-.4-.2-.9,0-1.1.4l-.2.4c-.2.4,0,.9.4,1.1l11.7,4.1c.4.2.9,0,1.1-.4l.2-.4c.2-.4,0-.9-.4-1.1z" />
+      <path d="M5.016 9.234L12 4.969l6.984 4.265L12 13.5zM12.93 18.344l-6.25-3.71-0.74 10.43 6.99-6.72zm0.68-0.2L20 12.188v2.46l-6.39 6.36z" />
     </svg>
 );
 
@@ -346,25 +345,7 @@ export const VercelIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 export const NetlifyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M16.75,6.5h-2.5a.75.75,0,0,0-.75.75v10.5a.75.75,0,0,0,1.5,0V8h1.75a.75.75,0,0,0,0-1.5m4.75,12a.75.75,0,0,0,.75-.75V7.25a.75.75,0,0,0-1.5,0V17h-1.75a.75.75,0,0,0,0,1.5h2.5M3.25,18.5H5a.75.75,0,0,0,0-1.5H3.25a.75.75,0,0,0,0,1.5M7.1,17.75a.74.74,0,0,0,.75-.75V7.25a.75.75,0,0,0-1.5,0V17A.74.74,0,0,0,7.1,17.75m-3,.75h2.5a.75.75,0,0,0,0-1.5H5.85a.75.75,0,0,0,0,1.5m6.15-1.5h1.75a.75.75,0,0,0,0-1.5H11a.75.75,0,0,0,0,1.5" />
-    </svg>
-);
-
-export const AwsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M3.32,14.54a1.72,1.72,0,0,0,1.71,1.71A1.72,1.72,0,0,0,6.74,14.54a1.72,1.72,0,0,0-1.71-1.71A1.72,1.72,0,0,0,3.32,14.54Zm2.42,4.89H4.17V17.3H1.57v2.13H0V11.83H1.57v1.89h2.6V11.83H5.74Zm5.27.17a3.47,3.47,0,0,0,2.68-1l-1.29-.78a2,2,0,0,1-1.42.53,1.61,1.61,0,0,1-1.68-1.71,1.61,1.61,0,0,1,1.68-1.7,2,2,0,0,1,1.42.52l1.29-.78a3.47,3.47,0,0,0-2.68-1A3.2,3.2,0,0,0,7.85,14.54,3.2,3.2,0,0,0,11,19.6Zm7.47-5.18a3.78,3.78,0,0,0-1.22-.17c-1.35,0-2.22.65-2.22,1.68,0,.86.72,1.42,1.93,1.52l1.22.1a1.2,1.2,0,0,1-1.14,1.15,1.7,1.7,0,0,1-1.42-.53l-1.3,1a3.09,3.09,0,0,0,2.83,1.38,2.78,2.78,0,0,0,2.88-2.88c0-1.45-1.14-2.5-3.09-2.63l-1.47-.1c-.4-.05-.55-.22-.55-.45s.23-.7.92-.7a2.53,2.53,0,0,1,1.55.5ZM24,19.43H22.43V17.3h-2.6v2.13H18.26V11.83h1.57v1.89h2.6V11.83H24Zm-14.7,0H7.73V11.83H9.3Z" />
-    </svg>
-);
-
-export const XanoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12,2A10,10,0,1,0,22,12,10,10,0,0,0,12,2Zm3.71,13.2L12,11.23,8.29,15.2a.5.5,0,0,1-.7-.04l-.07-.07a.5.5,0,0,1,.04-.7L11.25,12,7.56,8.11a.5.5,0,0,1,.04-.7l.07-.07a.5.5,0,0,1,.7.04L12,11.23l3.71-4a.5.5,0,0,1,.7.04l.07.07a.5.5,0,0,1-.04.7L12.75,12l3.69,3.89a.5.5,0,0,1-.04.7l-.07.07a.5.5,0,0,1-.7-.04Z" />
-    </svg>
-);
-
-export const BackendlessIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm-1.5 15h-2V7h2zm5 0h-2V7h2z" />
+      <path d="M16.33,20.5H7.67a1,1,0,0,1-.83-1.56L11.17,12,6.84,4.94a1,1,0,0,1,.83-1.56h8.66a1,1,0,0,1,.83,1.56L12.83,12l4.33,7.06A1,1,0,0,1,16.33,20.5Z"/>
     </svg>
 );
 
@@ -431,5 +412,17 @@ export const ArrowPathIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
 export const ChartBarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+    </svg>
+);
+
+export const FtpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
+    </svg>
+);
+
+export const QuestionMarkCircleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
     </svg>
 );

@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+
+import React, { useState, useEffect } from 'react';
+// FIX: Correct 'framer-motion' import for Variants type.
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
-// FIX: Add missing UsersIcon import to fix 'Cannot find name' error.
-import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, SparklesIcon, CubeIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, SignalIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, TvIcon, BuildingStorefrontIcon, IdentificationIcon, ComputerDesktopIcon, UsersIcon } from './Icons.tsx';
+import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, UsersIcon, FtpIcon } from './Icons.tsx';
+// FIX: Consolidate react-router-dom import.
 import { useNavigate } from 'react-router-dom';
 import SetupInstruction from './Admin/SetupInstruction.tsx';
-import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent } from './Admin/SetupGuides.tsx';
+import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent, FtpGuideContent } from './Admin/SetupGuides.tsx';
 
 const stepVariants = {
     hidden: { opacity: 0, x: 50 },
@@ -13,7 +15,10 @@ const stepVariants = {
     exit: { opacity: 0, x: -50 },
 };
 
+// FIX: Cast motion components to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
+const MotionSection = motion.section as any;
+const MotionG = motion.g as any;
 
 const containerVariants = {
     visible: {
@@ -24,7 +29,6 @@ const containerVariants = {
     }
 };
 
-// FIX: Explicitly type itemVariants as Variants to fix type error with the 'ease' property.
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -80,7 +84,6 @@ const HeroDiagram: React.FC = () => (
         <rect width="800" height="400" fill="url(#hero-bg-grad)" />
 
         {/* Floor and reflection */}
-        <path d="M 0 300 C 200 280, 600 280, 800 300 L 800 400 L 0 400 Z" fill="url(#hero-floor)" />
         <g opacity="0.2" transform="translate(0, 560) scale(1, -1)">
              <path d="M 270 235 L 250 255 L 550 255 L 530 235 Z" fill="#475569" />
              <path d="M 325 50 L 270 235 L 530 235 L 475 50 Z" fill="#334155" />
@@ -106,18 +109,18 @@ const HeroDiagram: React.FC = () => (
 
         {/* Surrounding UI elements */}
         <g className="text-white">
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}>
+            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}>
                 <text x="150" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Offline-First</text>
-            </motion.g>
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}>
+            </MotionG>
+            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}>
                 <text x="650" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Cloud Sync</text>
-            </motion.g>
-             <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}>
+            </MotionG>
+             <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}>
                 <text x="100" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Analytics</text>
-            </motion.g>
-            <motion.g initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}>
+            </MotionG>
+            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}>
                 <text x="700" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Customizable</text>
-            </motion.g>
+            </MotionG>
         </g>
     </svg>
 );
@@ -329,8 +332,8 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                 </div>
             )}
             <div className={`w-full ${onBack && !isDashboard ? 'h-[calc(100%-68px)]' : 'h-full'} overflow-y-auto`}>
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
-                    <motion.section variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
+                <MotionDiv variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
+                    <MotionSection variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
                         <div className="w-full max-w-4xl"><HeroDiagram /></div>
                         <h1 className="text-3xl md:text-5xl font-bold section-heading text-gray-800 dark:text-white mt-8">The Retail OS</h1>
                         <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
@@ -338,17 +341,17 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                            <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
                            <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
-                    </motion.section>
+                    </MotionSection>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <SystemEcosystemDiagram />
-                    </motion.section>
+                    </MotionSection>
                     
-                     <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <ValueLoopDiagram />
-                    </motion.section>
+                    </MotionSection>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
@@ -362,9 +365,9 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                                 <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access with specific permissions.</FeatureItem>
                             </div>
                         </div>
-                    </motion.section>
+                    </MotionSection>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -373,17 +376,17 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                                 <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
                             </div>
                         </div>
-                    </motion.section>
+                    </MotionSection>
 
-                    <motion.section variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-3xl mx-auto text-center">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
                             {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
                             {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
                         </div>
-                    </motion.section>
-                </motion.div>
+                    </MotionSection>
+                </MotionDiv>
             </div>
         </div>
     );
@@ -410,6 +413,21 @@ const SetupWizard: React.FC = () => {
     const [error, setError] = useState('');
     const [connectionResult, setConnectionResult] = useState<{success: boolean, message: string} | null>(null);
     const [isPotentiallyRestricted, setIsPotentiallyRestricted] = useState(false);
+    
+    // State for the redesigned guides section
+    type GuideID = 'cloud' | 'local' | 'ftp' | 'vercel' | 'supabase';
+    const [activeGuide, setActiveGuide] = useState<GuideID>('cloud');
+
+    const guides: { id: GuideID; title: string; component: React.ComponentType }[] = [
+        { id: 'cloud', title: 'Cloud Sync (PC Server)', component: CloudSyncGuideContent },
+        { id: 'local', title: 'Local Folder', component: LocalFolderGuideContent },
+        { id: 'ftp', title: 'FTP Server', component: FtpGuideContent },
+        { id: 'vercel', title: 'Vercel', component: VercelGuideContent },
+        { id: 'supabase', title: 'Supabase', component: SupabaseGuideContent },
+    ];
+    // FIX: Resolve type error by using a more general component type and ensuring the result is not undefined before rendering.
+    const activeGuideData = guides.find(g => g.id === activeGuide);
+    const ActiveGuideContent = activeGuideData?.component;
 
     useEffect(() => {
         if (window.self !== window.top) {
@@ -594,27 +612,53 @@ const SetupWizard: React.FC = () => {
                 return null;
             case 'guides':
                 return (
-                     <MotionDiv key="step-guides" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100">Setup Instructions</h2>
-                            <button onClick={() => setStep(2)} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 !py-1.5 !px-3">
-                                <ChevronLeftIcon className="w-4 h-4 mr-1" />
-                                Back
-                            </button>
+                     <MotionDiv key="step-guides" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                        <div className="flex-shrink-0">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100">Setup Instructions</h2>
+                                <button onClick={() => setStep(2)} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 !py-1.5 !px-3">
+                                    <ChevronLeftIcon className="w-4 h-4 mr-1" />
+                                    Back
+                                </button>
+                            </div>
+                             <div className="border-b border-gray-200 dark:border-gray-700">
+                                <nav className="flex items-center flex-wrap gap-x-4 -mb-px">
+                                    {guides.map(guide => (
+                                        <button
+                                            key={guide.id}
+                                            onClick={() => setActiveGuide(guide.id)}
+                                            className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                                                activeGuide === guide.id
+                                                    ? 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-300'
+                                                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-500'
+                                            }`}
+                                        >
+                                            {guide.title}
+                                        </button>
+                                    ))}
+                                </nav>
+                            </div>
                         </div>
-                        <div className="space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto pr-2">
-                             <SetupInstruction title="Cloud Sync with a PC Server (Recommended)" defaultOpen>
-                                <CloudSyncGuideContent />
-                            </SetupInstruction>
-                            <SetupInstruction title="Local or Network Folder Setup">
-                                <LocalFolderGuideContent />
-                            </SetupInstruction>
-                            <SetupInstruction title="Advanced: Deploying to Vercel">
-                                <VercelGuideContent />
-                            </SetupInstruction>
-                             <SetupInstruction title="Advanced: Deploying to Supabase">
-                                <SupabaseGuideContent />
-                            </SetupInstruction>
+                        
+                        <div className="flex-grow min-h-0 pt-4">
+                            <div className="h-full bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <AnimatePresence mode="wait">
+                                    <MotionDiv
+                                        key={activeGuide}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="h-full overflow-y-auto p-1"
+                                    >
+                                        {ActiveGuideContent && activeGuideData && (
+                                            <SetupInstruction title={activeGuideData.title} defaultOpen>
+                                                <ActiveGuideContent />
+                                            </SetupInstruction>
+                                        )}
+                                    </MotionDiv>
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </MotionDiv>
                 );
@@ -637,7 +681,7 @@ const SetupWizard: React.FC = () => {
                 initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 30 }}
-                className={`bg-white dark:bg-gray-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${isInfoStep ? 'w-full h-full rounded-none p-0' : 'rounded-2xl w-full max-w-xl min-h-[450px] p-8'} ${step === 'guides' ? '!max-w-3xl' : ''}`}
+                className={`bg-white dark:bg-gray-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${isInfoStep ? 'w-full h-full rounded-none p-0' : 'rounded-2xl w-full max-w-xl min-h-[450px] p-8'} ${step === 'guides' ? '!max-w-4xl !min-h-[600px] h-[80vh]' : ''}`}
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}

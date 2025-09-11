@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon, MoonIcon, SunIcon, SearchIcon, ArrowPathIcon } from '../Icons.tsx';
+import { SaveIcon, UploadIcon, TrashIcon, ChevronUpIcon, PlusIcon, ChevronDownIcon, ComputerDesktopIcon, XIcon, ArrowPathIcon } from '../Icons.tsx';
 import type { Settings, FontStyleSettings, ThemeColors, NavLink } from '../../types.ts';
 import LocalMedia from '../LocalMedia.tsx';
 import { Link } from 'react-router-dom';

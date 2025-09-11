@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // FIX: Add GenerateContentResponse to import
 import { GoogleGenAI, GenerateContentResponse } from '@google/genai';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SparklesIcon, XIcon } from '../Icons';
+import { SparklesIcon, XIcon } from '../Icons.tsx';
 
 interface DescriptionAssistantModalProps {
     isOpen: boolean;

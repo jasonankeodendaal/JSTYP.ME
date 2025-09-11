@@ -24,8 +24,6 @@ import { AboutSystem } from '../SetupWizard.tsx';
 type FooterTab = 'admin' | 'content' | 'system';
 export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
 
-// Keep old type name `Tab` for minimal changes inside the render function
-type Tab = SubTab;
 
 const getStatus = (item: Catalogue | Pamphlet) => {
     const today = new Date();
@@ -101,7 +99,6 @@ const AdminContentCard: React.FC<{
     );
 };
 
-// FIX: Changed to a named export to resolve circular dependency with App.tsx. This also resolves the associated TypeScript error.
 export const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
@@ -587,3 +584,5 @@ export const AdminDashboard: React.FC = () => {
         </div>
     );
 };
+
+export default AdminDashboard;

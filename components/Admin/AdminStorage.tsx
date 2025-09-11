@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { ServerStackIcon, ChevronDownIcon, LinkIcon, CodeBracketIcon, SupabaseIcon, FirebaseIcon, VercelIcon, NetlifyIcon, AwsIcon, XanoIcon, BackendlessIcon, XIcon } from '../Icons.tsx';
+import { ServerStackIcon, ChevronDownIcon, LinkIcon, CodeBracketIcon, SupabaseIcon, FirebaseIcon, VercelIcon, NetlifyIcon, XIcon, FtpIcon } from '../Icons.tsx';
 import { Link } from 'react-router-dom';
 import InstallPrompt from '../InstallPrompt.tsx';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { StorageProvider } from '../../types.ts';
 import SetupInstruction from './SetupInstruction.tsx';
-import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent } from './SetupGuides.tsx';
+import { LocalFolderGuideContent, CloudSyncGuideContent, VercelGuideContent, SupabaseGuideContent, FtpGuideContent } from './SetupGuides.tsx';
 
 
 const MotionDiv = motion.div as any;
@@ -25,28 +25,28 @@ interface Provider {
 const PROVIDERS: Provider[] = [
     { id: 'supabase', name: 'Supabase', description: 'Connect to a Supabase project for a powerful PostgreSQL backend.', icon: <SupabaseIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'Project URL', apiKey: 'Anon Key' }, guide: SupabaseGuideContent },
     { id: 'firebase', name: 'Firebase', description: 'Utilize Firebase Realtime Database for live data syncing.', icon: <FirebaseIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'Database URL', apiKey: 'Web API Key' }, guide: CloudSyncGuideContent },
-    { id: 'xano', name: 'Xano', description: 'Connect to a Xano no-code backend instance.', icon: <XanoIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'API Group Base URL' }, guide: CloudSyncGuideContent },
-    { id: 'backendless', name: 'Backendless', description: 'Use Backendless as your scalable backend solution.', icon: <BackendlessIcon />, category: 'baas', config: ['url', 'apiKey'], placeholders: { url: 'API Host URL', apiKey: 'REST API Key' }, guide: CloudSyncGuideContent },
     { id: 'vercel', name: 'Vercel', description: 'Sync with a serverless function deployed on Vercel.', icon: <VercelIcon />, category: 'serverless', config: ['url', 'apiKey'], placeholders: { url: 'Function Endpoint URL' }, guide: VercelGuideContent },
     { id: 'netlify', name: 'Netlify', description: 'Connect to a Netlify Function for backend logic.', icon: <NetlifyIcon />, category: 'serverless', config: ['url', 'apiKey'], placeholders: { url: 'Function Endpoint URL' }, guide: CloudSyncGuideContent },
-    { id: 'aws', name: 'AWS Lambda', description: 'Use an AWS Lambda function via API Gateway.', icon: <AwsIcon />, category: 'serverless', config: ['url', 'apiKey'], placeholders: { url: 'API Gateway URL', apiKey: 'API Key (optional)' }, guide: CloudSyncGuideContent },
 ];
 
 const AdminStorage: React.FC = () => {
     const { 
         connectToLocalProvider,
-        testAndConnectProvider,
         disconnectFromStorage,
         storageProvider,
+        lastConnectedProvider,
+        reconnectLastProvider,
+        clearLastConnectedProvider,
         directoryHandle,
         loggedInUser,
         settings,
         updateSettings,
-        connectToCloudProvider,
-        connectToSharedUrl
+        showConfirmation,
     } = useAppContext();
 
     const [isConnecting, setIsConnecting] = useState(false);
+    const [isReconnecting, setIsReconnecting] = useState(false);
+    const [reconnectResult, setReconnectResult] = useState<{success: boolean, message: string} | null>(null);
     const [isPotentiallyRestricted, setIsPotentiallyRestricted] = useState(false);
     const [modalState, setModalState] = useState<{ isOpen: boolean; provider: Provider | null }>({ isOpen: false, provider: null });
     const [guideProvider, setGuideProvider] = useState<Provider | null>(null);
@@ -75,19 +75,56 @@ const AdminStorage: React.FC = () => {
         setIsConnecting(false);
     };
     
-    const getProviderDetails = () => {
-        const providerData = PROVIDERS.find(p => p.id === storageProvider);
-        const genericName = { local: 'Local Folder', customApi: 'Custom API', sharedUrl: 'Shared URL' }[storageProvider] || 'Provider';
-        const genericIcon = { local: <ServerStackIcon className="h-8 w-8" />, customApi: <CodeBracketIcon className="h-8 w-8" />, sharedUrl: <LinkIcon className="h-8 w-8" /> }[storageProvider];
+    const handleReconnect = async () => {
+        setIsReconnecting(true);
+        setReconnectResult(null);
+        const result = await reconnectLastProvider();
+        setReconnectResult(result);
+        setIsReconnecting(false);
+        setTimeout(() => setReconnectResult(null), 5000);
+    };
+
+    const handleSwitchProvider = () => {
+        showConfirmation(
+            "Are you sure? This will clear your last used connection and you'll need to re-enter details if you switch back.",
+            clearLastConnectedProvider
+        );
+    };
+
+    const getProviderDetails = (provider: StorageProvider | null) => {
+        if (!provider || provider === 'none') return null;
+
+        const providerName: Record<StorageProvider, string> = {
+            local: 'Local Folder', customApi: 'Custom API', sharedUrl: 'Shared URL', ftp: 'FTP Server',
+            supabase: 'Supabase', firebase: 'Firebase', vercel: 'Vercel', netlify: 'Netlify',
+            aws: 'AWS', xano: 'Xano', backendless: 'Backendless', none: 'Provider'
+        };
+        const providerIcon: Record<StorageProvider, React.ReactNode> = {
+            local: <ServerStackIcon className="h-8 w-8" />, customApi: <CodeBracketIcon className="h-8 w-8" />, sharedUrl: <LinkIcon className="h-8 w-8" />, ftp: <FtpIcon className="h-8 w-8" />,
+            supabase: <SupabaseIcon />, firebase: <FirebaseIcon />, vercel: <VercelIcon />, netlify: <NetlifyIcon />,
+            aws: <CodeBracketIcon className="h-8 w-8" />, xano: <CodeBracketIcon className="h-8 w-8" />, backendless: <CodeBracketIcon className="h-8 w-8" />, none: <ServerStackIcon className="h-8 w-8" />
+        };
         
+        const urlMap: Partial<Record<StorageProvider, string | undefined>> = {
+            local: directoryHandle?.name,
+            customApi: settings.customApiUrl,
+            sharedUrl: settings.sharedUrl,
+            ftp: settings.customApiUrl,
+            supabase: settings.customApiUrl,
+            firebase: settings.customApiUrl,
+            vercel: settings.customApiUrl,
+            netlify: settings.customApiUrl,
+            aws: settings.customApiUrl,
+            xano: settings.customApiUrl,
+            backendless: settings.customApiUrl,
+        };
+
+        const providerData = PROVIDERS.find(p => p.id === provider);
+
         return {
-            icon: providerData?.icon || genericIcon || <ServerStackIcon className="h-8 w-8" />,
-            title: providerData?.name || genericName,
-            name: {
-                local: directoryHandle?.name,
-                customApi: settings.customApiUrl,
-                sharedUrl: settings.sharedUrl,
-            }[storageProvider] || settings.customApiUrl,
+            icon: providerData?.icon || providerIcon[provider],
+            title: providerData?.name || providerName[provider],
+            name: urlMap[provider],
         };
     }
 
@@ -131,11 +168,40 @@ const AdminStorage: React.FC = () => {
             </ProviderSection>
             
              <ProviderSection title="Generic Connectors">
-                <ProviderCard provider={{ id: 'sharedUrl', name: 'Shared URL / Simple API', description: 'Connect to a simple cloud endpoint, like a static JSON file.', icon: <LinkIcon className="h-8 w-8" />, category: 'generic', config: ['url'], placeholders: { url: 'https://.../database.json' }, guide: CloudSyncGuideContent }} onConnectClick={() => setModalState({ isOpen: true, provider: PROVIDERS.find(p=>p.id === 'sharedUrl') || { id: 'sharedUrl', name: 'Shared URL', description: '', icon: <LinkIcon />, category: 'generic', config: ['url'], placeholders: { url: 'https://.../database.json' }, guide: CloudSyncGuideContent } })} onGuideClick={() => setGuideProvider({id: 'sharedUrl', name: 'Shared URL', guide: CloudSyncGuideContent} as Provider)} disabled={isConnecting} />
-                <ProviderCard provider={{ id: 'customApi', name: 'Custom API Endpoint', description: 'For advanced users. Sync with your own backend API.', icon: <CodeBracketIcon className="h-8 w-8" />, category: 'generic', config: ['url', 'apiKey'], placeholders: { url: 'https://api.yourdomain.com/data' }, guide: CloudSyncGuideContent }} onConnectClick={() => setModalState({ isOpen: true, provider: PROVIDERS.find(p=>p.id === 'customApi') || { id: 'customApi', name: 'Custom API Endpoint', description: '', icon: <CodeBracketIcon />, category: 'generic', config: ['url', 'apiKey'], guide: CloudSyncGuideContent } })} onGuideClick={() => setGuideProvider({id: 'customApi', name: 'Custom API', guide: CloudSyncGuideContent} as Provider)} disabled={isConnecting} />
+                <ProviderCard provider={{ id: 'sharedUrl', name: 'Shared URL / Simple API', description: 'Connect to a simple cloud endpoint, like a static JSON file.', icon: <LinkIcon className="h-8 w-8" />, category: 'generic', config: ['url'], placeholders: { url: 'https://.../database.json' }, guide: CloudSyncGuideContent }} onConnectClick={() => setModalState({ isOpen: true, provider: { id: 'sharedUrl', name: 'Shared URL', description: '', icon: <LinkIcon />, category: 'generic', config: ['url'], placeholders: { url: 'https://.../database.json' }, guide: CloudSyncGuideContent } })} onGuideClick={() => setGuideProvider({id: 'sharedUrl', name: 'Shared URL', guide: CloudSyncGuideContent} as Provider)} disabled={isConnecting} />
+                <ProviderCard provider={{ id: 'customApi', name: 'Custom API Endpoint', description: 'For advanced users. Sync with your own backend API.', icon: <CodeBracketIcon className="h-8 w-8" />, category: 'generic', config: ['url', 'apiKey'], placeholders: { url: 'https://api.yourdomain.com/data' }, guide: CloudSyncGuideContent }} onConnectClick={() => setModalState({ isOpen: true, provider: { id: 'customApi', name: 'Custom API Endpoint', description: '', icon: <CodeBracketIcon />, category: 'generic', config: ['url', 'apiKey'], guide: CloudSyncGuideContent } })} onGuideClick={() => setGuideProvider({id: 'customApi', name: 'Custom API', guide: CloudSyncGuideContent} as Provider)} disabled={isConnecting} />
+                <ProviderCard provider={{ id: 'ftp', name: 'FTP Server', description: 'Sync with your own FTP/SFTP server via a required API bridge.', icon: <FtpIcon className="h-8 w-8" />, category: 'generic', config: ['url', 'apiKey'], placeholders: { url: 'Bridge API URL (e.g., http://localhost:3001)' }, guide: FtpGuideContent }} onConnectClick={() => setModalState({ isOpen: true, provider: { id: 'ftp', name: 'FTP Server', description: 'Sync with your own FTP/SFTP server via a required API bridge.', icon: <FtpIcon className="h-8 w-8" />, category: 'generic', config: ['url', 'apiKey'], placeholders: { url: 'Bridge API URL (e.g., http://localhost:3001)' }, guide: FtpGuideContent } })} onGuideClick={() => setGuideProvider({id: 'ftp', name: 'FTP Server', guide: FtpGuideContent} as Provider)} disabled={isConnecting} />
             </ProviderSection>
         </div>
     );
+    
+    const renderContent = () => {
+        if (storageProvider !== 'none') {
+            const details = getProviderDetails(storageProvider);
+            return <ConnectedCard {...details!} onDisconnect={disconnectFromStorage} />;
+        }
+        
+        if (lastConnectedProvider && lastConnectedProvider !== 'none') {
+            const details = getProviderDetails(lastConnectedProvider);
+            return (
+                <>
+                    <DisconnectedCard 
+                        {...details!}
+                        onReconnect={handleReconnect}
+                        onSwitch={handleSwitchProvider}
+                        isReconnecting={isReconnecting}
+                    />
+                    {reconnectResult && (
+                        <p className={`mt-4 text-sm text-center font-semibold ${reconnectResult.success ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {reconnectResult.message}
+                        </p>
+                    )}
+                </>
+            );
+        }
+
+        return renderProviderSelection();
+    };
 
     return (
         <div className="space-y-6">
@@ -153,7 +219,7 @@ const AdminStorage: React.FC = () => {
                 onClose={() => setGuideProvider(null)}
             />
             
-            {storageProvider !== 'none' ? <ConnectedCard {...getProviderDetails()!} onDisconnect={() => disconnectFromStorage()} /> : renderProviderSelection()}
+            {renderContent()}
             
             <details id="api-settings-section" className="group bg-white dark:bg-gray-800/50 rounded-2xl shadow-xl overflow-hidden border dark:border-gray-700/50">
                 <summary className="flex items-center justify-between p-4 sm:p-5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -271,6 +337,27 @@ const ConnectedCard: React.FC<{ icon: React.ReactNode; title: string; onDisconne
     </div>
 );
 
+const DisconnectedCard: React.FC<{ icon: React.ReactNode; title: string; onReconnect: () => void; onSwitch: () => void; name?: string; isReconnecting: boolean; }> = ({ icon, title, onReconnect, onSwitch, name, isReconnecting }) => (
+    <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border-l-4 border-yellow-500">
+        <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <div className="flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-2xl bg-yellow-100 dark:bg-yellow-900/50 text-yellow-600 dark:text-yellow-400">{icon}</div>
+            <div className="flex-grow min-w-0">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Disconnected from</p>
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 section-heading">{title}</h4>
+                {name && <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 font-medium truncate" title={name}>Last connection: {name}</p>}
+            </div>
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                <button onClick={onReconnect} className="btn btn-primary" disabled={isReconnecting}>
+                    {isReconnecting ? 'Connecting...' : 'Reconnect'}
+                </button>
+                <button onClick={onSwitch} className="btn bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200">
+                    Switch
+                </button>
+            </div>
+        </div>
+    </div>
+);
+
 const ConnectionModal: React.FC<{ isOpen: boolean; provider: Provider | null; onClose: () => void; onShowGuide: () => void; }> = ({ isOpen, provider, onClose, onShowGuide }) => {
     const { settings, updateSettings, connectToCloudProvider, connectToSharedUrl, testAndConnectProvider } = useAppContext();
     const [isConnecting, setIsConnecting] = useState(false);
@@ -281,6 +368,7 @@ const ConnectionModal: React.FC<{ isOpen: boolean; provider: Provider | null; on
         if (isOpen) {
             setConfig({ url: settings.customApiUrl, apiKey: settings.customApiKey });
             if (provider?.id === 'sharedUrl') setConfig(c => ({...c, url: settings.sharedUrl || ''}));
+            if (provider?.id === 'ftp') setConfig(c => ({...c, url: settings.customApiUrl || ''}));
             setConnectionResult(null);
         }
     }, [isOpen, provider, settings]);

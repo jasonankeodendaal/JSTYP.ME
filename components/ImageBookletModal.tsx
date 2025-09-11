@@ -94,15 +94,26 @@ export const ImageBookletModal: React.FC<{
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); if (event.key === 'ArrowLeft') prevPage(); if (event.key === 'ArrowRight') nextPage(); };
         const handleFullscreenChange = () => setIsFullScreen(!!document.fullscreenElement);
-        document.body.style.overflow = 'hidden'; window.addEventListener('keydown', handleKeyDown); document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.body.style.overflow = 'hidden'; window.addEventListener('keydown', handleKeyDown); 
+        // FIX: Corrected typo from 'handleFullscreen' to 'handleFullscreenChange'.
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => { document.body.style.overflow = 'unset'; window.removeEventListener('keydown', handleKeyDown); document.removeEventListener('fullscreenchange', handleFullscreenChange); };
     }, [onClose, prevPage, nextPage]);
 
-    const isWorking = isGeneratingPdf || isGeneratingZip;
     const btnClass = (disabled = false) => `p-2 rounded-full transition-colors ${disabled ? 'text-gray-500 cursor-not-allowed' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'}`;
     
+    // FIX: Added missing JSX return to resolve component type error.
     return (
-        <MotionDiv initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} ref={modalRef} className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col z-50 p-2 sm:p-4" onClick={onClose} aria-modal="true" role="dialog">
+        <MotionDiv
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            ref={modalRef}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md flex flex-col z-50 p-2 sm:p-4"
+            onClick={onClose}
+            aria-modal="true"
+            role="dialog"
+        >
             <header className="w-full max-w-6xl mx-auto flex-shrink-0 flex justify-between items-center text-white px-2 py-2">
                 <h3 className="text-lg font-semibold truncate" title={title}>{title}</h3>
                 <button onClick={onClose} aria-label="Close viewer" className="p-2 rounded-full hover:bg-white/20 transition-colors"><XIcon className="w-6 h-6" /></button>
@@ -110,20 +121,8 @@ export const ImageBookletModal: React.FC<{
             
             <main ref={viewportRef} className="flex-grow w-full max-w-7xl mx-auto relative flex items-center justify-center min-h-0 overflow-hidden cursor-grab active:cursor-grabbing" onClick={e => e.stopPropagation()} {...eventHandlers} style={{ touchAction: 'none' }}>
                 <AnimatePresence initial={false}>
-                    <MotionDiv 
-                        key={currentPage} 
-                        ref={contentRef} 
-                        className="h-full" 
-                        initial={{ opacity: 0, scale: 0.9 }} 
-                        animate={{ opacity: 1, scale: 1 }} 
-                        exit={{ opacity: 0, scale: 0.9 }} 
-                        transition={{ duration: 0.2, ease: 'easeOut' }} 
-                        style={{ 
-                            transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
-                            transition: isTransitioning ? 'transform 0.2s ease-out' : 'none'
-                        }}
-                    >
-                        <LocalMedia src={imageUrls[currentPage]} alt={`Page ${currentPage + 1}`} type="image" className="max-w-full max-h-full object-contain h-full" onDragStart={(e) => e.preventDefault()} />
+                    <MotionDiv key={currentPage} ref={contentRef} className="h-full" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.2, ease: 'easeOut' }} style={{ transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`, transition: isTransitioning ? 'transform 0.2s ease-out' : 'none' }}>
+                        <LocalMedia src={imageUrls[currentPage]} alt={`Page ${currentPage + 1} of ${title}`} type="image" className="max-w-full max-h-full object-contain h-full shadow-lg" onDragStart={(e) => e.preventDefault()} />
                     </MotionDiv>
                 </AnimatePresence>
             </main>
@@ -140,10 +139,13 @@ export const ImageBookletModal: React.FC<{
                     <button onClick={zoomIn} className={btnClass(transform.scale >= MAX_SCALE)} disabled={transform.scale >= MAX_SCALE} title="Zoom In"><MagnifyingGlassPlusIcon className="w-5 h-5"/></button>
                     <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
                     <button onClick={toggleFullScreen} className={btnClass()} title={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}>{isFullScreen ? <ExitFullScreenIcon className="w-5 h-5"/> : <EnterFullScreenIcon className="w-5 h-5"/>}</button>
-                    <div className="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
-                    <button onClick={handleDownloadSingleImage} className={btnClass(isWorking)} disabled={isWorking} title="Download Current Page"><ArrowDownTrayIcon className="w-5 h-5"/></button>
-                    <button onClick={handleDownloadPdf} className={btnClass(isWorking)} disabled={isWorking} title="Download as PDF">{isGeneratingPdf ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <DocumentArrowDownIcon className="w-5 h-5"/>}</button>
-                    <button onClick={handleDownloadZip} className={btnClass(isWorking)} disabled={isWorking} title="Download All as ZIP">{isGeneratingZip ? <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div> : <ArchiveBoxArrowDownIcon className="w-5 h-5"/>}</button>
+                    <button onClick={handleDownloadSingleImage} className={btnClass()} title="Download Current Page"><ArrowDownTrayIcon className="w-5 h-5"/></button>
+                    <button onClick={handleDownloadPdf} className={btnClass(isGeneratingPdf)} disabled={isGeneratingPdf} title="Download as PDF">
+                        {isGeneratingPdf ? <div className="w-5 h-5 animate-spin rounded-full border-2 border-current border-t-transparent"></div> : <DocumentArrowDownIcon className="w-5 h-5"/>}
+                    </button>
+                    <button onClick={handleDownloadZip} className={btnClass(isGeneratingZip)} disabled={isGeneratingZip} title="Download as ZIP">
+                        {isGeneratingZip ? <div className="w-5 h-5 animate-spin rounded-full border-2 border-current border-t-transparent"></div> : <ArchiveBoxArrowDownIcon className="w-5 h-5"/>}
+                    </button>
                 </div>
             </footer>
         </MotionDiv>

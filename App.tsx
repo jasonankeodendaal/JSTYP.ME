@@ -1,8 +1,8 @@
 /// <reference path="./swiper.d.ts" />
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { HashRouter } from 'react-router-dom';
+// FIX: Consolidate react-router-dom imports into a single line.
+import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -46,6 +46,8 @@ import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
 import type { FontStyleSettings } from './types';
 import { idbSet } from './components/context/idb.ts';
 
+// FIX: Cast motion.div to any to resolve framer-motion prop type errors.
+const MotionDiv = motion.div as any;
 
 // Register Swiper custom elements
 register();
@@ -161,13 +163,13 @@ const BackupProgressModal: React.FC = () => {
     return (
          <AnimatePresence>
             {backupProgress.active && (
-                 <motion.div
+                 <MotionDiv
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4"
                 >
-                    <motion.div
+                    <MotionDiv
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
@@ -179,8 +181,8 @@ const BackupProgressModal: React.FC = () => {
                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-4">
                             <div className="bg-indigo-500 h-2.5 rounded-full" style={{ width: `${backupProgress.percent}%` }}></div>
                         </div>
-                    </motion.div>
-                </motion.div>
+                    </MotionDiv>
+                </MotionDiv>
             )}
         </AnimatePresence>
     );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import type { BackupData } from '../../types.ts';
+import type { StorageProvider } from '../../types.ts';
 import { Link } from 'react-router-dom';
 import { CheckIcon, UploadIcon, AndroidIcon } from '../Icons.tsx';
 
@@ -11,7 +11,7 @@ const SyncStatusIndicator: React.FC = () => {
         return null;
     }
 
-    const providerName: Record<string, string> = {
+    const providerName: Record<StorageProvider, string> = {
         local: 'Local Folder',
         customApi: 'Custom API',
         sharedUrl: 'Shared URL',
@@ -22,6 +22,7 @@ const SyncStatusIndicator: React.FC = () => {
         aws: 'AWS Lambda',
         xano: 'Xano',
         backendless: 'Backendless',
+        ftp: 'FTP',
         none: 'None'
     };
 
@@ -56,7 +57,7 @@ const AdminBackupRestore: React.FC = () => {
     const { 
         storageProvider, 
         loggedInUser,
-        restoreBackup, showConfirmation,
+        showConfirmation,
         saveDatabaseToLocal, loadDatabaseFromLocal,
         pushToCloud, pullFromCloud, syncStatus,
         uploadProjectZip,
@@ -279,6 +280,7 @@ const AdminBackupRestore: React.FC = () => {
             case 'aws':
             case 'xano':
             case 'backendless':
+            case 'ftp':
                 const providerName = {
                     sharedUrl: 'Shared URL',
                     customApi: 'Custom API',
@@ -289,6 +291,7 @@ const AdminBackupRestore: React.FC = () => {
                     aws: 'AWS',
                     xano: 'Xano',
                     backendless: 'Backendless',
+                    ftp: 'FTP'
                 }[storageProvider] || 'Cloud';
 
                 return (

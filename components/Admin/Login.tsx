@@ -1,8 +1,85 @@
 import React, { useState, useEffect } from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
+import { motion } from 'framer-motion';
+import { UserCircleIcon, ShieldCheckIcon } from '../Icons.tsx';
+
+const MotionDiv = motion.div as any;
+
+const AdminLoginForm: React.FC<{
+    onSubmit: (e: React.FormEvent) => Promise<void>;
+    selectedUserId: string;
+    onUserChange: (id: string) => void;
+    pin: string;
+    onPinChange: (pin: string) => void;
+    error: string;
+}> = ({ onSubmit, selectedUserId, onUserChange, pin, onPinChange, error }) => {
+    const { adminUsers } = useAppContext();
+
+    return (
+        <form className="space-y-6" onSubmit={onSubmit}>
+            <div>
+                <label htmlFor="user-select" className="block text-sm font-medium text-left opacity-90">
+                    Select User
+                </label>
+                <div className="mt-1 relative">
+                    <UserCircleIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
+                    <select
+                        id="user-select"
+                        name="user"
+                        value={selectedUserId}
+                        onChange={(e) => onUserChange(e.target.value)}
+                        className="appearance-none block w-full pl-10 pr-3 py-3 border-2 border-transparent rounded-full shadow-inner placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-white sm:text-sm bg-black/20 text-white"
+                        required
+                    >
+                        {adminUsers.map(user => (
+                            <option key={user.id} value={user.id} className="bg-gray-700 text-white">
+                                {user.firstName} {user.lastName} {user.isMainAdmin ? '(Main)' : ''}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label htmlFor="pin-input" className="block text-sm font-medium text-left opacity-90">
+                    Enter PIN
+                </label>
+                <div className="mt-1 relative">
+                    <ShieldCheckIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50" />
+                    <input
+                        id="pin-input"
+                        name="pin"
+                        type="password"
+                        autoComplete="current-password"
+                        required
+                        value={pin}
+                        onChange={(e) => onPinChange(e.target.value)}
+                        placeholder="••••"
+                        maxLength={4}
+                        pattern="\d{4}"
+                        className="tracking-[1em] appearance-none block w-full pl-10 pr-3 py-3 border-2 border-transparent rounded-full shadow-inner placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-white sm:text-sm bg-black/20 text-white text-center"
+                    />
+                </div>
+            </div>
+            
+            {error && (
+                <p className="text-sm text-center font-semibold text-yellow-400">{error}</p>
+            )}
+
+            <div>
+                <button
+                    type="submit"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-lg text-md font-bold transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-white bg-white text-indigo-600"
+                >
+                    Sign In
+                </button>
+            </div>
+        </form>
+    );
+};
+
 
 const AdminLogin: React.FC = () => {
     const { adminUsers, login, loggedInUser, settings } = useAppContext();
@@ -18,7 +95,6 @@ const AdminLogin: React.FC = () => {
     }, [loggedInUser, navigate]);
 
     useEffect(() => {
-        // Pre-select the first user if available
         if (adminUsers.length > 0 && !selectedUserId) {
             setSelectedUserId(adminUsers[0].id);
         }
@@ -37,7 +113,7 @@ const AdminLogin: React.FC = () => {
 
         if (!user) {
             setError('Invalid user or PIN. Please try again.');
-            setPin(''); // Clear PIN field on error
+            setPin('');
         }
     };
 
@@ -46,89 +122,101 @@ const AdminLogin: React.FC = () => {
     const pageStyle: React.CSSProperties = {
         backgroundImage: loginSettings.backgroundImageUrl ? `url(${loginSettings.backgroundImageUrl})` : 'none',
         backgroundColor: loginSettings.backgroundColor || '#111827',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-    };
-
-    const boxStyle: React.CSSProperties = {
-        background: loginSettings.boxBackgroundColor || 'linear-gradient(to bottom right, #38bdf8, #3b82f6)',
     };
     
-    const textStyle: React.CSSProperties = {
-        color: loginSettings.textColor || '#ffffff',
+    const formPanelStyle: React.CSSProperties = {
+        background: loginSettings.boxBackgroundColor || 'rgba(255,255,255,0.1)',
     };
 
     return (
-        <div style={pageStyle} className="min-h-screen flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-                 <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto mx-auto mb-8" />
-                 <div style={boxStyle} className="py-12 px-4 shadow-2xl rounded-2xl sm:px-10">
-                    <div className="mb-8 text-center">
-                        <h2 className="text-3xl font-extrabold tracking-tight" style={textStyle}>
-                            ADMIN LOGIN
-                        </h2>
+        <div style={pageStyle} className="min-h-screen w-full bg-cover bg-center text-white">
+            {/* Desktop Layout (LG and up) */}
+            <div className="hidden lg:flex min-h-screen w-full flex-row">
+                <div className="flex flex-col items-center justify-center w-full lg:w-3/5 p-12 text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="relative z-10" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                        <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-24 w-auto drop-shadow-lg" />
+                        <h1 className="text-4xl lg:text-5xl font-bold mt-6 section-heading">{settings.appName}</h1>
+                        <p className="mt-2 text-lg max-w-md opacity-90">{settings.appDescription}</p>
                     </div>
-                    
-                    <form className="space-y-6" onSubmit={handleSubmit}>
-                        <div>
-                            <label htmlFor="user-select" className="block text-sm font-medium text-left" style={textStyle}>
-                                User
-                            </label>
-                            <div className="mt-1">
-                                <select
-                                    id="user-select"
-                                    name="user"
-                                    value={selectedUserId}
-                                    onChange={(e) => setSelectedUserId(e.target.value)}
-                                    className="appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white sm:text-sm bg-white text-gray-900"
-                                    required
-                                >
-                                    {adminUsers.map(user => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.firstName} {user.lastName} {user.isMainAdmin ? '(Main)' : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="pin-input" className="block text-sm font-medium text-left" style={textStyle}>
-                                PIN
-                            </label>
-                            <div className="mt-1">
-                                <input
-                                    id="pin-input"
-                                    name="pin"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    required
-                                    value={pin}
-                                    onChange={(e) => setPin(e.target.value)}
-                                    placeholder="Enter your 4-digit PIN"
-                                    maxLength={4}
-                                    pattern="\d{4}"
-                                    className="appearance-none block w-full px-3 py-3 border border-transparent rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-white sm:text-sm bg-white text-gray-900"
-                                />
-                            </div>
-                        </div>
-                        
-                        {error && (
-                            <p className="text-sm text-center text-yellow-200">{error}</p>
-                        )}
-
-                        <div>
-                            <button
-                                type="submit"
-                                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-blue-600 bg-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-700 focus:ring-black transition-colors"
-                            >
-                                Login
-                            </button>
-                        </div>
-                    </form>
+                </div>
+                <div className="w-full lg:w-2/5 flex items-center justify-center p-4 sm:p-8">
+                    <MotionDiv
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                        className="w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 backdrop-blur-xl border border-white/10"
+                        style={formPanelStyle}
+                    >
+                        <h2 className="text-3xl font-bold tracking-tight section-heading text-center mb-8">
+                            Admin Login
+                        </h2>
+                        <AdminLoginForm 
+                            onSubmit={handleSubmit}
+                            selectedUserId={selectedUserId}
+                            onUserChange={setSelectedUserId}
+                            pin={pin}
+                            onPinChange={setPin}
+                            error={error}
+                        />
+                    </MotionDiv>
                 </div>
             </div>
-             <p className="mt-8 text-center text-sm" style={{color: loginSettings.textColor, textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>
+
+            {/* Tablet Layout (MD to LG) */}
+            <div className="hidden md:flex lg:hidden min-h-screen w-full items-center justify-center p-8">
+                <MotionDiv
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 backdrop-blur-xl border border-white/10"
+                    style={formPanelStyle}
+                >
+                    <div className="flex flex-col items-center text-center mb-8" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                        <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto drop-shadow-lg" />
+                        <h1 className="text-3xl font-bold mt-4 section-heading">{settings.appName}</h1>
+                        <p className="mt-1 text-sm max-w-md opacity-90">{settings.appDescription}</p>
+                    </div>
+                    <AdminLoginForm 
+                        onSubmit={handleSubmit}
+                        selectedUserId={selectedUserId}
+                        onUserChange={setSelectedUserId}
+                        pin={pin}
+                        onPinChange={setPin}
+                        error={error}
+                    />
+                </MotionDiv>
+            </div>
+
+            {/* Mobile Layout (below MD) */}
+            <div className="md:hidden flex flex-col min-h-screen w-full">
+                <div className="flex-grow flex flex-col items-center justify-center p-8 text-center" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                    <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto drop-shadow-lg" />
+                    <h1 className="text-4xl font-bold mt-4 section-heading">{settings.appName}</h1>
+                    <p className="mt-1 text-md max-w-md opacity-90">{settings.appDescription}</p>
+                </div>
+                <MotionDiv
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+                    className="flex-shrink-0 p-8 rounded-t-[2.5rem] shadow-2xl backdrop-blur-xl border-t border-white/10"
+                    style={formPanelStyle}
+                >
+                    <h2 className="text-2xl font-bold tracking-tight section-heading text-center mb-6">
+                        Admin Login
+                    </h2>
+                    <AdminLoginForm 
+                        onSubmit={handleSubmit}
+                        selectedUserId={selectedUserId}
+                        onUserChange={setSelectedUserId}
+                        pin={pin}
+                        onPinChange={setPin}
+                        error={error}
+                    />
+                </MotionDiv>
+            </div>
+
+            <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-center text-xs opacity-50" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 &copy; {new Date().getFullYear()} All rights reserved.
             </p>
         </div>

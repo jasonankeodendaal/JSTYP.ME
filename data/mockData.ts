@@ -1,3 +1,4 @@
+
 import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Quote, ViewCounts, ActivityLog } from '../types';
 
 export const adminUsers: AdminUser[] = [
@@ -290,21 +291,21 @@ export const settings: Settings = {
     loginScreen: {
       backgroundImageUrl: "",
       backgroundColor: "#111827",
-      boxBackgroundColor: "linear-gradient(to bottom right, #38bdf8, #3b82f6)",
+      boxBackgroundColor: "linear-gradient(to bottom right, #4f46e5, #7c3aed)",
       textColor: "#ffffff"
     },
     creatorProfile: {
       enabled: true,
-      name: "Jason Odendaal",
-      title: "Founder & Lead Developer",
+      name: "JSTYP.me",
+      title: "Jason's Solution To Your Problems... yes me!",
       imageUrl: "https://iili.io/FGWJCtj.jpg",
-      logoUrlLight: "data:image/svg+xml,%3csvg width='300' height='100' viewBox='0 0 300 100' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='100' fill='white'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='32' fill='black'%3eJSTYP.me%3c/text%3e%3c/svg%3e",
-      logoUrlDark: "data:image/svg+xml,%3csvg width='300' height='100' viewBox='0 0 300 100' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='100' fill='black'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='32' fill='white'%3eJSTYP.me%3c/text%3e%3c/svg%3e",
+      logoUrlLight: "https://iili.io/KxPZTT7.png",
+      logoUrlDark: "https://iili.io/KxPZTT7.png",
       phone: "+27695989427",
-      email: "jason@jstyp.me",
+      email: "odendaaljason454@gmail.com",
       website: "https://jstyp.me",
       websiteText: "JSTYP.me - Your Solution to Digital Problems",
-      whatsapp: "27695989427"
+      whatsapp: "https://wa.link/5ajnc6"
     }
 };
 

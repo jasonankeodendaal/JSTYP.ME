@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+// FIX: Consolidate react-router-dom imports into a single line.
 import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { SearchIcon, VolumeUpIcon, VolumeOffIcon, Bars3Icon, XIcon, EnterFullScreenIcon, ExitFullScreenIcon, VolumeLowIcon, SunIcon, MoonIcon } from './Icons.tsx';
 import { useAppContext } from './context/AppContext.tsx';

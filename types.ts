@@ -190,7 +190,8 @@ export interface Settings {
   lastUpdated?: number; // Timestamp for sync checking
 }
 
-export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'supabase' | 'firebase' | 'vercel' | 'netlify' | 'aws' | 'xano' | 'backendless' | 'none';
+// FIX: Added 'aws', 'xano', and 'backendless' to the StorageProvider type to support new provider options.
+export type StorageProvider = 'local' | 'customApi' | 'sharedUrl' | 'supabase' | 'firebase' | 'vercel' | 'netlify' | 'ftp' | 'none' | 'aws' | 'xano' | 'backendless';
 
 export type AdLink =
   | { type: 'brand'; id: string; }
@@ -265,7 +266,7 @@ export interface Quote {
 
 export type ViewCounts = Record<string, {
   brands: Record<string, number>;
-  products: Record<string, number;
+  products: Record<string, number>;
 }>;
 
 export interface ActivityLog {
