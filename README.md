@@ -9,6 +9,61 @@ This guide provides technical information for developers working on the Interact
 
 ---
 
+## 🤖 Android APK Build (Capacitor)
+
+This project uses **Capacitor** to wrap the web app into a native Android application. Follow these steps to generate a signed APK ready for distribution.
+
+### Prerequisites
+
+1.  **Node.js**: Ensure you have Node.js (LTS version) installed.
+2.  **Java Development Kit (JDK)**: You need a recent version of the JDK. We recommend OpenJDK. You can install it via your system's package manager or from [Adoptium](https://adoptium.net/).
+3.  **Android Studio**: Download and install the latest version of [Android Studio](https://developer.android.com/studio).
+    -   During setup, make sure to install the Android SDK Platforms and Command-line Tools.
+
+### Step-by-Step Build Process
+
+Follow these steps in your terminal from the **root directory** of the project.
+
+1.  **Install All Dependencies**:
+    This command will install both the web app dependencies and the Capacitor CLI tools.
+    ```bash
+    npm install
+    ```
+
+2.  **Add the Android Platform**:
+    This command creates the native `android` project folder that Capacitor will manage. You only need to run this once.
+    ```bash
+    npx cap add android
+    ```
+
+3.  **Build the Web App and Sync with Android**:
+    This custom script first runs `vite build` to create an optimized production version of your web app in the `/dist` folder. Then, it runs `npx cap sync android` to copy these web assets into the native Android project.
+    ```bash
+    npm run build:android
+    ```
+    *You must run this command every time you make changes to your web code that you want to be reflected in the native app.*
+
+4.  **Open the Project in Android Studio**:
+    This command will launch Android Studio and open your native Android project.
+    ```bash
+    npm run open:android
+    ```
+
+5.  **Generate a Signed APK in Android Studio**:
+    -   Once Android Studio opens and finishes syncing, go to the top menu and select **`Build` &rarr; `Generate Signed Bundle / APK...`**.
+    -   Select **APK** and click "Next".
+    -   **Key store path**: If you have a signing key, select it. If not, click **"Create new..."**.
+        -   Fill out the form to create a new keystore file (e.g., `my-release-key.jks`). **Save this file and back it up securely! You will need it to publish updates.**
+        -   Remember the passwords you create.
+    -   Once you have selected your key, click "Next".
+    -   **Build Variants**: Choose **release**.
+    -   Click **"Finish"**.
+    -   Android Studio will build the signed APK. When it's done, a notification will appear with a link to **"locate"** the file. The APK will typically be in `/android/app/release/app-release.apk`.
+
+This `app-release.apk` file is your production-ready application, which you can now distribute or upload to the Google Play Store.
+
+---
+
 ## Technical Overview
 
 ### The "No-Build" PWA Foundation

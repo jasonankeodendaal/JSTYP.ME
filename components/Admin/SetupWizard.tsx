@@ -287,38 +287,6 @@ const ScenarioB2bDiagram: React.FC = () => (
 );
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
-    const { getFileUrl, projectZipBlob } = useAppContext();
-    const [isAvailable, setIsAvailable] = useState(false);
-    const [zipUrl, setZipUrl] = useState('');
-    const [isChecking, setIsChecking] = useState(true);
-
-    useEffect(() => {
-        let isMounted = true;
-        let objectUrlToRevoke: string | null = null;
-    
-        const checkAvailability = async () => {
-            setIsChecking(true);
-            if (projectZipBlob) {
-                objectUrlToRevoke = URL.createObjectURL(projectZipBlob);
-                if (isMounted) {
-                    setZipUrl(objectUrlToRevoke); setIsAvailable(true); setIsChecking(false);
-                }
-                return;
-            }
-            try {
-                const url = await getFileUrl('project.zip');
-                if (!url) { if (isMounted) setIsAvailable(false); return; }
-                const response = await fetch(url, { method: 'HEAD' });
-                if (isMounted) {
-                    if (response.ok) { setIsAvailable(true); setZipUrl(url); } else { setIsAvailable(false); }
-                }
-            } catch (error) { if (isMounted) setIsAvailable(false); } 
-            finally { if (isMounted) setIsChecking(false); }
-        };
-        checkAvailability();
-        return () => { isMounted = false; if (objectUrlToRevoke) { URL.revokeObjectURL(objectUrlToRevoke); } };
-    }, [getFileUrl, projectZipBlob]);
-    
     return (
         <div className={`w-full h-full ${isDashboard ? 'bg-transparent' : 'bg-slate-900 text-gray-300'} relative`}>
             {(onBack && !isDashboard) && (
@@ -380,9 +348,10 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-3xl mx-auto text-center">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
-                            {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
-                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is open-source and designed to be fully self-hostable. For developers, the complete project source code can be downloaded from GitHub.</p>
+                            <a href="https://github.com/jasonankeodendaal/JSTYP.ME.git" target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full sm:w-auto">
+                                Click Me
+                            </a>
                         </div>
                     </MotionSection>
                 </MotionDiv>

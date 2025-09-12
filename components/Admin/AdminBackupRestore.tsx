@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
 import type { StorageProvider } from '../../types.ts';
 import { Link } from 'react-router-dom';
-import { CheckIcon, UploadIcon, AndroidIcon } from '../Icons.tsx';
+import { CheckIcon, UploadIcon, AndroidIcon, DocumentArrowDownIcon } from '../Icons.tsx';
 
 const SyncStatusIndicator: React.FC = () => {
     const { syncStatus, storageProvider } = useAppContext();
@@ -64,7 +64,8 @@ const AdminBackupRestore: React.FC = () => {
         createZipBackup,
         restoreZipBackup,
         uploadApk,
-        uploadProjectZipToLocalDB
+        uploadProjectZipToLocalDB,
+        deleteAllMockData
     } = useAppContext();
 
     const [fileName, setFileName] = useState<string>('');
@@ -403,6 +404,32 @@ const AdminBackupRestore: React.FC = () => {
             )}
             
             {renderLocalFileUI()}
+            
+            {isSuperAdmin && (
+                <>
+                    <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-red-300 dark:border-red-700" /></div>
+                        <div className="relative flex justify-center"><span className="bg-gray-100/50 dark:bg-gray-800/20 px-3 text-sm font-semibold text-red-600 dark:text-red-400">Danger Zone</span></div>
+                    </div>
+                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl shadow-xl border border-red-300 dark:border-red-700/50">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div>
+                                <h4 className="font-semibold text-red-800 dark:text-red-200">Delete All Data</h4>
+                                <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+                                    Permanently delete all brands, products, catalogues, clients, and other content. This will reset the kiosk to a blank state. This action cannot be undone.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={deleteAllMockData}
+                                className="btn btn-destructive !text-sm !py-2 w-full sm:w-auto flex-shrink-0"
+                            >
+                                Delete All Data
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
 
             <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-gray-300 dark:border-gray-600" /></div>

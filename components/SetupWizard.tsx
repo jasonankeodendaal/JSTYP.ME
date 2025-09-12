@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type.
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
@@ -250,76 +249,49 @@ const ScenarioBoutiqueDiagram: React.FC = () => (
     </svg>
 );
 
-const ScenarioFranchiseDiagram: React.FC = () => {
-    const storeIcon = <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" />;
-    const iconStyle = "fill-none text-slate-500 dark:text-slate-400";
-    
-    return (
-        <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-            </defs>
-            <path d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <circle cx="50" cy="25" r="12" fill="url(#franchise-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
-            <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
-            
-            <g transform="translate(18, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(42.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(67.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-        </svg>
-    );
-};
+const ScenarioFranchiseDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#8b5cf6"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
+        </defs>
+        <circle cx="50" cy="25" r="10" fill="url(#franchise-grad)"/>
+        <path d="M50 35 C 40 40, 30 50, 25 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <path d="M50 35 C 50 40, 50 50, 50 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <path d="M50 35 C 60 40, 70 50, 75 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <g className="fill-slate-400 dark:fill-slate-500">
+            <path d="M20 75 L 20 68 L 25 63 L 30 68 L 30 75 Z" />
+            <path d="M45 75 L 45 68 L 50 63 L 55 68 L 55 75 Z" />
+            <path d="M70 75 L 70 68 L 75 63 L 80 68 L 80 75 Z" />
+        </g>
+    </svg>
+);
 
 const ScenarioB2bDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-                <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500" />
-            </marker>
+            <linearGradient id="b2b-phone-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#3b82f6" />
+            </linearGradient>
+            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500"/></marker>
         </defs>
-        <UserCircleIcon x="15" y="45" className="w-10 h-10 text-slate-400 dark:text-slate-500"/>
-        <rect x="42" y="30" width="16" height="25" rx="2" className="fill-indigo-500" />
-        <rect x="43" y="32" width="14" height="18" rx="1" className="fill-purple-300" />
-        <path d="M58 42 C 68 42, 68 32, 78 32" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
-        <ClipboardDocumentListIcon x="75" y="15" className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+        {/* Phone */}
+        <rect x="25" y="20" width="18" height="30" rx="3" fill="url(#b2b-phone-grad)"/>
+
+        {/* Stand */}
+        <path d="M 55 70 A 20 8 0 0 0 95 70" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
+        <path d="M 60 60 A 15 6 0 0 0 90 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
+        <path d="M 70 52 A 5 2 0 0 0 80 52" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
+        <rect x="65" y="25" width="4" height="25" className="fill-slate-400 dark:stroke-slate-500"/>
+        <rect x="81" y="25" width="4" height="25" className="fill-slate-400 dark:stroke-slate-500"/>
+        
+        {/* Arrow */}
+        <path d="M45 35 C 50 35, 50 45, 60 45" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
     </svg>
 );
 
-export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
-    const { getFileUrl, projectZipBlob } = useAppContext();
-    const [isAvailable, setIsAvailable] = useState(false);
-    const [zipUrl, setZipUrl] = useState('');
-    const [isChecking, setIsChecking] = useState(true);
 
-    useEffect(() => {
-        let isMounted = true;
-        let objectUrlToRevoke: string | null = null;
-    
-        const checkAvailability = async () => {
-            setIsChecking(true);
-            if (projectZipBlob) {
-                objectUrlToRevoke = URL.createObjectURL(projectZipBlob);
-                if (isMounted) {
-                    setZipUrl(objectUrlToRevoke); setIsAvailable(true); setIsChecking(false);
-                }
-                return;
-            }
-            try {
-                const url = await getFileUrl('project.zip');
-                if (!url) { if (isMounted) setIsAvailable(false); return; }
-                const response = await fetch(url, { method: 'HEAD' });
-                if (isMounted) {
-                    if (response.ok) { setIsAvailable(true); setZipUrl(url); } else { setIsAvailable(false); }
-                }
-            } catch (error) { if (isMounted) setIsAvailable(false); } 
-            finally { if (isMounted) setIsChecking(false); }
-        };
-        checkAvailability();
-        return () => { isMounted = false; if (objectUrlToRevoke) { URL.revokeObjectURL(objectUrlToRevoke); } };
-    }, [getFileUrl, projectZipBlob]);
-    
+export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
     return (
         <div className={`w-full h-full ${isDashboard ? 'bg-transparent' : 'bg-slate-900 text-gray-300'} relative`}>
             {(onBack && !isDashboard) && (
@@ -355,14 +327,14 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
-                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Runs flawlessly with or without an internet connection, ensuring 100% uptime.</FeatureItem>
-                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder or a cloud API for multi-location franchises.</FeatureItem>
-                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data from a single admin panel and sync changes everywhere.</FeatureItem>
-                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Display beautiful catalogues, pamphlets, and full-screen video ads.</FeatureItem>
-                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Track product and brand views to understand what's popular.</FeatureItem>
-                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Generate client quotes directly from the kiosk interface.</FeatureItem>
-                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and fonts to layout.</FeatureItem>
-                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Role-based admin access with specific permissions.</FeatureItem>
+                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Data is stored locally, ensuring instant response times and uninterrupted service, even during network outages.</FeatureItem>
+                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder for simple setups or a cloud API for multi-location franchises. The choice is yours.</FeatureItem>
+                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data, promotions, and settings from a single, easy-to-use admin panel and sync changes everywhere.</FeatureItem>
+                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Go beyond static images. Display beautiful digital catalogues, promotional pamphlets, and full-screen video ads.</FeatureItem>
+                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Gain valuable insight by tracking which products and brands are most viewed on each kiosk device.</FeatureItem>
+                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Empower your sales staff by allowing them to generate client quotes directly from the kiosk interface.</FeatureItem>
+                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and typography to layout and transition effects.</FeatureItem>
+                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Create multiple admin accounts with role-based permissions to control who can access sensitive areas.</FeatureItem>
                             </div>
                         </div>
                     </MotionSection>
@@ -371,9 +343,21 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-xs text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                    <ScenarioBoutiqueDiagram />
+                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">High-End Boutiques</h4>
+                                    <p className="text-sm text-gray-400 mt-2">Provide a sophisticated, interactive catalogue.</p>
+                                </div>
+                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                    <ScenarioFranchiseDiagram />
+                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">Multi-Location Franchises</h4>
+                                    <p className="text-sm text-gray-400 mt-2">Ensure brand consistency and manage data centrally.</p>
+                                </div>
+                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                    <ScenarioB2bDiagram />
+                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">B2B & Trade Shows</h4>
+                                    <p className="text-sm text-gray-400 mt-2">Capture leads and generate quotes instantly.</p>
+                                </div>
                             </div>
                         </div>
                     </MotionSection>
@@ -381,9 +365,10 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-3xl mx-auto text-center">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is designed to be fully self-hostable. For developers, the complete project source code can be made available for download here. An administrator must first upload the <code>project.zip</code> file in the <strong>System &rarr; Backup &amp; Restore</strong> section.</p>
-                            {isChecking ? (<button className="btn btn-primary w-full sm:w-auto" disabled>Checking for file...</button>) : isAvailable ? (<a href={zipUrl} download="kiosk-project.zip" className="btn btn-primary w-full sm:w-auto">Download Full Project (.zip)</a>) : (<button className="btn btn-primary w-full sm:w-auto" disabled>Download Unavailable</button>)}
-                            {!isAvailable && !isChecking && (<p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No project.zip file has been uploaded by the administrator yet.</p>)}
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">This application is open-source and designed to be fully self-hostable. For developers, the complete project source code can be downloaded from GitHub.</p>
+                            <a href="https://github.com/jasonankeodendaal/JSTYP.ME.git" target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full sm:w-auto">
+                                Click Me
+                            </a>
                         </div>
                     </MotionSection>
                 </MotionDiv>

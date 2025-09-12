@@ -5,6 +5,9 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 // New imports for screensaver and global state
 import { AppProvider, useAppContext } from './components/context/AppContext.tsx';
@@ -43,7 +46,8 @@ import TvContentEdit from './components/Admin/TvContentEdit.tsx';
 import StockPick from './components/Admin/StockPick.tsx';
 import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
-import type { FontStyleSettings } from './types';
+// FIX: Add Settings type to import
+import type { FontStyleSettings, Settings } from './types';
 import { idbSet } from './components/context/idb.ts';
 
 // FIX: Cast motion.div to any to resolve framer-motion prop type errors.
@@ -51,6 +55,41 @@ const MotionDiv = motion.div as any;
 
 // Register Swiper custom elements
 register();
+
+// FIX: Pass settings object to useNativeMobileSetup to access theme colors.
+const useNativeMobileSetup = (theme: 'light' | 'dark', settings: Settings) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+                if (!canGoBack || location.pathname === '/') {
+                    CapacitorApp.exitApp();
+                } else {
+                    navigate(-1);
+                }
+            });
+
+            return () => {
+                CapacitorApp.removeAllListeners();
+            };
+        }
+    }, [navigate, location.pathname]);
+
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: theme === 'dark' ? Style.Dark : Style.Light });
+            // FIX: Use settings from props instead of undefined initialSettings.
+            const themeColors = theme === 'dark' 
+                ? settings.darkTheme 
+                : settings.lightTheme;
+            StatusBar.setBackgroundColor({ color: themeColors.mainBg });
+        }
+// FIX: Add settings to dependency array.
+    }, [theme, settings]);
+};
+
 
 const useIdleRedirect = () => {
     const { settings, activeTvContent, bookletModalState, pdfModalState, confirmation, quoteStartModal } = useAppContext();
@@ -193,6 +232,8 @@ const AppContent: React.FC = () => {
   const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal, playTouchSound, theme } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
+  // FIX: Pass settings object to useNativeMobileSetup.
+  useNativeMobileSetup(theme, settings);
   useIdleRedirect();
   useScreensaverManager();
 

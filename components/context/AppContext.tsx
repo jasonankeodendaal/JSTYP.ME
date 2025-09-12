@@ -148,6 +148,7 @@ interface AppContextType {
   deleteQuote: (quoteId: string) => void;
   updateSettings: (newSettings: Partial<Settings>) => void;
   restoreBackup: (data: Partial<BackupData>) => void;
+  deleteAllMockData: () => void;
   isScreensaverActive: boolean;
   isScreensaverEnabled: boolean;
   startScreensaver: () => void;
@@ -1301,6 +1302,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         throw new Error('No compatible storage provider (Local Folder or Custom API) is connected for this operation.');
     }, [storageProvider, directoryHandle, settings, addActivityLog]);
 
+    const deleteAllMockData = useCallback(() => {
+        showConfirmation(
+            "Are you sure you want to delete ALL data? This will reset the kiosk to a blank state, leaving only admin users and system settings. This action cannot be undone.",
+            () => {
+                const emptyBackup: Partial<BackupData> = {
+                    brands: [],
+                    products: [],
+                    catalogues: [],
+                    pamphlets: [],
+                    screensaverAds: [],
+                    tvContent: [],
+                    categories: [],
+                    clients: [],
+                    quotes: [],
+                    viewCounts: {},
+                    activityLogs: [],
+                };
+                restoreBackup(emptyBackup);
+                
+                addActivityLog({
+                    actionType: 'HARD_DELETE',
+                    entityType: 'System',
+                    details: 'All mock/user data was permanently deleted.'
+                });
+
+                alert('All data has been deleted. The application is now in a fresh state.');
+            }
+        );
+    }, [showConfirmation, restoreBackup, addActivityLog]);
+
     const contextValue: AppContextType = {
         isSetupComplete,
         completeSetup: () => {
@@ -1371,7 +1402,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                  markAsDirty();
             }
         },
-        updateSettings, restoreBackup,
+        updateSettings, restoreBackup, deleteAllMockData,
         isScreensaverActive, isScreensaverEnabled, startScreensaver, exitScreensaver, toggleScreensaver,
         deferredPrompt, triggerInstallPrompt: () => deferredPrompt?.prompt(),
         confirmation, showConfirmation, hideConfirmation,
