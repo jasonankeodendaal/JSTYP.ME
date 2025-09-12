@@ -280,51 +280,70 @@ app.listen(port, () => console.log(\`FTP Bridge server running on port \${port}\
 
 export const VercelGuideContent: React.FC = () => (
     <>
-        <p>Vercel is a popular platform for hosting modern web applications. You can deploy the included Node.js server from the <code>/server</code> directory as a "Serverless Function" on Vercel. This is a powerful, scalable option that doesn't require you to keep a PC running 24/7.</p>
-        <h4>Part 1: Prepare Your Server Code</h4>
+        <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-800 dark:text-red-300 p-4 rounded-r-lg mb-4">
+            <p className="font-bold">Important Compatibility Notice</p>
+            <p className="text-sm mt-1">
+                The default server included in the <code>/server</code> directory is <strong>NOT compatible</strong> with Vercel's serverless environment. It relies on a local filesystem for storing data (<code>data.json</code>) and uploads, which is not available on Vercel.
+            </p>
+        </div>
+        <p>To deploy your backend on Vercel, you must use a serverless-friendly storage solution. Vercel offers excellent, easy-to-use options:</p>
+        <ul>
+            <li><strong>Vercel KV:</strong> A serverless Redis database for your <code>database.json</code> content.</li>
+            <li><strong>Vercel Blob:</strong> A serverless object storage for your media files (images, videos).</li>
+        </ul>
+        <hr/>
+        <h4>Part 1: Prepare Your Serverless Backend</h4>
         <ol>
-            <li><strong>Get a GitHub Account:</strong> If you don't have one, sign up for a free account at <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>.</li>
-            <li><strong>Create `vercel.json`:</strong> In the <code>/server</code> directory of your project, create a new file named <code>vercel.json</code>.</li>
-            <li>Paste the following configuration into <code>vercel.json</code>. This tells Vercel how to handle the server as a function.
-                <pre><code>{`{
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
-  ]
-}`}</code></pre>
+            <li><strong>Create a Vercel Project:</strong> Create a new project on <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">Vercel</a>, connected to a new GitHub repository containing your server code. You can start with the code from <code>/server_examples/custom_api_redis</code> as a template, but you will need to adapt it for Vercel's storage.</li>
+            <li><strong>Add Vercel Storage:</strong> In your Vercel project dashboard, go to the "Storage" tab and create a new KV database and a new Blob store. Connect them to your project.</li>
+            <li>
+                <strong>Update Server Code:</strong> Modify your <code>server.js</code> to use the <code>@vercel/kv</code> and <code>@vercel/blob</code> packages instead of <code>fs</code> and <code>multer</code>. Vercel will automatically inject the necessary environment variables.
+                <pre><code>{`// Example server.js adapted for Vercel
+const { kv } = require('@vercel/kv');
+const { put } = require('@vercel/blob');
+// ... your express app setup ...
+
+// GET /data
+app.get('/data', async (req, res) => {
+  const data = await kv.get('kiosk_data');
+  if (data) res.status(200).json(data);
+  else res.status(404).send('No data found.');
+});
+
+// POST /data
+app.post('/data', async (req, res) => {
+  await kv.set('kiosk_data', req.body);
+  res.status(200).send('Data saved.');
+});
+
+// POST /upload
+app.post('/upload', async (req, res) => {
+  const fileName = req.headers['x-vercel-filename'] || 'file.bin';
+  const { url } = await put(fileName, req.body, { access: 'public' });
+  // IMPORTANT: The kiosk expects a 'filename', not a full URL.
+  // You need to return just the part Vercel Blob generates.
+  const vercelFilename = new URL(url).pathname.split('/').pop();
+  res.status(200).json({ filename: vercelFilename });
+});
+
+// GET /files/:filename
+app.get('/files/:filename', async (req, res) => {
+  const fileUrl = \`https://\${process.env.BLOB_READ_WRITE_TOKEN.split('_')[2].toLowerCase()}.public.blob.vercel-storage.com/\${req.params.filename}\`;
+  // Redirect to the public blob URL
+  res.redirect(301, fileUrl);
+});
+`}</code></pre>
+                 <p className="text-xs"><strong>Note:</strong> This is a simplified example. You will need to handle `multer`-like streaming for uploads correctly by adapting your frontend or using a Vercel-compatible library.</p>
             </li>
-            <li><strong>Push to GitHub:</strong> Upload your entire project folder (including the new `vercel.json` file) to a new repository on your GitHub account.</li>
+            <li><strong>Deploy to Vercel:</strong> Commit and push your updated server code to GitHub. Vercel will automatically deploy it.</li>
         </ol>
         <hr />
-        <h4>Part 2: Deploy on Vercel</h4>
+        <h4>Part 2: Connect the Kiosk</h4>
         <ol>
-            <li>Sign up or log in to <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer">Vercel</a> with your GitHub account.</li>
-            <li>Click "Add New..." &rarr; "Project".</li>
-            <li>Find your project repository and click "Import".</li>
-            <li><strong>CRITICAL - Configure Project Settings:</strong>
-                <ul>
-                    <li>Expand the "Environment Variables" section. Add a new variable named <code>API_KEY</code> and paste the secret key from your local <code>/server/.env</code> file as the value.</li>
-                    <li>Find the "Root Directory" setting. Click "Edit" next to it and change it from the default to <code>server</code>. This tells Vercel to look inside your `server` subfolder for the code.</li>
-                </ul>
-            </li>
-            <li>Click <strong>"Deploy"</strong> and wait for the process to finish.</li>
-        </ol>
-        <hr />
-        <h4>Part 3: Connect the Kiosk</h4>
-        <ol>
-            <li>Once deployment is complete, Vercel will give you a public URL (e.g., <code>https://your-project.vercel.app</code>).</li>
+            <li>Get your project's public URL from the Vercel dashboard.</li>
             <li>In the kiosk's Admin Panel &rarr; Storage section, click "Connect" on the "Vercel" card.</li>
-            <li>In the modal, for the URL, enter your Vercel URL. You do not need to add anything to the end.</li>
-            <li>Enter the same <code>API_KEY</code> you set in the Vercel environment variables.</li>
+            <li>In the modal, for the URL, enter your Vercel deployment URL. You do not need to add anything to the end.</li>
+            <li>Enter your custom <code>API_KEY</code> (which you should set as an Environment Variable in Vercel).</li>
             <li>Click "Test &amp; Connect".</li>
         </ol>
     </>
