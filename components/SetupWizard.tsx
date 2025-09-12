@@ -138,43 +138,57 @@ const SystemEcosystemDiagram: React.FC = () => (
 const SystemEcosystemDiagramSVG: React.FC = () => (
     <svg viewBox="0 0 550 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
-            <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
-            <linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.05)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
-            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
-            <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset in="blur" dy="4" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <marker id="eco-arrowhead-push" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-indigo-400"/></marker>
+            <marker id="eco-arrowhead-pull" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-purple-400"/></marker>
+            <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/><feOffset in="blur" dy="5" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-        
-        {/* Kiosk Node */}
-        <g transform="translate(120 140)" filter="url(#card-shadow)">
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Kiosk Device</text>
-            <foreignObject x="-90" y="-20" width="180" height="100">
-                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Offline-First Core</div>
-                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div>
-                <div className="mt-4 text-center text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1 inline-block">FAST & RELIABLE</div>
+
+        {/* Central Kiosk Device */}
+        <g transform="translate(130 140)">
+            <rect x="-90" y="-110" width="180" height="220" rx="20" className="fill-gray-100 dark:fill-gray-800" filter="url(#card-shadow)"/>
+            <foreignObject x="-80" y="-100" width="160" height="200">
+                <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
+                    <div className="relative w-20 h-20">
+                        <svg viewBox="0 0 24 24" className="w-full h-full text-indigo-500 dark:text-indigo-400"><path fill="currentColor" d="M19.5 22H4.5A2.5 2.5 0 0 1 2 19.5V4.5A2.5 2.5 0 0 1 4.5 2h15A2.5 2.5 0 0 1 22 4.5v15a2.5 2.5 0 0 1-2.5 2.5ZM4.5 3.5a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h15a1 1 0 0 0 1-1V4.5a1 1 0 0 0-1-1Z"/><path fill="currentColor" d="M12 18.5a.5.5 0 0 1-.5-.5v-12a.5.5 0 0 1 1 0v12a.5.5 0 0 1-.5.5Z"/></svg>
+                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-green-100 dark:bg-green-900 rounded-full"><CircleStackIcon className="w-5 h-5 text-green-600 dark:text-green-400"/></div>
+                    </div>
+                    <h3 className="mt-3 text-lg font-bold text-gray-800 dark:text-white section-heading">Kiosk Device</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">On-device PWA & Database</p>
+                    <div className="mt-4 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1">Instant & Always On</div>
+                </div>
             </foreignObject>
         </g>
         
-        {/* Cloud Node */}
-        <g transform="translate(430 140)" filter="url(#card-shadow)">
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
-            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
-            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Sync Provider</text>
-            <foreignObject x="-90" y="-20" width="180" height="100">
-                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Optional & Flexible</div>
-                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div>
-                <div className="mt-4 text-center text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1 inline-block">CENTRALIZED</div>
+        {/* Sync Provider */}
+        <g transform="translate(420 140)">
+             <rect x="-90" y="-110" width="180" height="220" rx="20" className="fill-gray-100 dark:fill-gray-800" filter="url(#card-shadow)"/>
+             <foreignObject x="-80" y="-100" width="160" height="200">
+                <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
+                    <div className="relative w-20 h-20">
+                        <svg viewBox="0 0 24 24" className="w-full h-full text-purple-500 dark:text-purple-400"><path fill="currentColor" d="M6.5 20q-1.875 0-3.188-1.313T2 15.5q0-1.65 1.025-2.925T5.75 11.25q.3-.825 1-1.488T8.5 9q0-2.275 1.613-3.888T14 3.5q2.9 0 4.95 2.05T21 10.5q0 .375-.025.738T20.9 11.8q1.55.3 2.575 1.575T24.5 16.5q0 1.875-1.313 3.188T20 20Z"/></svg>
+                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-blue-100 dark:bg-blue-900 rounded-full"><ServerStackIcon className="w-5 h-5 text-blue-600 dark:text-blue-400"/></div>
+                    </div>
+                    <h3 className="mt-3 text-lg font-bold text-gray-800 dark:text-white section-heading">Sync Provider</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Cloud API or Local Folder</p>
+                    <div className="mt-4 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1">Centralized & Scalable</div>
+                </div>
             </foreignObject>
         </g>
 
-        {/* Connection Arrows */}
-        <g className="text-gray-400 dark:text-gray-500">
-            <path d="M 210 110 C 250 75, 330 75, 370 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
-            <path d="M 370 170 C 330 205, 250 205, 210 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
-            <text x="290" y="70" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
-            <text x="290" y="215" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
+        {/* Animated Connection Arrows */}
+        <g>
+            <path id="push-path" d="M 220 115 C 260 80, 310 80, 350 115" fill="none" className="stroke-indigo-400/80" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#eco-arrowhead-push)"/>
+            <path id="pull-path" d="M 350 165 C 310 200, 260 200, 220 165" fill="none" className="stroke-purple-400/80" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#eco-arrowhead-pull)"/>
+            <text x="285" y="70" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
+            <text x="285" y="215" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
+            
+            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
+            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-1s" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
+            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-2s" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
+            
+            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
+            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-1.3s" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
+            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-2.6s" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
         </g>
     </svg>
 );
@@ -228,68 +242,73 @@ const ValueLoopDiagramSVG: React.FC = () => (
 );
 
 const ScenarioBoutiqueDiagram: React.FC = () => (
-    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 200 120" className="w-full h-40" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="boutique-glow-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#3b82f6" />
-            </linearGradient>
-            <filter id="boutique-glow-filter">
-                <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
-                <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-            </filter>
+            <linearGradient id="boutique-floor-grad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stopColor="#475569"/><stop offset="100%" stopColor="#334155"/></linearGradient>
+            <linearGradient id="boutique-wall-grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#1e293b"/><stop offset="100%" stopColor="#334155"/></linearGradient>
+            <linearGradient id="boutique-screen-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#3b82f6"/></linearGradient>
         </defs>
-        <path d="M25 75 V 25 C 25 10, 75 10, 75 25 V 75" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="6" strokeLinecap="round" />
-        <g filter="url(#boutique-glow-filter)">
-            <rect x="42" y="50" width="16" height="25" rx="2" fill="url(#boutique-glow-grad)" />
+        <path d="M 0 120 L 200 120 L 200 60 L 0 80 Z" fill="url(#boutique-floor-grad)" />
+        <path d="M 0 80 L 200 60 L 200 0 L 0 0 Z" fill="url(#boutique-wall-grad)" />
+        <g transform="translate(100 75)">
+            <path d="M -25 35 L -30 40 L 30 40 L 25 35 Z" fill="#475569" />
+            <path d="M -18 -40 L -25 35 L 25 35 L 18 -40 Z" fill="#1e293b" />
+            <rect x="-20" y="-45" width="40" height="65" rx="3" fill="#0f172a" />
+            <rect x="-18" y="-43" width="36" height="61" rx="2" fill="url(#boutique-screen-grad)" />
+        </g>
+        <g transform="translate(30 85)">
+          <path d="M -25 0 L 45 0 L 50 -15 L -20 -15 Z" fill="#334155" />
+          <path d="M -25 0 V -25 L -20 -40 L -20 -15 Z" fill="#475569" />
+          <path d="M -25 -25 L 45 -25 L 50 -40 L -20 -40 Z" fill="#1e293b" />
+        </g>
+         <g transform="translate(160 80)">
+          <rect x="-25" y="0" width="50" height="3" rx="1.5" fill="#475569" />
+          <rect x="-2" y="-30" width="4" height="30" fill="#475569" />
+          <rect x="-20" y="-30" width="40" height="4" rx="2" fill="#334155" />
+          <path d="M -15 -28 v 15 l 5 5 v -20 z" fill="#a78bfa" opacity="0.7"/>
+          <path d="M -5 -28 v 18 l 5 4 v -22 z" fill="#6366f1" opacity="0.7"/>
+          <path d="M 5 -28 v 16 l 5 2 v -18 z" fill="#818cf8" opacity="0.7"/>
         </g>
     </svg>
 );
 
 const ScenarioFranchiseDiagram: React.FC = () => (
-    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 200 120" className="w-full h-40" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#8b5cf6"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
+            <linearGradient id="franchise-cloud-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#6366f1"/></linearGradient>
         </defs>
-        <circle cx="50" cy="25" r="10" fill="url(#franchise-grad)"/>
-        <path d="M50 35 C 40 40, 30 50, 25 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <path d="M50 35 C 50 40, 50 50, 50 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <path d="M50 35 C 60 40, 70 50, 75 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <g className="fill-slate-400 dark:fill-slate-500">
-            <path d="M20 75 L 20 68 L 25 63 L 30 68 L 30 75 Z" />
-            <path d="M45 75 L 45 68 L 50 63 L 55 68 L 55 75 Z" />
-            <path d="M70 75 L 70 68 L 75 63 L 80 68 L 80 75 Z" />
+        <g transform="translate(100 40)">
+            <path d="M -30 0 C -50 -20, -20 -40, 0 -30 C 20 -50, 50 -30, 40 0 C 60 20, 20 30, 0 20 C -20 30, -50 20, -30 0 Z" fill="url(#franchise-cloud-grad)" />
+            <path d="M -30 0 C -50 -20, -20 -40, 0 -30 C 20 -50, 50 -30, 40 0 C 60 20, 20 30, 0 20 C -20 30, -50 20, -30 0 Z" fill="white" opacity="0.3" transform="translate(-5, 2) scale(0.6)" />
+        </g>
+        <g className="store" transform="translate(35 100)"><path d="M -20 -20 L 20 -20 L 20 20 L -20 20 Z" fill="#334155"/><path d="M -25 -10 L 25 -10 L 0 -30 Z" fill="#475569"/><rect x="-8" y="-5" width="16" height="25" fill="#1e293b"/></g>
+        <g className="store" transform="translate(100 100)"><path d="M -20 -20 L 20 -20 L 20 20 L -20 20 Z" fill="#334155"/><path d="M -25 -10 L 25 -10 L 0 -30 Z" fill="#475569"/><rect x="-8" y="-5" width="16" height="25" fill="#1e293b"/></g>
+        <g className="store" transform="translate(165 100)"><path d="M -20 -20 L 20 -20 L 20 20 L -20 20 Z" fill="#334155"/><path d="M -25 -10 L 25 -10 L 0 -30 Z" fill="#475569"/><rect x="-8" y="-5" width="16" height="25" fill="#1e293b"/></g>
+        <g fill="url(#franchise-cloud-grad)">
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 90 55 C 60 70, 45 80, 35 90" /></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 90 55 C 60 70, 45 80, 35 90" begin="-1s"/></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 90 55 C 60 70, 45 80, 35 90" begin="-2s"/></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 100 55 V 90" /></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 100 55 V 90" begin="-1s"/></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 100 55 V 90" begin="-2s"/></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 110 55 C 140 70, 155 80, 165 90" /></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 110 55 C 140 70, 155 80, 165 90" begin="-1s"/></circle>
+            <circle r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M 110 55 C 140 70, 155 80, 165 90" begin="-2s"/></circle>
         </g>
     </svg>
 );
 
 const ScenarioB2bDiagram: React.FC = () => (
-    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="b2b-phone-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#3b82f6" />
-            </linearGradient>
-            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500"/></marker>
-        </defs>
-        {/* Phone */}
-        <rect x="25" y="20" width="18" height="30" rx="3" fill="url(#b2b-phone-grad)"/>
-
-        {/* Stand */}
-        <path d="M 55 70 A 20 8 0 0 0 95 70" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
-        <path d="M 60 60 A 15 6 0 0 0 90 60" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
-        <path d="M 70 52 A 5 2 0 0 0 80 52" fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="2" />
-        <rect x="65" y="25" width="4" height="25" className="fill-slate-400 dark:stroke-slate-500"/>
-        <rect x="81" y="25" width="4" height="25" className="fill-slate-400 dark:stroke-slate-500"/>
-        
-        {/* Arrow */}
-        <path d="M45 35 C 50 35, 50 45, 60 45" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
+    <svg viewBox="0 0 200 120" className="w-full h-40" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="b2b-wall-grad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#334155"/><stop offset="100%" stopColor="#475569"/></linearGradient></defs>
+        <path d="M 10 110 L 10 10 L 190 10 L 190 110 L 170 110 L 170 30 L 30 30 L 30 110 Z" fill="url(#b2b-wall-grad)" />
+        <path d="M 10 10 L 30 30" stroke="#1e293b" strokeWidth="2" /><path d="M 190 10 L 170 30" stroke="#1e293b" strokeWidth="2" />
+        <g transform="translate(60 75)"><circle cx="0" cy="-15" r="8" fill="#a78bfa" /><path d="M -12 0 C -12 15, 12 15, 12 0 Z" fill="#818cf8"/></g>
+        <g transform="translate(110 70)"><path d="M -15 35 L -18 40 L 18 40 L 15 35 Z" fill="#475569" /><path d="M -10 -30 L -15 35 L 15 35 L 10 -30 Z" fill="#1e293b" /><rect x="-12" y="-35" width="24" height="55" rx="2" fill="#0f172a" /><rect x="-11" y="-34" width="22" height="53" rx="1.5" fill="#6366f1" /></g>
+        <g transform="translate(160 55)"><path d="M -15 -20 L 15 -20 L 15 20 L -15 20 Z" fill="#cbd5e1" rx="2" /><rect x="-10" y="-12" width="20" height="2" fill="#94a3b8" /><rect x="-10" y="-6" width="15" height="2" fill="#94a3b8" /><rect x="-10" y="0" width="20" height="2" fill="#94a3b8" /><rect x="-10" y="6" width="10" height="2" fill="#94a3b8" /></g>
+        <g fill="#a78bfa"><circle r="2.5"><animateMotion dur="2s" repeatCount="indefinite" path="M 125 50 C 135 40, 145 40, 155 50" /></g>
     </svg>
 );
-
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
     return (
@@ -327,36 +346,36 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-sm">
-                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Data is stored locally, ensuring instant response times and uninterrupted service, even during network outages.</FeatureItem>
-                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder for simple setups or a cloud API for multi-location franchises. The choice is yours.</FeatureItem>
-                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data, promotions, and settings from a single, easy-to-use admin panel and sync changes everywhere.</FeatureItem>
-                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content">Go beyond static images. Display beautiful digital catalogues, promotional pamphlets, and full-screen video ads.</FeatureItem>
-                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Customer Analytics">Gain valuable insight by tracking which products and brands are most viewed on each kiosk device.</FeatureItem>
-                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Empower your sales staff by allowing them to generate client quotes directly from the kiosk interface.</FeatureItem>
-                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Control every aspect of the look and feel, from colors and typography to layout and transition effects.</FeatureItem>
-                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Create multiple admin accounts with role-based permissions to control who can access sensitive areas.</FeatureItem>
+                                <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Engineered to run flawlessly with or without an internet connection, guaranteeing a premium user experience free from network lag or outages.</FeatureItem>
+                                <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Choose a backend that fits your scale: a simple local network folder for a single store, or a scalable cloud API to manage an entire network of franchises.</FeatureItem>
+                                <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Command your entire fleet of kiosks from one place. Update product data, launch promotions, and sync changes to all devices instantly.</FeatureItem>
+                                <FeatureItem icon={<BookOpenIcon className="w-5 h-5"/>} title="Rich Content & Media">Captivate your audience with beautiful digital catalogues, interactive pamphlets, and full-screen video ads that bring your products and brand story to life.</FeatureItem>
+                                <FeatureItem icon={<ChartBarIcon className="w-5 h-5"/>} title="Actionable Analytics">Turn passive browsing into business intelligence. Track product and brand views on each kiosk to understand in-store trends and inform inventory decisions.</FeatureItem>
+                                <FeatureItem icon={<ClipboardDocumentListIcon className="w-5 h-5"/>} title="Integrated Sales Tool">Empower your sales staff to generate detailed client quotes, check specifications, and assist customers directly from the kiosk interface.</FeatureItem>
+                                <FeatureItem icon={<PaintBrushIcon className="w-5 h-5"/>} title="Deep Customization">Tailor every pixel to your brand with deep control over colors, typography, layout, transition effects, and custom branding for a unique experience.</FeatureItem>
+                                <FeatureItem icon={<ShieldCheckIcon className="w-5 h-5"/>} title="Secure & Multi-User">Maintain security with a robust multi-user admin system. Create multiple administrator accounts with granular, role-based permissions.</FeatureItem>
                             </div>
                         </div>
                     </MotionSection>
 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
+                            <h3 className="font-bold text-2xl md:text-3xl text-gray-800 dark:text-white mb-12 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                <div className="text-center p-6 rounded-2xl bg-slate-800 border border-slate-700 flex flex-col">
                                     <ScenarioBoutiqueDiagram />
-                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">High-End Boutiques</h4>
-                                    <p className="text-sm text-gray-400 mt-2">Provide a sophisticated, interactive catalogue.</p>
+                                    <h4 className="font-bold text-lg mt-6 text-white underline decoration-indigo-400 decoration-2 underline-offset-4">High-End Boutiques & Showrooms</h4>
+                                    <p className="text-sm text-slate-400 mt-3 flex-grow">Transform your showroom into a modern, tactile gallery. The kiosk acts as a silent, expert salesperson, presenting your entire collection with stunning visuals and detailed information. It creates an 'endless aisle,' allowing customers to discover products beyond your physical inventory. This not only elevates the perception of your brand but also frees up staff to focus on personalized service and closing sales.</p>
                                 </div>
-                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                <div className="text-center p-6 rounded-2xl bg-slate-800 border border-slate-700 flex flex-col">
                                     <ScenarioFranchiseDiagram />
-                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">Multi-Location Franchises</h4>
-                                    <p className="text-sm text-gray-400 mt-2">Ensure brand consistency and manage data centrally.</p>
+                                    <h4 className="font-bold text-lg mt-6 text-white underline decoration-indigo-400 decoration-2 underline-offset-4">Multi-Location Franchises</h4>
+                                    <p className="text-sm text-slate-400 mt-3 flex-grow">Achieve unparalleled brand consistency and operational efficiency across all your locations. From a single central dashboard, deploy new products, pricing, and promotional campaigns to every kiosk instantly. Eliminate the recurring costs and logistical headaches of printing and shipping physical marketing materials, while gathering uniform, real-time analytics from every store to make data-driven decisions.</p>
                                 </div>
-                                <div className="text-center p-6 rounded-2xl bg-gray-800/50 border border-gray-700/50">
+                                <div className="text-center p-6 rounded-2xl bg-slate-800 border border-slate-700 flex flex-col">
                                     <ScenarioB2bDiagram />
-                                    <h4 className="font-bold text-base mt-4 text-white underline decoration-indigo-500 decoration-2 underline-offset-4">B2B & Trade Shows</h4>
-                                    <p className="text-sm text-gray-400 mt-2">Capture leads and generate quotes instantly.</p>
+                                    <h4 className="font-bold text-lg mt-6 text-white underline decoration-indigo-400 decoration-2 underline-offset-4">B2B & Trade Shows</h4>
+                                    <p className="text-sm text-slate-400 mt-3 flex-grow">Dominate your next trade show and streamline your B2B sales process. The kiosk becomes your interactive sales toolkit, allowing potential clients to self-serve, explore technical specs, and build custom quotes in real-time. This dynamic approach captures high-quality leads directly into your system, showcases a vast product line without costly physical samples, and leaves a lasting impression of technological sophistication.</p>
                                 </div>
                             </div>
                         </div>
