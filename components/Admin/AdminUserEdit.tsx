@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { AdminUser, AdminUserPermissions } from '../../types.ts';
@@ -105,7 +106,7 @@ const AdminUserEdit: React.FC = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], ['users', editableUser.id]);
                 setEditableUser(prev => ({ ...prev, imageUrl: fileName }));
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save image.");

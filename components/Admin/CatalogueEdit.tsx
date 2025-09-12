@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -65,7 +66,7 @@ const CatalogueEdit: React.FC = () => {
      const handleThumbnailChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], ['catalogues', formData.id]);
                 setFormData(prev => ({ ...prev, thumbnailUrl: fileName }));
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save thumbnail.");
@@ -77,7 +78,7 @@ const CatalogueEdit: React.FC = () => {
         if (e.target.files && formData.type === 'image') {
              for (const file of Array.from(e.target.files)) {
                 try {
-                    const savedPath = await saveFileToStorage(file);
+                    const savedPath = await saveFileToStorage(file, ['catalogues', formData.id, 'pages']);
                     setFormData(prev => {
                         if (prev.type !== 'image') return prev;
                         return { ...prev, imageUrls: [...prev.imageUrls, savedPath] };
@@ -134,7 +135,12 @@ const CatalogueEdit: React.FC = () => {
             </div>
         ) : (
             <>
-            <PdfImportModal isOpen={isPdfModalOpen} onClose={() => setIsPdfModalOpen(false)} onComplete={handlePdfImportComplete} />
+            <PdfImportModal 
+                isOpen={isPdfModalOpen} 
+                onClose={() => setIsPdfModalOpen(false)} 
+                onComplete={handlePdfImportComplete}
+                pathPrefixSegments={['catalogues', formData.id, 'pages']}
+            />
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
                 <div>

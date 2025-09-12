@@ -118,11 +118,11 @@ const ProductEdit: React.FC = () => {
     };
     
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        if (e.target.files && formData) {
             const files = Array.from(e.target.files);
             for (const file of files) {
                 try {
-                    const fileName = await saveFileToStorage(file);
+                    const fileName = await saveFileToStorage(file, ['products', formData.id]);
                     setFormData(prev => prev ? ({ ...prev, images: [...prev.images, fileName] }) : null);
                     markDirty();
                 } catch (error) {
@@ -133,10 +133,10 @@ const ProductEdit: React.FC = () => {
     };
     
     const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
+        if (e.target.files && e.target.files[0] && formData) {
             const file = e.target.files[0];
             try {
-                const fileName = await saveFileToStorage(file);
+                const fileName = await saveFileToStorage(file, ['products', formData.id]);
                 setFormData(prev => prev ? ({ ...prev, video: fileName }) : null);
                 markDirty();
             } catch (error) {
@@ -171,11 +171,11 @@ const ProductEdit: React.FC = () => {
     };
 
     const handleDocumentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, docId: string) => {
-        if (e.target.files) {
+        if (e.target.files && formData) {
             const files = Array.from(e.target.files);
             for (const file of files) {
                 try {
-                    const savedPath = await saveFileToStorage(file);
+                    const savedPath = await saveFileToStorage(file, ['products', formData.id, 'documents', docId]);
                     setFormData(prev => {
                         if (!prev) return null;
                         const newDocs = (prev.documents || []).map(doc => {
@@ -291,7 +291,12 @@ const ProductEdit: React.FC = () => {
             </div>
         ) : (
             <>
-                <PdfImportModal isOpen={isPdfModalOpen} onClose={() => setIsPdfModalOpen(false)} onComplete={handlePdfImportComplete} />
+                <PdfImportModal 
+                    isOpen={isPdfModalOpen} 
+                    onClose={() => setIsPdfModalOpen(false)} 
+                    onComplete={handlePdfImportComplete}
+                    pathPrefixSegments={['products', formData.id, `doc_pdf_${Date.now()}`]}
+                />
                 {formData && brand && (
                     <DescriptionAssistantModal
                         isOpen={isDescriptionModalOpen}

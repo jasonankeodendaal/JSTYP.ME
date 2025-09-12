@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -83,7 +84,7 @@ const AdEdit: React.FC = () => {
             for (const file of files) {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'video';
                 try {
-                    const fileName = await saveFileToStorage(file);
+                    const fileName = await saveFileToStorage(file, ['ads', formData.id]);
                     setFormData(prev => ({
                         ...prev,
                         media: [...prev.media, { url: fileName, type: fileType }]

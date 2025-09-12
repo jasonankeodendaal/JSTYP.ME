@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-// FIX: Correct 'framer-motion' import for Variants type.
+// FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
-import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, UsersIcon, FtpIcon } from './Icons.tsx';
+// FIX: Add UserCircleIcon to imports to fix missing component error.
+import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UsersIcon, FtpIcon, UserCircleIcon } from './Icons.tsx';
 // FIX: Consolidate react-router-dom import.
 import { useNavigate } from 'react-router-dom';
 import SetupInstruction from './Admin/SetupInstruction.tsx';
@@ -139,57 +140,43 @@ const SystemEcosystemDiagram: React.FC = () => (
 const SystemEcosystemDiagramSVG: React.FC = () => (
     <svg viewBox="0 0 550 280" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <marker id="eco-arrowhead-push" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-indigo-400"/></marker>
-            <marker id="eco-arrowhead-pull" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-purple-400"/></marker>
-            <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/><feOffset in="blur" dy="5" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
+            <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
+            <linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.05)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
+            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
+            <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset in="blur" dy="4" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-
-        {/* Central Kiosk Device */}
-        <g transform="translate(130 140)">
-            <rect x="-90" y="-110" width="180" height="220" rx="20" className="fill-gray-100 dark:fill-gray-800" filter="url(#card-shadow)"/>
-            <foreignObject x="-80" y="-100" width="160" height="200">
-                <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
-                    <div className="relative w-20 h-20">
-                        <svg viewBox="0 0 24 24" className="w-full h-full text-indigo-500 dark:text-indigo-400"><path fill="currentColor" d="M19.5 22H4.5A2.5 2.5 0 0 1 2 19.5V4.5A2.5 2.5 0 0 1 4.5 2h15A2.5 2.5 0 0 1 22 4.5v15a2.5 2.5 0 0 1-2.5 2.5ZM4.5 3.5a1 1 0 0 0-1 1v15a1 1 0 0 0 1 1h15a1 1 0 0 0 1-1V4.5a1 1 0 0 0-1-1Z"/><path fill="currentColor" d="M12 18.5a.5.5 0 0 1-.5-.5v-12a.5.5 0 0 1 1 0v12a.5.5 0 0 1-.5.5Z"/></svg>
-                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-green-100 dark:bg-green-900 rounded-full"><CircleStackIcon className="w-5 h-5 text-green-600 dark:text-green-400"/></div>
-                    </div>
-                    <h3 className="mt-3 text-lg font-bold text-gray-800 dark:text-white section-heading">Kiosk Device</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">On-device PWA & Database</p>
-                    <div className="mt-4 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1">Instant & Always On</div>
-                </div>
+        
+        {/* Kiosk Node */}
+        <g transform="translate(120 140)" filter="url(#card-shadow)">
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Kiosk Device</text>
+            <foreignObject x="-90" y="-20" width="180" height="100">
+                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Offline-First Core</div>
+                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">React UI + Local Database for speed and reliability.</div>
+                <div className="mt-4 text-center text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1 inline-block">FAST & RELIABLE</div>
             </foreignObject>
         </g>
         
-        {/* Sync Provider */}
-        <g transform="translate(420 140)">
-             <rect x="-90" y="-110" width="180" height="220" rx="20" className="fill-gray-100 dark:fill-gray-800" filter="url(#card-shadow)"/>
-             <foreignObject x="-80" y="-100" width="160" height="200">
-                <div className="w-full h-full flex flex-col items-center justify-center text-center p-4">
-                    <div className="relative w-20 h-20">
-                        <svg viewBox="0 0 24 24" className="w-full h-full text-purple-500 dark:text-purple-400"><path fill="currentColor" d="M6.5 20q-1.875 0-3.188-1.313T2 15.5q0-1.65 1.025-2.925T5.75 11.25q.3-.825 1-1.488T8.5 9q0-2.275 1.613-3.888T14 3.5q2.9 0 4.95 2.05T21 10.5q0 .375-.025.738T20.9 11.8q1.55.3 2.575 1.575T24.5 16.5q0 1.875-1.313 3.188T20 20Z"/></svg>
-                        <div className="absolute -bottom-2 -right-2 p-1.5 bg-blue-100 dark:bg-blue-900 rounded-full"><ServerStackIcon className="w-5 h-5 text-blue-600 dark:text-blue-400"/></div>
-                    </div>
-                    <h3 className="mt-3 text-lg font-bold text-gray-800 dark:text-white section-heading">Sync Provider</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Cloud API or Local Folder</p>
-                    <div className="mt-4 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1">Centralized & Scalable</div>
-                </div>
+        {/* Cloud Node */}
+        <g transform="translate(430 140)" filter="url(#card-shadow)">
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
+            <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
+            <text x="0" y="-55" textAnchor="middle" className="text-xl font-bold fill-gray-800 dark:fill-gray-100 section-heading" style={{ transform: 'translateY(25px)' }}>Sync Provider</text>
+            <foreignObject x="-90" y="-20" width="180" height="100">
+                <div className="text-center text-sm text-gray-700 dark:text-gray-300 font-semibold">Optional & Flexible</div>
+                <div className="text-center text-xs text-gray-500 dark:text-gray-400 mt-1">Cloud API or a Local/Network folder for data sync.</div>
+                <div className="mt-4 text-center text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1 inline-block">CENTRALIZED</div>
             </foreignObject>
         </g>
 
-        {/* Animated Connection Arrows */}
-        <g>
-            <path id="push-path" d="M 220 115 C 260 80, 310 80, 350 115" fill="none" className="stroke-indigo-400/80" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#eco-arrowhead-push)"/>
-            <path id="pull-path" d="M 350 165 C 310 200, 260 200, 220 165" fill="none" className="stroke-purple-400/80" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#eco-arrowhead-pull)"/>
-            <text x="285" y="70" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
-            <text x="285" y="215" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
-            
-            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
-            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-1s" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
-            <circle r="3" className="fill-indigo-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-2s" rotate="auto"><mpath href="#push-path"/></animateMotion></circle>
-            
-            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
-            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-1.3s" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
-            <circle r="3" className="fill-purple-400"><animateMotion dur="4s" repeatCount="indefinite" begin="-2.6s" rotate="auto"><mpath href="#pull-path"/></animateMotion></circle>
+        {/* Connection Arrows */}
+        <g className="text-gray-400 dark:text-gray-500">
+            <path d="M 210 110 C 250 75, 330 75, 370 110" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <path d="M 370 170 C 330 205, 250 205, 210 170" fill="none" className="stroke-current" strokeWidth="1.5" markerEnd="url(#eco-arrowhead)" strokeDasharray="4 4"/>
+            <text x="290" y="70" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
+            <text x="290" y="215" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
         </g>
     </svg>
 );
@@ -242,73 +229,139 @@ const ValueLoopDiagramSVG: React.FC = () => (
     </svg>
 );
 
-const ScenarioBoutiqueDiagram: React.FC = () => (
-    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 75 L 95 75 L 95 65 L 5 65 Z" fill="#d1d5db" className="dark:fill-slate-700" />
-        <path d="M10 65 L 90 65 L 85 20 L 15 20 Z" fill="#e5e7eb" className="dark:fill-slate-600" />
-        <rect x="25" y="25" width="50" height="40" fill="#f3f4f6" className="dark:fill-slate-500" rx="2"/>
-        <g className="fill-slate-400 dark:fill-slate-400/50">
-            <rect x="28" y="28" width="12" height="8" rx="1" />
-            <rect x="42" y="28" width="12" height="8" rx="1" />
-            <rect x="56" y="28" width="12" height="8" rx="1" />
-            <rect x="28" y="38" width="12" height="8" rx="1" />
-        </g>
-        <g transform="translate(42 42)">
-            <rect x="0" y="15" width="16" height="3" rx="1" fill="#4b5563" className="dark:fill-slate-800" />
-            <path d="M 3 0 L 13 0 L 13 15 L 3 15 Z" fill="#9ca3af" className="dark:fill-slate-500" />
-            <rect x="4" y="1" width="10" height="11" fill="#6366f1"/>
-        </g>
-    </svg>
-);
-
-const ScenarioFranchiseDiagram: React.FC = () => (
+const AnimatedBoutiqueIcon = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <path id="store-path" d="M -10 -8 L 10 -8 L 10 8 L -10 8 Z M -12 -8 L 12 -8 L 0 -15 Z" />
-            <radialGradient id="franchise-cloud-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#6366f1" />
+            <radialGradient id="spotlight-grad" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="rgba(251, 237, 188, 0.4)" />
+                <stop offset="100%" stopColor="rgba(251, 237, 188, 0)" />
+            </radialGradient>
+            <linearGradient id="gem-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#c4b5fd" />
+                <stop offset="50%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+            <filter id="gem-glow">
+                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+        </defs>
+        <motion.path
+            d="M 35 0 L 65 0 L 75 50 L 25 50 Z"
+            fill="url(#spotlight-grad)"
+            animate={{ opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <path d="M 30 75 L 70 75 L 75 65 L 25 65 Z" fill="#334155" />
+        <rect x="35" y="55" width="30" height="10" rx="2" fill="#475569" />
+        <g transform="translate(50, 45)" filter="url(#gem-glow)">
+            <motion.path
+                d="M 0 -10 L 10 0 L 0 10 L -10 0 Z"
+                fill="url(#gem-grad)"
+                stroke="#d1c4e9"
+                strokeWidth="1"
+                animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <motion.path
+                d="M -3 -3 L 3 3 M 3 -3 L -3 3"
+                stroke="white"
+                strokeWidth="1"
+                strokeLinecap="round"
+                animate={{ scale: [0, 1, 0], rotate: [0, 45, 90], opacity: [0, 1, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+            />
+        </g>
+    </svg>
+);
+
+const AnimatedFranchiseIcon = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <radialGradient id="cloud-glow" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="rgba(34, 211, 238, 0.6)" />
+                <stop offset="100%" stopColor="rgba(34, 211, 238, 0)" />
             </radialGradient>
         </defs>
-        <path d="M50 25 C 30 40, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-        <path d="M50 25 C 70 40, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-        
-        <circle cx="50" cy="25" r="15" fill="url(#franchise-cloud-grad)" />
-        <path d="M 45 23 L 55 23 L 55 27 L 45 27 Z M 48 27 L 52 27 L 50 31 Z" className="fill-white/80"><animateTransform attributeName="transform" type="translate" values="0 0; 0 -4; 0 0" dur="2s" repeatCount="indefinite" /></path>
-        
-        <g transform="translate(25 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
-        <g transform="translate(50 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
-        <g transform="translate(75 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
+        <g transform="translate(50, 25)">
+            <motion.path
+                d="M -20 0 a 10 10 0 0 1 0 -20 a 12 12 0 0 1 20 -2 a 8 8 0 0 1 15 5 a 10 10 0 0 1 0 17 z"
+                fill="#0e7490"
+                stroke="#67e8f9"
+                strokeWidth="1.5"
+                animate={{ scale: [1, 1.03, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <circle cx="0" cy="-5" r="20" fill="url(#cloud-glow)" />
+        </g>
+        <g className="fill-slate-300 dark:fill-slate-600" stroke="#475569" strokeWidth="1">
+            <path d="M 15 75 l 0 -10 l 10 0 l 0 10 l -10 0 M 10 65 l 10 -5 l 10 5" />
+            <path d="M 45 75 l 0 -10 l 10 0 l 0 10 l -10 0 M 40 65 l 10 -5 l 10 5" />
+            <path d="M 75 75 l 0 -10 l 10 0 l 0 10 l -10 0 M 70 65 l 10 -5 l 10 5" />
+        </g>
+        <g fill="#22d3ee">
+            {[0, 1, 2].map(i => (
+                <motion.circle key={`packet-1-${i}`} r="2">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 50 35 C 40 45, 30 50, 25 60" begin={`${i * 0.8}s`} />
+                </motion.circle>
+            ))}
+            {[0, 1, 2].map(i => (
+                <motion.circle key={`packet-2-${i}`} r="2">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 50 35 C 50 45, 50 50, 50 60" begin={`${0.3 + i * 0.8}s`} />
+                </motion.circle>
+            ))}
+            {[0, 1, 2].map(i => (
+                <motion.circle key={`packet-3-${i}`} r="2">
+                    <animateMotion dur="2.5s" repeatCount="indefinite" path="M 50 35 C 60 45, 70 50, 75 60" begin={`${0.6 + i * 0.8}s`} />
+                </motion.circle>
+            ))}
+        </g>
     </svg>
 );
 
-const ScenarioB2bDiagram: React.FC = () => (
+const AnimatedB2bIcon = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-         <defs>
-            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500"/></marker>
+        <defs>
+            <linearGradient id="screen-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#1e3a8a" />
+                <stop offset="100%" stopColor="#1e40af" />
+            </linearGradient>
         </defs>
-        <g transform="translate(18 52)">
-            <circle cx="0" cy="-7" r="4" className="fill-slate-400 dark:fill-slate-500"/>
-            <path d="M -8 0 L 8 0 L 5 18 L -5 18 Z" className="fill-slate-400 dark:fill-slate-500"/>
+        <path d="M 10 75 L 90 75 L 85 20 L 15 20 Z" fill="#334155" />
+        <rect x="5" y="75" width="90" height="5" rx="2" fill="#475569" />
+        <rect x="20" y="25" width="60" height="45" rx="3" fill="url(#screen-grad)" stroke="#3b82f6" strokeWidth="1.5" />
+        <motion.path
+            d="M 25 60 q 10 -20 20 0 t 20 5"
+            fill="none"
+            stroke="#34d399"
+            strokeWidth="2"
+            strokeDasharray="100"
+            initial={{ strokeDashoffset: 100 }}
+            animate={{ strokeDashoffset: 0 }}
+            transition={{ duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+        />
+        <g fill="#fb923c">
+            <motion.rect x="70" y="65" width="5" height="5" rx="1"
+                initial={{ y: 65, height: 5 }}
+                animate={{ y: [65, 55, 65], height: [5, 15, 5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            />
+            <motion.rect x="70" y="65" width="5" height="5" rx="1" transform="translate(-8, 0)"
+                initial={{ y: 65, height: 5 }}
+                animate={{ y: [65, 50, 65], height: [5, 20, 5] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            />
         </g>
-        <g transform="translate(46 45)">
-            <path d="M-12 25 L -14 30 L 14 30 L 12 25 Z" fill="#475569" />
-            <path d="M-8 -20 L -12 25 L 12 25 L 8 -20 Z" fill="#1e293b" />
-            <rect x="-10" y="-22" width="20" height="42" rx="2" fill="#0f172a" />
-            <rect x="-9" y="-21" width="18" height="40" rx="1.5" fill="#6366f1" />
-            <rect x="-6" y="-18" width="12" height="3" rx="1" fill="#a78bfa"/>
-            <rect x="-6" y="-13" width="8" height="3" rx="1" fill="#a78bfa"/>
-        </g>
-        <path d="M60 48 C 68 48, 68 32, 78 32" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
-        <g transform="translate(80 20)">
-            <path d="M-10 -12 L 10 -12 L 10 12 L -10 12 Z" fill="#cbd5e1" className="dark:fill-slate-600" rx="2"/>
-            <rect x="-7" y="-8" width="14" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
-            <rect x="-7" y="-4" width="10" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
-            <rect x="-7" y="0" width="14" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
-        </g>
+        <motion.g
+            initial={{ x: 50, y: 50, opacity: 0, scale: 0.5 }}
+            animate={{ x: [50, 75, 75], y: [50, 15, 15], opacity: [0, 1, 0], scale: [0.5, 1, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "circOut", delay: 1 }}
+        >
+            <rect x="0" y="0" width="18" height="22" rx="2" fill="#f0f9ff" stroke="#60a5fa" strokeWidth="1" />
+            <path d="M 3 5 h 12 M 3 9 h 12 M 3 13 h 8" stroke="#93c5fd" strokeWidth="1" strokeLinecap="round" />
+        </motion.g>
     </svg>
 );
-
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
     return (
@@ -362,9 +415,27 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-2xl md:text-3xl text-gray-800 dark:text-white mb-12 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-xs text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
+                                    <AnimatedBoutiqueIcon />
+                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">High-End Boutiques</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
+                                        Create an unforgettable luxury experience. Allow clients to discover your entire collection on a stunning, interactive display that mirrors the quality of your brand. Go beyond the physical showcase, telling the rich story behind each piece with high-resolution imagery and detailed narratives. It's a silent, sophisticated salesperson that enhances prestige.
+                                    </p>
+                                </div>
+                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
+                                    <AnimatedFranchiseIcon />
+                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">Multi-Location Franchises</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
+                                        Achieve flawless brand consistency and operational agility. From a single admin panel, deploy product updates, price changes, and promotional campaigns instantly to every kiosk across all your locations. Eliminate outdated print materials and empower each store with the latest information, while tracking performance with aggregated analytics.
+                                    </p>
+                                </div>
+                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
+                                    <AnimatedB2bIcon />
+                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">B2B & Trade Shows</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
+                                        Transform your booth into a dynamic lead-generation hub. Ditch cumbersome paper catalogues and empower your sales team with an interactive digital showcase. Effortlessly demonstrate complex products, customize configurations in real-time, and instantly generate and email detailed quotes to capture high-value leads on the spot.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </MotionSection>

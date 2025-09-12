@@ -1,3 +1,4 @@
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -43,7 +44,12 @@ app.use('/files', express.static(uploadsDir)); // Serve uploaded files staticall
 // Multer storage config for general file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadsDir);
+        const relativePath = req.header('x-upload-path') || '';
+        // Basic sanitization to prevent path traversal
+        const safeRelativePath = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, '');
+        const finalPath = path.join(uploadsDir, safeRelativePath);
+        fs.mkdirSync(finalPath, { recursive: true }); // Ensure directory exists
+        cb(null, finalPath);
     },
     filename: (req, file, cb) => {
         // To prevent filename conflicts and special character issues
@@ -143,8 +149,9 @@ app.post('/upload', upload.single('file'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file provided.' });
     }
-    // Return the generated filename so the client can reference it
-    res.status(200).json({ filename: req.file.filename });
+    // Return the relative path from the uploads directory, using forward slashes for consistency
+    const relativePath = path.relative(uploadsDir, req.file.path).replace(/\\/g, '/');
+    res.status(200).json({ filename: relativePath });
 });
 
 // POST /upload-project - Upload the project.zip file

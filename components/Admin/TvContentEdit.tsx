@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import type { TvContent } from '../../types';
@@ -58,7 +59,7 @@ const TvContentEdit: React.FC = () => {
             for (const file of Array.from(e.target.files)) {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'video';
                 try {
-                    const fileName = await saveFileToStorage(file);
+                    const fileName = await saveFileToStorage(file, ['tv', formData.id]);
                     setFormData(prev => ({ ...prev, media: [...prev.media, { url: fileName, type: fileType }] }));
                 } catch (error) {
                     alert(error instanceof Error ? error.message : "Failed to save media file.");

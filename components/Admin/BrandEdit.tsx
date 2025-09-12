@@ -73,7 +73,7 @@ const BrandEdit: React.FC = () => {
     const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
-                const fileName = await saveFileToStorage(e.target.files[0]);
+                const fileName = await saveFileToStorage(e.target.files[0], ['brands', formData.id]);
                 setFormData(prev => ({ ...prev, logoUrl: fileName }));
             } catch (error) {
                 alert(error instanceof Error ? error.message : "Failed to save file.");

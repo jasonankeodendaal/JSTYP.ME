@@ -1,3 +1,4 @@
+
 /// <reference path="../../swiper.d.ts" />
 
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
@@ -180,7 +181,7 @@ interface AppContextType {
   disconnectFromStorage: () => void;
   reconnectLastProvider: () => Promise<{ success: boolean; message: string; }>;
   clearLastConnectedProvider: () => void;
-  saveFileToStorage: (file: File) => Promise<string>;
+  saveFileToStorage: (file: File, pathSegments: string[]) => Promise<string>;
   getFileUrl: (fileName: string) => Promise<string>;
   syncStatus: SyncStatus;
   saveDatabaseToLocal: () => Promise<boolean>;
@@ -797,17 +798,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, message: 'No sync provider is configured in Settings.' };
     };
 
-    const saveFileToStorage = useCallback(async (file: File): Promise<string> => {
+    const saveFileToStorage = useCallback(async (file: File, pathSegments: string[]): Promise<string> => {
+        const relativePath = pathSegments.join('/');
+        
         if (storageProvider === 'local' && directoryHandle) {
             try {
-                const assetsDir = await directoryHandle.getDirectoryHandle('assets', { create: true });
+                let currentHandle = await directoryHandle.getDirectoryHandle('assets', { create: true });
+                for (const segment of pathSegments) {
+                    currentHandle = await currentHandle.getDirectoryHandle(segment, { create: true });
+                }
                 const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
                 const fileName = `${Date.now()}-${safeName}`;
-                const fileHandle = await assetsDir.getFileHandle(fileName, { create: true });
+                const fileHandle = await currentHandle.getFileHandle(fileName, { create: true });
                 const writable = await fileHandle.createWritable();
                 await writable.write(file);
                 await writable.close();
-                return fileName;
+                return `${relativePath}/${fileName}`;
             } catch (error) {
                 console.error('Error saving file to local directory:', error);
                 throw new Error('Failed to save file to local directory.');
@@ -828,12 +834,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             formData.append('file', file);
             const response = await fetch(uploadUrl.toString(), {
                 method: 'POST',
-                headers: { 'x-api-key': settings.customApiKey },
+                headers: { 'x-api-key': settings.customApiKey, 'x-upload-path': relativePath },
                 body: formData,
             });
             if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
             const result = await response.json();
-            return result.filename;
+            return result.filename; // Server returns the full relative path
         }
         
         return fileToBase64(file);
@@ -888,20 +894,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
     }, [addActivityLog]);
 
-    const getFileUrl = useCallback(async (fileName: string): Promise<string> => {
-        if (!fileName || fileName.startsWith('http') || fileName.startsWith('data:')) {
-            return fileName || '';
+    const getFileUrl = useCallback(async (filePath: string): Promise<string> => {
+        if (!filePath || filePath.startsWith('http') || filePath.startsWith('data:')) {
+            return filePath || '';
         }
         
         if (storageProvider === 'local' && directoryHandle) {
             try {
-                // For project.zip, check the root. For others, check assets.
-                const dir = fileName === 'project.zip' ? directoryHandle : await directoryHandle.getDirectoryHandle('assets');
-                const fileHandle = await dir.getFileHandle(fileName);
+                const pathSegments = filePath.split('/').filter(p => p);
+                const fileName = pathSegments.pop();
+                if (!fileName) return '';
+
+                let currentHandle = await directoryHandle.getDirectoryHandle('assets');
+                for (const segment of pathSegments) {
+                    currentHandle = await currentHandle.getDirectoryHandle(segment);
+                }
+                const fileHandle = await currentHandle.getFileHandle(fileName);
                 const file = await fileHandle.getFile();
                 return URL.createObjectURL(file);
             } catch (error) {
-                console.error(`Could not get file "${fileName}" from local storage:`, error);
+                console.error(`Could not get file "${filePath}" from local storage:`, error);
                 return '';
             }
         }
@@ -912,21 +924,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (isCustomApi || isSharedUrlApi) {
             try {
                 const baseUrlString = isCustomApi ? settings.customApiUrl : settings.sharedUrl;
-                if (!baseUrlString) return fileName;
+                if (!baseUrlString) return filePath;
     
                 const baseUrl = new URL(baseUrlString);
-                // For project.zip, it's served from /files/project.zip.
-                const filePath = fileName === 'project.zip' || fileName === 'kiosk-app.apk' ? `/files/${fileName}` : `/files/${fileName}`;
-                const fileUrl = new URL(filePath, baseUrl.origin);
+                const finalUrl = new URL(`/files/${filePath}`, baseUrl.origin);
                 
-                return fileUrl.toString();
+                return finalUrl.toString();
             } catch (error) {
                 console.error("Error constructing file URL:", error);
-                return fileName;
+                return filePath;
             }
         }
         
-        return fileName;
+        return filePath;
     }, [storageProvider, directoryHandle, settings]);
     
     useEffect(() => {
@@ -1188,8 +1198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const backupData: BackupData = { brands, products, catalogues, pamphlets, settings: updatedSettings, screensaverAds, adminUsers, tvContent, categories, clients, quotes, viewCounts, activityLogs };
             zip.file('database.json', JSON.stringify(backupData, null, 2));
             setBackupProgress({ message: 'Database backed up.', percent: 10 });
-            const assetsFolder = zip.folder('assets');
-            if (!assetsFolder) throw new Error("Could not create assets folder in zip.");
+            
             const allAssetPaths = new Set<string>();
             const addAsset = (url?: string) => url && !url.startsWith('http') && !url.startsWith('data:') && allAssetPaths.add(url);
             
@@ -1209,7 +1218,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     const url = await getFileUrl(path);
                     const response = await fetch(url);
                     const blob = await response.blob();
-                    assetsFolder.file(path, blob);
+                    // Create nested structure in zip
+                    zip.file(`assets/${path}`, blob);
                     const percent = 10 + Math.round(((i + 1) / assetPathsArray.length) * 85);
                     setBackupProgress({ message: `Backing up asset: ${path}`, percent });
                 } catch (e) { console.warn(`Could not back up asset ${path}:`, e); }
@@ -1250,7 +1260,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     try {
                         const blob = await assetFile.async('blob');
                         const file = new File([blob], assetFile.name);
-                        await saveFileToStorage(file);
+                        const pathSegments = assetFile.name.split('/').slice(0, -1);
+                        await saveFileToStorage(file, pathSegments);
                         uploadedCount++;
                         const percent = 5 + Math.round((uploadedCount / assetFiles.length) * 90);
                         setBackupProgress({ message: `Restoring asset: ${assetFile.name}`, percent });
