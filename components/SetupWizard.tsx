@@ -244,62 +244,71 @@ const ValueLoopDiagramSVG: React.FC = () => (
 
 const ScenarioBoutiqueDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="boutique-glow-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#3b82f6" />
-            </linearGradient>
-            <filter id="boutique-glow-filter">
-                <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
-                <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-            </filter>
-        </defs>
-        <path d="M25 75 V 25 C 25 10, 75 10, 75 25 V 75" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="6" strokeLinecap="round" />
-        <g filter="url(#boutique-glow-filter)">
-            <rect x="42" y="50" width="16" height="25" rx="2" fill="url(#boutique-glow-grad)" />
+        <path d="M5 75 L 95 75 L 95 65 L 5 65 Z" fill="#d1d5db" className="dark:fill-slate-700" />
+        <path d="M10 65 L 90 65 L 85 20 L 15 20 Z" fill="#e5e7eb" className="dark:fill-slate-600" />
+        <rect x="25" y="25" width="50" height="40" fill="#f3f4f6" className="dark:fill-slate-500" rx="2"/>
+        <g className="fill-slate-400 dark:fill-slate-400/50">
+            <rect x="28" y="28" width="12" height="8" rx="1" />
+            <rect x="42" y="28" width="12" height="8" rx="1" />
+            <rect x="56" y="28" width="12" height="8" rx="1" />
+            <rect x="28" y="38" width="12" height="8" rx="1" />
+        </g>
+        <g transform="translate(42 42)">
+            <rect x="0" y="15" width="16" height="3" rx="1" fill="#4b5563" className="dark:fill-slate-800" />
+            <path d="M 3 0 L 13 0 L 13 15 L 3 15 Z" fill="#9ca3af" className="dark:fill-slate-500" />
+            <rect x="4" y="1" width="10" height="11" fill="#6366f1"/>
         </g>
     </svg>
 );
 
-const ScenarioFranchiseDiagram: React.FC = () => {
-    const storeIcon = <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" />;
-    const iconStyle = "fill-none text-slate-500 dark:text-slate-400";
-    
-    return (
-        <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="franchise-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-            </defs>
-            <path d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <circle cx="50" cy="25" r="12" fill="url(#franchise-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
-            <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
-            
-            <g transform="translate(18, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(42.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(67.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-        </svg>
-    );
-};
+const ScenarioFranchiseDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <path id="store-path" d="M -10 -8 L 10 -8 L 10 8 L -10 8 Z M -12 -8 L 12 -8 L 0 -15 Z" />
+            <radialGradient id="franchise-cloud-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#6366f1" />
+            </radialGradient>
+        </defs>
+        <path d="M50 25 C 30 40, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+        <path d="M50 25 C 70 40, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
+        
+        <circle cx="50" cy="25" r="15" fill="url(#franchise-cloud-grad)" />
+        <path d="M 45 23 L 55 23 L 55 27 L 45 27 Z M 48 27 L 52 27 L 50 31 Z" className="fill-white/80"><animateTransform attributeName="transform" type="translate" values="0 0; 0 -4; 0 0" dur="2s" repeatCount="indefinite" /></path>
+        
+        <g transform="translate(25 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
+        <g transform="translate(50 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
+        <g transform="translate(75 65)" className="fill-slate-400 dark:fill-slate-500"><use href="#store-path"/></g>
+    </svg>
+);
 
 const ScenarioB2bDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
-                <path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500" />
-            </marker>
+         <defs>
+            <marker id="b2b-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-slate-400 dark:fill-slate-500"/></marker>
         </defs>
-        <UserCircleIcon x="15" y="45" className="w-10 h-10 text-slate-400 dark:text-slate-500"/>
-        <rect x="42" y="30" width="16" height="25" rx="2" className="fill-indigo-500" />
-        <rect x="43" y="32" width="14" height="18" rx="1" className="fill-purple-300" />
-        <path d="M58 42 C 68 42, 68 32, 78 32" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
-        <ClipboardDocumentListIcon x="75" y="15" className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
+        <g transform="translate(18 52)">
+            <circle cx="0" cy="-7" r="4" className="fill-slate-400 dark:fill-slate-500"/>
+            <path d="M -8 0 L 8 0 L 5 18 L -5 18 Z" className="fill-slate-400 dark:fill-slate-500"/>
+        </g>
+        <g transform="translate(46 45)">
+            <path d="M-12 25 L -14 30 L 14 30 L 12 25 Z" fill="#475569" />
+            <path d="M-8 -20 L -12 25 L 12 25 L 8 -20 Z" fill="#1e293b" />
+            <rect x="-10" y="-22" width="20" height="42" rx="2" fill="#0f172a" />
+            <rect x="-9" y="-21" width="18" height="40" rx="1.5" fill="#6366f1" />
+            <rect x="-6" y="-18" width="12" height="3" rx="1" fill="#a78bfa"/>
+            <rect x="-6" y="-13" width="8" height="3" rx="1" fill="#a78bfa"/>
+        </g>
+        <path d="M60 48 C 68 48, 68 32, 78 32" strokeWidth="1.5" className="stroke-slate-400 dark:stroke-slate-500" fill="none" strokeDasharray="2 2" markerEnd="url(#b2b-arrow)"/>
+        <g transform="translate(80 20)">
+            <path d="M-10 -12 L 10 -12 L 10 12 L -10 12 Z" fill="#cbd5e1" className="dark:fill-slate-600" rx="2"/>
+            <rect x="-7" y="-8" width="14" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
+            <rect x="-7" y="-4" width="10" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
+            <rect x="-7" y="0" width="14" height="2" fill="#94a3b8" className="dark:fill-slate-400"/>
+        </g>
     </svg>
 );
+
 
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
     return (
