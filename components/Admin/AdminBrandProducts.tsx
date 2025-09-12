@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState, useCallback } from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -296,5 +294,3 @@ const AdminBrandProducts: React.FC = () => {
         </div>
     );
 };
-
-export default AdminBrandProducts;

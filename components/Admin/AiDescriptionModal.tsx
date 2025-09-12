@@ -43,6 +43,7 @@ const DescriptionAssistantModal: React.FC<DescriptionAssistantModalProps> = ({
         setGeneratedDescription('');
 
         try {
+            // FIX: Use new GoogleGenAI class and initialization
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             
             const specsString = specifications
@@ -61,13 +62,13 @@ const DescriptionAssistantModal: React.FC<DescriptionAssistantModalProps> = ({
                 ${specsString ? `- Key Specifications: ${specsString}` : ''}
             `;
 
-            // FIX: Add GenerateContentResponse type annotation
+            // FIX: Use new generateContent method and add response type
             const response: GenerateContentResponse = await ai.models.generateContent({
               model: 'gemini-2.5-flash',
               contents: prompt,
             });
             
-            // FIX: Correctly access the 'text' property on the response object.
+            // FIX: Access response text directly from 'text' property.
             const text = response.text;
             setGeneratedDescription(text || '');
 

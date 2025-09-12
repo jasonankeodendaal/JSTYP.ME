@@ -1,8 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Catalogue } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -139,7 +136,7 @@ const CatalogueEdit: React.FC = () => {
                 isOpen={isPdfModalOpen} 
                 onClose={() => setIsPdfModalOpen(false)} 
                 onComplete={handlePdfImportComplete}
-                pathPrefixSegments={['catalogues', formData.id, 'pages']}
+                pathPrefixSegments={['catalogues', formData.id, `pdf_import_${Date.now()}`]}
             />
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}

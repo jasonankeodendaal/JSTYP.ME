@@ -14,15 +14,16 @@ interface PdfImportModalProps {
     isOpen: boolean;
     onClose: () => void;
     onComplete: (imagePaths: string[]) => void;
+    pathPrefixSegments: string[];
 }
 
 const MotionDiv = motion.div as any;
 
 // Set the worker source once for all PDF operations in this module.
 // FIX: Align workerSrc version with main package and use modern .mjs worker.
-GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^5.4.149/build/pdf.worker.mjs`;
+GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.4.178/build/pdf.worker.mjs`;
 
-const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete }) => {
+const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComplete, pathPrefixSegments }) => {
     const { saveFileToStorage } = useAppContext();
     const [file, setFile] = useState<File | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -154,7 +155,8 @@ const PdfImportModal: React.FC<PdfImportModalProps> = ({ isOpen, onClose, onComp
                 const fileName = `${file!.name.replace('.pdf', '')}_page_${pageNum}.png`;
                 const imageFile = await dataUrlToFile(dataUrl, fileName);
 
-                const savedPath = await saveFileToStorage(imageFile);
+                // FIX: Added the missing 'pathPrefixSegments' argument to the saveFileToStorage call.
+                const savedPath = await saveFileToStorage(imageFile, pathPrefixSegments);
                 savedPaths.push(savedPath);
             }
             

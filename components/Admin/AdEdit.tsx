@@ -1,8 +1,6 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { ScreensaverAd, AdLink } from '../../types.ts';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -157,9 +155,8 @@ const AdEdit: React.FC = () => {
                     <div className="md:flex md:items-center md:justify-between">
                         <div className="flex-1 min-w-0">
                             <h2 className="text-3xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate">
-                                {isEditing ? 'Edit Screensaver Ad' : 'Create New Screensaver Ad'}
+                                {isEditing ? 'Edit Ad' : 'Create New Ad'}
                             </h2>
-                            {isEditing && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Editing "{formData.title}"</p>}
                         </div>
                         <div className="mt-4 flex md:mt-0 md:ml-4">
                             <button
@@ -168,56 +165,58 @@ const AdEdit: React.FC = () => {
                                 className={`btn btn-primary ${saved ? 'bg-green-600 hover:bg-green-600' : ''}`}
                             >
                                 <SaveIcon className="h-4 w-4" />
-                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save Changes')}
+                                {saving ? 'Saving...' : (saved ? 'Saved!' : 'Save Ad')}
                             </button>
                         </div>
                     </div>
                 </div>
-
                 {/* Form Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="col-span-1 lg:col-span-2 space-y-6">
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Ad Details</h3>
-                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
-                                <div className="col-span-1 sm:col-span-2">
-                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
-                                    <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required/>
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Ad Details</h3>
+                             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ad Title</label>
+                                    <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                
-                                <div>
+                                <div className="sm:col-span-1">
                                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
-                                    <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required/>
+                                    <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-
-                                    <div>
+                                 <div className="sm:col-span-1">
                                     <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
-                                    <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required/>
+                                    <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-
-                                <div className="col-span-1">
-                                    <label htmlFor="linkType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Link Ad To (Optional)</label>
-                                    <select id="linkType" name="linkType" value={linkType} onChange={e => {setLinkType(e.target.value); setLinkTarget('')}} className={selectStyle}>
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Link (Optional)</h3>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">When the screensaver is touched while this ad is showing, it will navigate to this link.</p>
+                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="linkType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Link Type</label>
+                                    <select id="linkType" value={linkType} onChange={e => { setLinkType(e.target.value); setLinkTarget(''); }} className={selectStyle}>
                                         <option value="none">None</option>
-                                        <option value="brand">Brand</option>
                                         <option value="product">Product</option>
+                                        <option value="brand">Brand</option>
                                         <option value="catalogue">Catalogue</option>
                                         <option value="pamphlet">Pamphlet</option>
                                         <option value="external">External URL</option>
                                     </select>
                                 </div>
                                 {linkType !== 'none' && (
-                                    <div className="col-span-1">
-                                        <label htmlFor="linkTarget" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Link Destination</label>
+                                    <div>
+                                        <label htmlFor="linkTarget" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Target</label>
                                         {linkType === 'external' ? (
-                                            <input type="url" id="linkTarget" value={linkTarget} onChange={e => setLinkTarget(e.target.value)} placeholder="https://example.com" className={inputStyle} required />
+                                            <input type="url" id="linkTarget" value={linkTarget} onChange={e => setLinkTarget(e.target.value)} className={inputStyle} placeholder="https://example.com" />
                                         ) : (
-                                            <select id="linkTarget" value={linkTarget} onChange={e => setLinkTarget(e.target.value)} className={selectStyle} required>
+                                            <select id="linkTarget" value={linkTarget} onChange={e => setLinkTarget(e.target.value)} className={selectStyle}>
                                                 <option value="">Select...</option>
-                                                {linkType === 'brand' && brands.filter(b => !b.isDeleted).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                                                {linkType === 'product' && products.filter(p => !p.isDiscontinued && !p.isDeleted).map(p => <option key={p.id} value={p.id}>{brands.find(b=>b.id === p.brandId)?.name} - {p.name}</option>)}
-                                                {linkType === 'catalogue' && catalogues.filter(c => !c.isDeleted).map(c => <option key={c.id} value={c.id}>{c.title} ({c.year})</option>)}
-                                                {linkType === 'pamphlet' && pamphlets.filter(p => !p.isDeleted).map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                                                {linkType === 'product' && products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                {linkType === 'brand' && brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                                {linkType === 'catalogue' && catalogues.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                                {linkType === 'pamphlet' && pamphlets.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                                             </select>
                                         )}
                                     </div>
@@ -225,15 +224,14 @@ const AdEdit: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    <div className="col-span-1 space-y-6">
-                        <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Ad Media</h3>
+                    <div className="space-y-6">
+                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Media Files</h3>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Upload one or more images or videos.</p>
                             <div className="mt-4 grid grid-cols-2 gap-4">
                                 {formData.media.map((item, index) => (
                                     <div key={index} className="relative group aspect-video">
-                                        <LocalMedia src={item.url} alt="Ad preview" type={item.type} className="rounded-xl object-cover w-full h-full" />
+                                        <LocalMedia src={item.url} alt="Media preview" type={item.type} className="rounded-xl object-cover w-full h-full" />
                                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center rounded-xl">
                                             <button type="button" onClick={() => handleMediaDelete(index)} className="p-2 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete media">
                                                 <TrashIcon className="w-5 h-5"/>
@@ -243,23 +241,23 @@ const AdEdit: React.FC = () => {
                                 ))}
                                 <label htmlFor="media-upload" className="cursor-pointer aspect-video border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors">
                                     <UploadIcon className="w-8 h-8"/>
-                                    <span className="mt-2 text-sm font-medium">{formData.media.length > 0 ? 'Add More Media' : 'Add Media'}</span>
+                                    <span className="mt-2 text-sm font-medium">{formData.media.length > 0 ? 'Add More' : 'Add Media'}</span>
                                     <input id="media-upload" type="file" multiple onChange={handleMediaChange} className="sr-only" accept="image/*,video/mp4,video/webm" />
                                 </label>
                             </div>
                         </div>
                     </div>
-                </div>
+                 </div>
             </form>
         )
     );
-
+    // FIX: Add a return statement for the component's JSX.
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-6xl mx-auto">
                  <div className="bg-white/90 dark:bg-gray-800/70 p-6 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/50">
                     {pageContent}
-                </div>
+                 </div>
             </div>
         </div>
     );

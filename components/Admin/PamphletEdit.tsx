@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import type { Pamphlet } from '../../types';
 import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, DocumentArrowRightIcon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
@@ -13,9 +11,9 @@ const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gr
 const getInitialFormData = (): Pamphlet => ({
     id: `pam_${Date.now()}_${Math.random().toString(16).slice(2)}`,
     title: '',
-    imageUrl: '',
+    imageUrl: '', // This is the cover image
     type: 'image',
-    imageUrls: [],
+    imageUrls: [], // These are the pages
     startDate: '',
     endDate: '',
 });
@@ -55,25 +53,25 @@ const PamphletEdit: React.FC = () => {
         }
     }, [pamphletId, pamphlets, isEditing]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             try {
                 const fileName = await saveFileToStorage(e.target.files[0], ['pamphlets', formData.id]);
                 setFormData(prev => ({ ...prev, imageUrl: fileName }));
             } catch (error) {
-                 alert(error instanceof Error ? error.message : "Failed to save image.");
+                alert(error instanceof Error ? error.message : "Failed to save cover image.");
             }
         }
     };
 
     const handleDocumentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && formData.type === 'image') {
-             for (const file of Array.from(e.target.files)) {
+            for (const file of Array.from(e.target.files)) {
                 try {
                     const savedPath = await saveFileToStorage(file, ['pamphlets', formData.id, 'pages']);
                     setFormData(prev => {
@@ -98,12 +96,11 @@ const PamphletEdit: React.FC = () => {
             setFormData(prev => ({ ...prev, type: 'image', imageUrls: newImageUrls }));
         }
     };
-    
+
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        const imagesAreSet = formData.type === 'image' && formData.imageUrls.length > 0;
-        if (!formData.title || !formData.imageUrl || !formData.startDate || !formData.endDate || !imagesAreSet) {
-            alert('Please fill out Title, Start/End Dates, upload a cover image, and provide at least one page image.');
+        if (!formData.title || !formData.imageUrl || !formData.startDate || !formData.endDate || formData.imageUrls.length === 0) {
+            alert('Please fill out all fields and provide a cover image and at least one page image.');
             return;
         }
 
@@ -113,10 +110,10 @@ const PamphletEdit: React.FC = () => {
         } else {
             addPamphlet(formData);
         }
-        
+
         setTimeout(() => {
             setSaving(false);
-            if (isEditing) {
+            if(isEditing){
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2000);
             } else {
@@ -138,7 +135,7 @@ const PamphletEdit: React.FC = () => {
                 isOpen={isPdfModalOpen} 
                 onClose={() => setIsPdfModalOpen(false)} 
                 onComplete={handlePdfImportComplete}
-                pathPrefixSegments={['pamphlets', formData.id, 'pages']}
+                pathPrefixSegments={['pamphlets', formData.id, `pdf_import_${Date.now()}`]}
             />
             <form onSubmit={handleSave} className="space-y-8">
                 {/* Header */}
@@ -199,11 +196,11 @@ const PamphletEdit: React.FC = () => {
                                     <div className="h-48 w-auto aspect-[3/4] bg-gray-100 dark:bg-gray-700 rounded-xl border dark:border-gray-600 flex items-center justify-center text-xs text-gray-400 dark:text-gray-500">
                                         <LocalMedia src={formData.imageUrl} alt="Cover preview" type="image" className="rounded-xl object-cover h-full w-full"/>
                                     </div>
-                                    <label htmlFor="image-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                    <label htmlFor="cover-upload" className="mt-2 w-full cursor-pointer inline-flex justify-center items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                         <UploadIcon className="h-4 w-4"/>
                                         <span>{formData.imageUrl ? 'Change Cover' : 'Upload Cover'}</span>
                                     </label>
-                                    <input id="image-upload" type="file" className="sr-only" onChange={handleImageChange} accept="image/*" />
+                                    <input id="cover-upload" type="file" className="sr-only" onChange={handleCoverImageChange} accept="image/*" />
                                 </div>
                                 <div>
                                     <span className="block text-sm font-medium text-gray-700 dark:text-gray-300">Pamphlet Pages</span>
@@ -224,7 +221,7 @@ const PamphletEdit: React.FC = () => {
                                                 <span>Add Image(s)</span>
                                             </label>
                                             <input id="doc-image-upload" type="file" multiple onChange={handleDocumentImageUpload} className="sr-only" accept="image/*" />
-                                            <button type="button" onClick={() => setIsPdfModalOpen(true)} className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
+                                             <button type="button" onClick={() => setIsPdfModalOpen(true)} className="btn bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full justify-center">
                                                 <DocumentArrowRightIcon className="h-4 w-4" />
                                                 Import from PDF
                                             </button>

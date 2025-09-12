@@ -45,7 +45,8 @@ const AdminWebsiteImporter: React.FC = () => {
             
             const fileName = `${fileNamePrefix}_${Date.now()}.${extension}`;
             const file = new File([blob], fileName, { type: blob.type });
-            return await saveFileToStorage(file);
+            // FIX: Added missing 'pathSegments' argument.
+            return await saveFileToStorage(file, ['ai_imports']);
         } catch (error) {
             console.error(`Could not process image from URL ${imageUrl}:`, error);
             throw error;
@@ -65,6 +66,7 @@ const AdminWebsiteImporter: React.FC = () => {
         setImportLog([]);
 
         try {
+            // FIX: Use new GoogleGenAI class and initialization
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const schema = {
                 type: Type.OBJECT,
@@ -89,7 +91,7 @@ const AdminWebsiteImporter: React.FC = () => {
                  prompt = `Analyze the website at ${url}. Extract the main brand name, a URL to its logo, and 3-5 key products. For each product, find its name, a short description, its SKU (or generate one), and a direct image URL. Respond ONLY with a JSON object matching the schema.`;
             }
 
-            // FIX: Add GenerateContentResponse type annotation
+            // FIX: Use new generateContent method and add response type
             const response: GenerateContentResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
@@ -100,7 +102,7 @@ const AdminWebsiteImporter: React.FC = () => {
                 }
             });
 
-            // FIX: Correctly access the 'text' property on the response object.
+            // FIX: Access response text directly from 'text' property.
             if (!response.text) {
                 throw new Error("The AI model returned an empty response.");
             }

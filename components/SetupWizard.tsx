@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
-// FIX: Add UserCircleIcon to imports to fix missing component error.
-import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UsersIcon, FtpIcon, UserCircleIcon } from './Icons.tsx';
+// FIX: Add CubeIcon to imports to fix missing component error.
+import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, UsersIcon, FtpIcon, CubeIcon } from './Icons.tsx';
 // FIX: Consolidate react-router-dom import.
 import { useNavigate } from 'react-router-dom';
 import SetupInstruction from './Admin/SetupInstruction.tsx';
@@ -61,70 +60,109 @@ interface AboutSystemProps {
     isDashboard?: boolean;
 }
 
-const HeroDiagram: React.FC = () => (
-    <svg viewBox="0 0 800 400" className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#1e293b" />
-                <stop offset="100%" stopColor="#0f172a" />
-            </linearGradient>
-            <linearGradient id="hero-kiosk-screen" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a78bfa" />
-                <stop offset="100%" stopColor="#3b82f6" />
-            </linearGradient>
-            <linearGradient id="hero-floor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(30, 41, 59, 0)" />
-                <stop offset="100%" stopColor="rgba(30, 41, 59, 1)" />
-            </linearGradient>
-            <filter id="hero-glow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="15" result="coloredBlur" />
-                <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-        </defs>
+const HeroDiagram: React.FC = () => {
+    const screenUiVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.3,
+                delayChildren: 0.5,
+            },
+        },
+    };
 
-        <rect width="800" height="400" fill="url(#hero-bg-grad)" />
+    const cardVariant = {
+        hidden: { opacity: 0, x: -30 },
+        visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+    };
 
-        {/* Floor and reflection */}
-        <g opacity="0.2" transform="translate(0, 560) scale(1, -1)">
-             <path d="M 270 235 L 250 255 L 550 255 L 530 235 Z" fill="#475569" />
-             <path d="M 325 50 L 270 235 L 530 235 L 475 50 Z" fill="#334155" />
-             <rect x="330" y="55" width="140" height="170" fill="url(#hero-kiosk-screen)" />
-        </g>
-        
-        {/* Central Kiosk */}
-        <g transform="translate(400, 200)">
-            <path d="M -130 135 L -150 155 L 150 155 L 130 135 Z" fill="#475569" />
-            <path d="M -75 -150 L -130 135 L 130 135 L 75 -150 Z" fill="#334155" />
-            <rect x="-70" y="-145" width="140" height="270" fill="#0f172a" />
-            <g filter="url(#hero-glow)" opacity="0.4"><rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" /></g>
-            <rect x="-70" y="-145" width="140" height="270" fill="url(#hero-kiosk-screen)" />
-            <g className="fill-white opacity-80">
-                <rect x="-60" y="-135" width="120" height="40" rx="4" fill="rgba(255,255,255,0.1)" />
-                <rect x="-50" y="-125" width="50" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
-                <rect x="-60" y="-85" width="120" height="190" rx="4" fill="rgba(255,255,255,0.1)" />
-                <rect x="-50" y="-75" width="100" height="120" rx="2" fill="rgba(255,255,255,0.1)" />
-                <rect x="-50" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
-                <rect x="5" y="55" width="45" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+    return (
+        <svg viewBox="0 0 800 500" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="hero-bg-grad-new" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#0f172a" />
+                    <stop offset="100%" stopColor="#1e293b" />
+                </linearGradient>
+                <linearGradient id="kiosk-metal" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#475569" />
+                    <stop offset="100%" stopColor="#1e293b" />
+                </linearGradient>
+                <linearGradient id="kiosk-screen-glow-grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#a78bfa" />
+                    <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+                <filter id="hero-glow-new" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="12" result="coloredBlur" />
+                    <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+                 <filter id="floating-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="0" dy="10" stdDeviation="8" floodColor="#000" floodOpacity="0.3" />
+                </filter>
+            </defs>
+            
+            <rect width="800" height="500" fill="url(#hero-bg-grad-new)" />
+
+            {/* Fading grid */}
+            <g opacity="0.1" stroke="white" strokeWidth="0.5">
+                <path d="M 0 450 L 800 450" />
+                <path d="M 100 0 L 100 500" transform="skewX(-30) translate(250, 0)" />
+                <path d="M 200 0 L 200 500" transform="skewX(-30) translate(250, 0)" />
+                <path d="M 300 0 L 300 500" transform="skewX(-30) translate(250, 0)" />
+                <path d="M 400 0 L 400 500" transform="skewX(-30) translate(250, 0)" />
+                <path d="M 500 0 L 500 500" transform="skewX(-30) translate(250, 0)" />
             </g>
-        </g>
 
-        {/* Surrounding UI elements */}
-        <g className="text-white">
-            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}>
-                <text x="150" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Offline-First</text>
-            </MotionG>
-            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}>
-                <text x="650" y="150" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Cloud Sync</text>
-            </MotionG>
-             <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.6 } }}>
-                <text x="100" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Analytics</text>
-            </MotionG>
-            <MotionG initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0, transition: { delay: 0.8 } }}>
-                <text x="700" y="300" textAnchor="middle" dominantBaseline="middle" className="text-lg fill-white/80 font-semibold">Customizable</text>
-            </MotionG>
-        </g>
-    </svg>
-);
+            {/* Central Kiosk - perspective */}
+            <g transform="translate(400, 260)" filter="url(#floating-shadow)">
+                {/* Base */}
+                <path d="M -160, 180 L -140, 200 L 140, 200 L 160, 180 L 140, 160 L -140, 160 Z" fill="#1e293b" stroke="#475569" strokeWidth="1" />
+                
+                {/* Body */}
+                <path d="M -90, 160 L -110, -180 L 110, -180 L 90, 160 Z" fill="url(#kiosk-metal)" />
+                <path d="M 90, 160 L 110, -180 L 125, -170 L 105, 170 Z" fill="#334155" />
+
+                {/* Screen */}
+                <g>
+                    <path d="M -95, -170 L -80, 150 L 80, 150 L 95, -170 Z" fill="#020617" />
+                    <g filter="url(#hero-glow-new)" opacity="0.3">
+                        <path d="M -95, -170 L -80, 150 L 80, 150 L 95, -170 Z" fill="url(#kiosk-screen-glow-grad)" />
+                    </g>
+                     <MotionG variants={screenUiVariants} initial="hidden" animate="visible" className="text-white">
+                        {/* Title bar */}
+                        {/* FIX: Replaced motion.g with pre-cast MotionG to resolve TypeScript error with variants prop. */}
+                        <MotionG variants={cardVariant}>
+                             <rect x="-70" y="-155" width="140" height="30" rx="4" fill="rgba(255,255,255,0.05)" />
+                             <rect x="-65" y="-145" width="60" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
+                        </MotionG>
+                        {/* Main product card */}
+                        {/* FIX: Replaced motion.g with pre-cast MotionG to resolve TypeScript error with variants prop. */}
+                        <MotionG variants={cardVariant}>
+                             <rect x="-70" y="-115" width="140" height="150" rx="4" fill="rgba(255,255,255,0.05)" />
+                             <rect x="-65" y="-110" width="130" height="90" rx="2" fill="rgba(255,255,255,0.1)" />
+                             <rect x="-65" y="-10" width="80" height="4" rx="2" fill="rgba(255,255,255,0.4)" />
+                             <rect x="-65" y="0" width="100" height="4" rx="2" fill="rgba(255,255,255,0.2)" />
+                        </MotionG>
+                        {/* Small cards */}
+                        {/* FIX: Replaced motion.g with pre-cast MotionG to resolve TypeScript error with variants prop. */}
+                        <MotionG variants={cardVariant}>
+                            <rect x="-70" y="45" width="65" height="80" rx="4" fill="rgba(255,255,255,0.05)" />
+                            <rect x="-65" y="50" width="55" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+                        </MotionG>
+                         {/* FIX: Replaced motion.g with pre-cast MotionG to resolve TypeScript error with variants prop. */}
+                         <MotionG variants={cardVariant}>
+                            <rect x="5" y="45" width="65" height="80" rx="4" fill="rgba(255,255,255,0.05)" />
+                            <rect x="10" y="50" width="55" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
+                        </MotionG>
+                    </MotionG>
+                </g>
+            </g>
+        </svg>
+    );
+};
 
 const SystemEcosystemDiagram: React.FC = () => (
     <div className="text-center">
@@ -143,7 +181,7 @@ const SystemEcosystemDiagramSVG: React.FC = () => (
             <linearGradient id="eco-kiosk-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#8b5cf6"/></linearGradient>
             <linearGradient id="eco-cloud-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
             <linearGradient id="card-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="rgba(255,255,255,0.05)"/><stop offset="100%" stopColor="rgba(255,255,255,0)"/></linearGradient>
-            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
+            <marker id="eco-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
             <filter id="card-shadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/><feOffset in="blur" dy="4" result="offsetBlur"/><feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
         
@@ -159,7 +197,7 @@ const SystemEcosystemDiagramSVG: React.FC = () => (
             </foreignObject>
         </g>
         
-        {/* Cloud Node */}
+        {/* Sync Provider Node */}
         <g transform="translate(430 140)" filter="url(#card-shadow)">
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" className="fill-gray-100/80 dark:fill-gray-800/80 stroke-gray-200/50 dark:stroke-gray-700/50 rounded-2xl"/>
             <path d="M -110 -95 L 110 -95 L 110 95 L -110 95 Z" transform="skewX(-5)" fill="url(#card-grad)" className="rounded-2xl"/>
@@ -197,39 +235,42 @@ const ValueLoopDiagram: React.FC = () => (
     </div>
 );
 
-const ValueLoopDiagramSVG: React.FC = () => (
-    <svg viewBox="0 0 300 300" className="w-full h-auto max-w-sm mx-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="val-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a5b4fc"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
-            <linearGradient id="val-grad-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c4b5fd"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-            <linearGradient id="val-grad-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f9a8d4"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
-            <marker id="val-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-gray-400 dark:fill-gray-500"/></marker>
-            <filter id="val-shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/><feOffset dy="3" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        </defs>
+const ValueLoopDiagramSVG: React.FC = () => {
+    const iconBase = "w-8 h-8 text-white";
+    return (
+        <svg viewBox="0 0 300 300" className="w-full h-auto max-w-sm mx-auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="val-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a5b4fc"/><stop offset="100%" stopColor="#818cf8"/></linearGradient>
+                <linearGradient id="val-grad-2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#c4b5fd"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
+                <linearGradient id="val-grad-3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#f9a8d4"/><stop offset="100%" stopColor="#f472b6"/></linearGradient>
+                <marker id="val-arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-gray-400 dark:fill-gray-500"/></marker>
+                <filter id="val-shadow"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/><feOffset dy="3" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
 
-        <circle cx="150" cy="150" r="120" strokeDasharray="8 8" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5" fill="none" marker-end="url(#val-arrowhead)" marker-start="url(#val-arrowhead)"/>
-        
-        <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)">
-            <circle r="32" className="fill-white dark:fill-gray-700"/>
-            <circle r="28" fill="url(#val-grad-1)"/>
-        </g>
-        <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Customer Interaction</text>
+            <circle cx="150" cy="150" r="120" strokeDasharray="8 8" className="stroke-gray-300 dark:stroke-gray-600" strokeWidth="1.5" fill="none" marker-end="url(#val-arrowhead)" marker-start="url(#val-arrowhead)"/>
+            
+            <g transform="translate(150, 40)" className="cursor-pointer" filter="url(#val-shadow)">
+                <circle r="32" className="fill-white dark:fill-gray-700"/>
+                <circle r="28" fill="url(#val-grad-1)"/>
+            </g>
+            <text x="150" y="95" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Customer Interaction</text>
 
-        <g transform="translate(230, 150)" className="cursor-pointer" filter="url(#val-shadow)">
-            <circle r="32" className="fill-white dark:fill-gray-700"/>
-            <circle r="28" fill="url(#val-grad-2)"/>
-        </g>
-        <text x="230" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
+            <g transform="translate(230, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+                <circle r="32" className="fill-white dark:fill-gray-700"/>
+                <circle r="28" fill="url(#val-grad-2)"/>
+            </g>
+             <text x="230" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Actionable Analytics</text>
 
-        <g transform="translate(70, 150)" className="cursor-pointer" filter="url(#val-shadow)">
-            <circle r="32" className="fill-white dark:fill-gray-700"/>
-            <circle r="28" fill="url(#val-grad-3)"/>
-        </g>
-        <text x="70" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
-    </svg>
-);
+            <g transform="translate(70, 150)" className="cursor-pointer" filter="url(#val-shadow)">
+                <circle r="32" className="fill-white dark:fill-gray-700"/>
+                <circle r="28" fill="url(#val-grad-3)"/>
+            </g>
+            <text x="70" y="205" textAnchor="middle" className="font-bold text-sm fill-gray-800 dark:fill-gray-100">Smarter Decisions</text>
+        </svg>
+    );
+};
 
-const AnimatedBoutiqueIcon = () => (
+const AnimatedBoutiqueIcon: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="spotlight-grad" cx="0.5" cy="0.5" r="0.5">
@@ -275,7 +316,7 @@ const AnimatedBoutiqueIcon = () => (
     </svg>
 );
 
-const AnimatedFranchiseIcon = () => (
+const AnimatedFranchiseIcon: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <radialGradient id="cloud-glow" cx="0.5" cy="0.5" r="0.5">
@@ -319,7 +360,7 @@ const AnimatedFranchiseIcon = () => (
     </svg>
 );
 
-const AnimatedB2bIcon = () => (
+const AnimatedB2bIcon: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="screen-grad" x1="0" y1="0" x2="1" y2="1">
@@ -413,29 +454,12 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-2xl md:text-3xl text-gray-800 dark:text-white mb-12 section-heading text-center">Perfect For Any Environment</h3>
+                            <h3 className="font-bold text-2xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
-                                    <AnimatedBoutiqueIcon />
-                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">High-End Boutiques</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
-                                        Create an unforgettable luxury experience. Allow clients to discover your entire collection on a stunning, interactive display that mirrors the quality of your brand. Go beyond the physical showcase, telling the rich story behind each piece with high-resolution imagery and detailed narratives. It's a silent, sophisticated salesperson that enhances prestige.
-                                    </p>
-                                </div>
-                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
-                                    <AnimatedFranchiseIcon />
-                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">Multi-Location Franchises</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
-                                        Achieve flawless brand consistency and operational agility. From a single admin panel, deploy product updates, price changes, and promotional campaigns instantly to every kiosk across all your locations. Eliminate outdated print materials and empower each store with the latest information, while tracking performance with aggregated analytics.
-                                    </p>
-                                </div>
-                                <div className="text-center p-6 rounded-xl bg-gray-100 dark:bg-gray-800/50 flex flex-col">
-                                    <AnimatedB2bIcon />
-                                    <h4 className="font-semibold mt-4 text-gray-800 dark:text-white">B2B & Trade Shows</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex-grow">
-                                        Transform your booth into a dynamic lead-generation hub. Ditch cumbersome paper catalogues and empower your sales team with an interactive digital showcase. Effortlessly demonstrate complex products, customize configurations in real-time, and instantly generate and email detailed quotes to capture high-value leads on the spot.
-                                    </p>
-                                </div>
+                                {/* FIX: Replaced incorrect component names with correct ones. */}
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><AnimatedBoutiqueIcon /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-xs text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><AnimatedFranchiseIcon /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-xs text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
+                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><AnimatedB2bIcon /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-xs text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
                             </div>
                         </div>
                     </MotionSection>

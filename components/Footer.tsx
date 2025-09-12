@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 // FIX: Consolidate react-router-dom imports into a single line.
 import { Link } from 'react-router-dom';

@@ -78,7 +78,7 @@ const useNativeMobileSetup = (theme: 'light' | 'dark', settings: Settings) => {
     }, [navigate, location.pathname]);
 
     useEffect(() => {
-        if (Capacitor.isNativePlatform()) {
+        if (Capacitor.isNativePlatform() && settings) {
             StatusBar.setStyle({ style: theme === 'dark' ? Style.Dark : Style.Light });
             // FIX: Use settings from props instead of undefined initialSettings.
             const themeColors = theme === 'dark' 
@@ -239,6 +239,7 @@ const AppContent: React.FC = () => {
 
   // Dynamic theming and typography
     useEffect(() => {
+        if (!settings) return;
         const root = document.documentElement;
 
         // 1. Apply Theme Colors

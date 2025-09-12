@@ -309,7 +309,8 @@ Zip template created by the Interactive Kiosk System.
 
                     for (const imageFile of imageFiles) {
                         const fileObj = await zipEntryToFile(imageFile, imageFile.name.split('/').pop()!);
-                        const savedPath = await saveFileToStorage(fileObj);
+                        // FIX: Added the missing 'pathSegments' argument to the saveFileToStorage call.
+                        const savedPath = await saveFileToStorage(fileObj, ['products', newProduct.id, 'images']);
                         newProduct.images.push(savedPath);
                     }
                      if (newProduct.images.length === 0) {
@@ -319,13 +320,15 @@ Zip template created by the Interactive Kiosk System.
                     if (videoFiles.length > 0) {
                         const videoFile = videoFiles[0];
                         const fileObj = await zipEntryToFile(videoFile, videoFile.name.split('/').pop()!);
-                        newProduct.video = await saveFileToStorage(fileObj);
+                        // FIX: Added the missing 'pathSegments' argument to the saveFileToStorage call.
+                        newProduct.video = await saveFileToStorage(fileObj, ['products', newProduct.id, 'videos']);
                     }
 
                     for (const docFile of documentFiles) {
                         if (docFile.name.toLowerCase().endsWith('.pdf')) {
                             const fileObj = await zipEntryToFile(docFile, docFile.name.split('/').pop()!);
-                            const savedPath = await saveFileToStorage(fileObj);
+                            // FIX: Added the missing 'pathSegments' argument to the saveFileToStorage call.
+                            const savedPath = await saveFileToStorage(fileObj, ['products', newProduct.id, 'documents']);
                             const docTitle = docFile.name.split('/').pop()!.replace(/\.pdf$/i, '');
                             const newDoc: ProductDocument = {
                                 id: `doc_zip_${Date.now()}_${Math.random().toString(16).slice(2)}`,

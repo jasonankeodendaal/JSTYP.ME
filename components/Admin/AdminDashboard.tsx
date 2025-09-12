@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
@@ -101,7 +99,6 @@ const AdminContentCard: React.FC<{
     );
 };
 
-// FIX: Change to a named export to match import in App.tsx
 export const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
