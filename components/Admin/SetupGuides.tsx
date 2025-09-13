@@ -1,5 +1,15 @@
 import React from 'react';
 
+const CodeRequirementNote: React.FC<{ children?: React.ReactNode }> = ({ children }) => (
+    <div className="bg-yellow-100 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-300 p-4 rounded-r-lg mb-4">
+        <p className="font-bold">Developer Note: Source Code Required</p>
+        <div className="text-sm mt-1">
+            {children || <p>This setup method requires you to download and run server code included with the project's source files.</p>}
+        </div>
+    </div>
+);
+
+
 export const LocalFolderGuideContent: React.FC = () => (
     <>
         <h4>Part 1: How It Works</h4>
@@ -39,6 +49,7 @@ export const LocalFolderGuideContent: React.FC = () => (
 
 export const CloudSyncGuideContent: React.FC = () => (
     <>
+        <CodeRequirementNote />
         <p><strong>Use this for:</strong> The most powerful and reliable setup. Manage a main admin PC and multiple display kiosks across different locations, all synced together over the internet.</p>
         <p>This setup uses <strong>PM2</strong>, a professional process manager, to ensure your server and the secure connection run 24/7 and restart automatically.</p>
         
@@ -100,6 +111,9 @@ export const CloudSyncGuideContent: React.FC = () => (
 
 export const FtpGuideContent: React.FC = () => (
     <>
+        <CodeRequirementNote>
+            <p>This method requires you to copy/paste and run a "bridge" server script provided below. This is because browsers cannot directly connect to FTP servers for security reasons.</p>
+        </CodeRequirementNote>
         <h4>Introduction: Why a "Bridge" Server is Needed</h4>
         <p>For security reasons, web browsers cannot directly connect to FTP/SFTP servers. To work around this, we use a small "bridge" server that runs on your computer. Your kiosk connects to this bridge server using standard web requests (HTTPS), and the bridge server then communicates with your FTP server to store and retrieve files.</p>
         <p>This guide will walk you through setting up a free FTP server on your Windows PC and then setting up the necessary bridge server.</p>
@@ -280,6 +294,7 @@ app.listen(port, () => console.log(\`FTP Bridge server running on port \${port}\
 
 export const VercelGuideContent: React.FC = () => (
     <>
+        <CodeRequirementNote />
         <div className="bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-800 dark:text-red-300 p-4 rounded-r-lg mb-4">
             <p className="font-bold">Important Compatibility Notice</p>
             <p className="text-sm mt-1">
@@ -351,6 +366,9 @@ app.get('/files/:filename', async (req, res) => {
 
 export const SupabaseGuideContent: React.FC = () => (
     <>
+        <CodeRequirementNote>
+             <p>This method requires you to copy/paste and deploy an "Edge Function" script (provided below) to your Supabase project.</p>
+        </CodeRequirementNote>
         <p>This is an advanced setup. It uses a Supabase Edge Function to read/write from a table and Supabase Storage for files. It fully mimics the custom API server and provides a robust, scalable backend.</p>
         <h4>Part 1: Set up Supabase Project</h4>
         <ol>

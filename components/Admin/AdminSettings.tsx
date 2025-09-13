@@ -9,6 +9,9 @@ import KioskPreview from './KioskPreview.tsx';
 
 // --- HELPER COMPONENTS (Inlined) ---
 
+// FIX: Cast motion.div to any to resolve framer-motion prop type errors.
+const MotionDiv = motion.div as any;
+
 const FormSection: React.FC<{
     title: string;
     description?: string;
@@ -526,7 +529,7 @@ const AdminSettings: React.FC = () => {
                         <div className="pt-8 border-t border-gray-200 dark:border-gray-700 space-y-4">
                              <AnimatePresence>
                                 {showReloadNotice && (
-                                    <motion.div
+                                    <MotionDiv
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: 10 }}
@@ -541,7 +544,7 @@ const AdminSettings: React.FC = () => {
                                         <button type="button" onClick={() => setShowReloadNotice(false)} className="p-1.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800/60">
                                             <XIcon className="h-4 w-4" />
                                         </button>
-                                    </motion.div>
+                                    </MotionDiv>
                                 )}
                             </AnimatePresence>
                             <div className="flex justify-end">
@@ -576,20 +579,20 @@ const AdminSettings: React.FC = () => {
             {/* Mobile Preview Modal */}
             <AnimatePresence>
                 {isPreviewModalOpen && (
-                    <motion.div
+                    <MotionDiv
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex flex-col p-4"
                         onClick={() => setIsPreviewModalOpen(false)}
                     >
-                        <motion.div
+                        <MotionDiv
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: 'spring', stiffness: 400, damping: 40 }}
                             className="w-full h-full bg-transparent flex flex-col overflow-hidden"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
                         >
                             <header className="flex-shrink-0 flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-t-2xl border-b border-gray-200 dark:border-gray-700">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 section-heading ml-2">Live Preview</h3>
@@ -600,8 +603,8 @@ const AdminSettings: React.FC = () => {
                             <div className="flex-grow overflow-y-auto bg-gray-200 dark:bg-gray-900 rounded-b-2xl">
                                <KioskPreview settings={formData} previewPage={previewPage} />
                             </div>
-                        </motion.div>
-                    </motion.div>
+                        </MotionDiv>
+                    </MotionDiv>
                 )}
             </AnimatePresence>
         </>

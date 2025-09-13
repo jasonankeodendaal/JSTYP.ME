@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
 // FIX: Add CubeIcon to imports to fix missing component error.
 import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, UsersIcon, FtpIcon, CubeIcon } from './Icons.tsx';
@@ -127,26 +128,26 @@ const HeroDiagram: React.FC = () => {
                     className="w-full h-full bg-slate-900 relative overflow-hidden cursor-pointer"
                     style={{ perspective: '1200px' }}
                 >
-                    <motion.div 
+                    <MotionDiv 
                         className="p-8 space-y-6 absolute inset-0 transition-transform duration-300 ease-out"
                         animate={{ transform: isHovering ? 'rotateX(5deg) scale(1.03)' : 'rotateX(0deg) scale(1)' }}
                     >
                         <div className="text-white text-3xl font-bold section-heading">Shop by Brand</div>
                         <div className="grid grid-cols-4 gap-4">
                             {[...Array(4)].map((_, i) => (
-                                <motion.div key={i} className="bg-white/5 aspect-square rounded-lg border border-white/10" whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.15)' }}></motion.div>
+                                <MotionDiv key={i} className="bg-white/5 aspect-square rounded-lg border border-white/10" whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.15)' }}></MotionDiv>
                             ))}
                         </div>
                         <div className="text-white text-3xl font-bold section-heading">Featured</div>
                         <div className="grid grid-cols-2 gap-6">
                             {[...Array(2)].map((_, i) => (
-                                <motion.div key={i} className="bg-white/5 aspect-[4/3] rounded-lg border border-white/10 p-4" initial="initial" whileHover="hover">
-                                    <motion.div className="w-full h-2/3 bg-white/10 rounded" variants={cardVariants}></motion.div>
-                                    <motion.div className="w-3/4 h-4 bg-white/20 rounded mt-3" variants={cardVariants}></motion.div>
-                                </motion.div>
+                                <MotionDiv key={i} className="bg-white/5 aspect-[4/3] rounded-lg border border-white/10 p-4" initial="initial" whileHover="hover">
+                                    <MotionDiv className="w-full h-2/3 bg-white/10 rounded" variants={cardVariants}></MotionDiv>
+                                    <MotionDiv className="w-3/4 h-4 bg-white/20 rounded mt-3" variants={cardVariants}></MotionDiv>
+                                </MotionDiv>
                             ))}
                         </div>
-                    </motion.div>
+                    </MotionDiv>
                     
                     {/* Dynamic Glare Effect */}
                     <div 
@@ -595,7 +596,7 @@ const SetupWizard: React.FC = () => {
         switch (step) {
             case 1:
                 return (
-                    <MotionDiv key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="text-center">
+                    <MotionDiv key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="text-center w-full max-w-2xl mx-auto flex flex-col justify-center items-center h-full">
                         <h2 className="text-2xl font-bold section-heading text-gray-800 dark:text-gray-100">Welcome to Your Kiosk!</h2>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">This quick setup will help you configure how your kiosk data is stored and synced. You can change these settings later in the admin panel.</p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
@@ -610,7 +611,7 @@ const SetupWizard: React.FC = () => {
                 );
             case 2:
                 return (
-                    <MotionDiv key="step2" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                    <MotionDiv key="step2" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="w-full max-w-3xl mx-auto flex flex-col justify-center h-full">
                         <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">Choose a Storage Method</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <button onClick={() => handleSelectProvider('local')} disabled={isPotentiallyRestricted} className="p-6 border-2 border-transparent rounded-xl text-left bg-gray-100 dark:bg-gray-700/50 hover:border-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-transparent">
@@ -646,7 +647,7 @@ const SetupWizard: React.FC = () => {
                 const isConnected = storageProvider !== 'none';
                 if (provider === 'local') {
                     return (
-                        <MotionDiv key="step3-local" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="text-center">
+                        <MotionDiv key="step3-local" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="text-center w-full max-w-md mx-auto flex flex-col justify-center h-full">
                             <ServerStackIcon className="w-12 h-12 text-indigo-500 mx-auto mb-4" />
                             <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100">Local Folder Setup</h2>
                             {isConnecting && <p className="mt-2 text-gray-600 dark:text-gray-400">Awaiting folder selection...</p>}
@@ -677,7 +678,7 @@ const SetupWizard: React.FC = () => {
                 );
                 if (provider === 'sharedUrl') {
                     return (
-                        <MotionDiv key="step3-sharedurl" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                        <MotionDiv key="step3-sharedurl" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="w-full max-w-md mx-auto flex flex-col justify-center h-full">
                             <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">Shared URL / Simple API Setup</h2>
                                 <div className="space-y-4">
                                     <div className="mt-2 p-4 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded-lg text-sm text-left">
@@ -701,7 +702,7 @@ const SetupWizard: React.FC = () => {
                 }
                 if (provider === 'customApi') {
                      return (
-                        <MotionDiv key="step3-api" variants={stepVariants} initial="hidden" animate="visible" exit="exit">
+                        <MotionDiv key="step3-api" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="w-full max-w-md mx-auto flex flex-col justify-center h-full">
                              <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">API Configuration</h2>
                                 <div className="space-y-4">
                                      <div>
@@ -724,7 +725,7 @@ const SetupWizard: React.FC = () => {
                 return null;
             case 'guides':
                 return (
-                     <MotionDiv key="step-guides" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full">
+                     <MotionDiv key="step-guides" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="flex flex-col h-full p-4 sm:p-6 md:p-8">
                         <div className="flex-shrink-0">
                             <div className="flex justify-between items-center mb-4">
                                 <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100">Setup Instructions</h2>
@@ -785,15 +786,13 @@ const SetupWizard: React.FC = () => {
         }
     };
     
-    const isInfoStep = step === 'info';
-
     return (
-        <div className={`fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center ${isInfoStep ? '' : 'p-4'}`}>
+        <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center">
             <MotionDiv 
                 initial={{ scale: 0.9, y: 30 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 30 }}
-                className={`bg-white dark:bg-gray-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${isInfoStep ? 'w-full h-full rounded-none p-0' : 'rounded-2xl w-full max-w-xl min-h-[450px] p-8'} ${step === 'guides' ? '!max-w-4xl !min-h-[600px] h-[80vh]' : ''}`}
+                className="bg-white dark:bg-gray-800 shadow-2xl w-full h-full flex flex-col overflow-hidden"
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}

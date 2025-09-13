@@ -60,7 +60,7 @@ const ClientDetailsModal: React.FC = () => {
         if (clientIdToUse) {
             closeQuoteStartModal();
             setTimeout(() => {
-                navigate('/admin/stock-pick', { state: { clientId: clientIdToUse } });
+                navigate('/stock-pick', { state: { clientId: clientIdToUse } });
             }, 100);
         }
     };

@@ -112,7 +112,8 @@ const useIdleRedirect = () => {
                                  location.pathname.startsWith('/product/') || 
                                  location.pathname.startsWith('/admin') ||
                                  location.pathname.startsWith('/catalogues') || 
-                                 location.pathname.startsWith('/tvs');
+                                 location.pathname.startsWith('/tvs') ||
+                                 location.pathname.startsWith('/stock-pick');
 
             // Don't start timer on exempt paths, if disabled, or if TV player or any modal is active
             if (timeout <= 0 || isExemptPath || activeTvContent || bookletModalState.isOpen || pdfModalState.isOpen || confirmation.isOpen || quoteStartModal.isOpen) {
@@ -274,12 +275,12 @@ const AppContent: React.FC = () => {
 
             const applyFontStyles = (prefix: string, styles: FontStyleSettings) => {
                 if(!styles) return;
-                root.style.setProperty(`--${prefix}-font-family`, `'${styles.fontFamily}', sans-serif`);
-                root.style.setProperty(`--${prefix}-font-weight`, styles.fontWeight);
-                root.style.setProperty(`--${prefix}-font-style`, styles.fontStyle);
-                root.style.setProperty(`--${prefix}-font-decoration`, styles.textDecoration);
-                root.style.setProperty(`--${prefix}-letter-spacing`, styles.letterSpacing);
-                root.style.setProperty(`--${prefix}-text-transform`, styles.textTransform);
+                root.style.setProperty(`--\${prefix}-font-family`, `'${styles.fontFamily}', sans-serif`);
+                root.style.setProperty(`--\${prefix}-font-weight`, styles.fontWeight);
+                root.style.setProperty(`--\${prefix}-font-style`, styles.fontStyle);
+                root.style.setProperty(`--\${prefix}-font-decoration`, styles.textDecoration);
+                root.style.setProperty(`--\${prefix}-letter-spacing`, styles.letterSpacing);
+                root.style.setProperty(`--\${prefix}-text-transform`, styles.textTransform);
             };
 
             applyFontStyles('body', typography.body);
@@ -375,6 +376,7 @@ const AppContent: React.FC = () => {
 
   const isPrinting = location.pathname.includes('/print');
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isStockPickRoute = location.pathname.startsWith('/stock-pick');
 
   return (
     <>
@@ -403,12 +405,15 @@ const AppContent: React.FC = () => {
            <Routes>
                 <Route path="/admin/quote/:quoteId/print" element={<ProtectedRoute><PrintOrderView /></ProtectedRoute>} />
            </Routes>
+      ) : isStockPickRoute ? (
+           <Routes>
+                <Route path="/stock-pick" element={<StockPick />} />
+           </Routes>
       ) : isAdminRoute ? (
            <Routes>
                <Route path="/login" element={<AdminLogin />} />
                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                <Route path="/admin/remote-control" element={<ProtectedRoute mainAdminOnly><AdminRemoteControl /></ProtectedRoute>} />
-               <Route path="/admin/stock-pick" element={<ProtectedRoute><StockPick /></ProtectedRoute>} />
                <Route path="/admin/brand/new" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
                <Route path="/admin/brand/edit/:brandId" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
                <Route path="/admin/brand/:brandId" element={<ProtectedRoute><AdminBrandProducts /></ProtectedRoute>} />

@@ -262,6 +262,8 @@ export interface Quote {
     quantity: number;
   }[];
   kioskId: string;
+  tickedItems?: string[];
+  quoteImageUrl?: string;
 }
 
 export type ViewCounts = Record<string, {
