@@ -1,3 +1,4 @@
+
 import React from 'react';
 // @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { Link } from 'react-router-dom';
@@ -89,7 +90,7 @@ const ApkDownloadCTA: React.FC = () => {
 
 
 const KioskControls: React.FC = () => {
-    const { isScreensaverEnabled, toggleScreensaver } = useAppContext();
+    const { isScreensaverEnabled, toggleScreensaver, resetSetup, showConfirmation } = useAppContext();
     
     const baseClasses = "inline-flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:ring-offset-gray-800 transition-all";
 
@@ -97,6 +98,12 @@ const KioskControls: React.FC = () => {
     
     const offClasses = "bg-red-100 dark:bg-red-800/60 text-red-800 dark:text-red-100 border border-red-300 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-700/80 focus:ring-red-500";
 
+    const handleReset = () => {
+        showConfirmation(
+            "Are you sure you want to return to the setup wizard? This will log you out and may require re-configuring your storage provider.",
+            resetSetup
+        );
+    };
 
     return (
         <div className="text-center mt-12 py-6 border-t border-black/10 dark:border-white/10">
@@ -125,6 +132,14 @@ const KioskControls: React.FC = () => {
                 }
             </p>
             <ApkDownloadCTA />
+            <div className="mt-6">
+                <button
+                    onClick={handleReset}
+                    className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors hover:underline"
+                >
+                    Return to Setup Wizard
+                </button>
+            </div>
         </div>
     );
 };

@@ -448,3 +448,21 @@ serve(async (req) => {
         </ol>
     </>
 );
+
+export const DownloadSourceGuideContent: React.FC = () => (
+    <>
+        <h4>Project Source Code</h4>
+        <p>This application is open-source and designed to be fully self-hostable. For developers, the complete project source code, including the backend server, can be downloaded from the official GitHub repository.</p>
+        <p>This allows you to:</p>
+        <ul>
+            <li>Host the entire system on your own infrastructure.</li>
+            <li>Customize the application's features and appearance.</li>
+            <li>Review the code for security and auditing purposes.</li>
+        </ul>
+        <div className="mt-6 text-center">
+            <a href="https://github.com/jasonankeodendaal/JSTYP.ME.git" target="_blank" rel="noopener noreferrer" className="btn btn-primary !inline-flex !w-auto">
+                Download from GitHub
+            </a>
+        </div>
+    </>
+);

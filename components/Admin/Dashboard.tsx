@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
@@ -100,7 +101,8 @@ const AdminContentCard: React.FC<{
     );
 };
 
-const AdminDashboard: React.FC = () => {
+// FIX: Export the component to make it available for import in other modules.
+export const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
     const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');

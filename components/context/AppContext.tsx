@@ -86,6 +86,7 @@ type SyncStatus = 'idle' | 'pending' | 'syncing' | 'synced' | 'error';
 interface AppContextType {
   isSetupComplete: boolean;
   completeSetup: () => void;
+  resetSetup: () => void;
   brands: Brand[];
   products: Product[];
   catalogues: Catalogue[];
@@ -251,6 +252,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return localStorage.getItem('kioskSetupComplete') === 'true';
     });
     
+    const resetSetup = () => {
+        logout(); // Log out the user as well for security
+        setIsSetupComplete(false);
+        localStorage.removeItem('kioskSetupComplete');
+    };
+
     // Screensaver state
     const [isScreensaverActive, setIsScreensaverActive] = useState(false);
     const [isScreensaverEnabled, setIsScreensaverEnabled] = useState(true);
@@ -1349,6 +1356,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             setIsSetupComplete(true);
             localStorage.setItem('kioskSetupComplete', 'true');
         },
+        resetSetup,
         settings, brands, products, catalogues, pamphlets, screensaverAds, adminUsers, loggedInUser, tvContent, categories, clients, quotes, viewCounts, activityLogs,
         login, logout,
         addBrand: brandOps.add, updateBrand: brandOps.update, 

@@ -104,3 +104,7 @@ declare global {
     recursive?: boolean;
   }
 }
+
+// FIX: Removed invalid module augmentation for 'react-router-dom'.
+// `export *` is not permitted in a `declare module` block, as it's meant for augmenting existing modules, not re-exporting them.
+// This was likely a workaround for module resolution issues that should be handled by the build configuration.
