@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
@@ -50,8 +50,8 @@ const FeatureItem: React.FC<{icon: React.ReactNode, title: string, children: Rea
             {icon}
         </div>
         <div>
-            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h4>
-            <p className="text-base">{children}</p>
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 text-[17px]">{title}</h4>
+            <p className="text-[14px]">{children}</p>
         </div>
     </div>
 );
@@ -62,176 +62,175 @@ interface AboutSystemProps {
     isDashboard?: boolean;
 }
 
-const HeroDiagram: React.FC = () => (
-    <svg viewBox="0 0 800 400" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="hero-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-            <linearGradient id="hero-kiosk-screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient>
-            <linearGradient id="hero-kiosk-side" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#334155"/><stop offset="100%" stopColor="#475569"/></linearGradient>
-            <radialGradient id="hero-glow-grad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%"><stop offset="0%" stopColor="rgba(129, 140, 248, 0.4)"/><stop offset="100%" stopColor="rgba(129, 140, 248, 0)"/></radialGradient>
-            <style>{`
-                @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-                @keyframes screen-content-scroll { 0% { transform: translateY(0); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0); } }
-                .hero-float-1 { animation: float 6s ease-in-out infinite; }
-                .hero-float-2 { animation: float 6s ease-in-out infinite 1.5s; }
-                .hero-float-3 { animation: float 6s ease-in-out infinite 3s; }
-                .hero-float-4 { animation: float 6s ease-in-out infinite 4.5s; }
-                .screen-scroll { animation: screen-content-scroll 8s ease-in-out infinite; }
-            `}</style>
-        </defs>
+const HeroDiagram: React.FC = () => {
+    const [glarePosition, setGlarePosition] = useState({ x: -200, y: -200 });
+    const [isHovering, setIsHovering] = useState(false);
+    const screenRef = useRef<HTMLDivElement>(null);
 
-        <rect width="800" height="400" fill="url(#hero-bg-grad)" />
-        <circle cx="400" cy="200" r="250" fill="url(#hero-glow-grad)" opacity="0.5"/>
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (screenRef.current) {
+            const rect = screenRef.current.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            setGlarePosition({ x, y });
+        }
+    };
 
-        {/* Kiosk 3D structure */}
-        <g transform="translate(400, 210) scale(1.2)">
-            {/* Base */}
-            <path d="M -150 120 L -170 140 L 170 140 L 150 120 Z" fill="#1e293b" />
-            <path d="M -90 -160 L -150 120 L 150 120 L 90 -160 Z" fill="#475569" />
-            {/* Side Panel */}
-            <path d="M 90 -160 L 150 120 L 155 115 L 95 -165 Z" fill="url(#hero-kiosk-side)" />
-             {/* Main Body */}
-            <rect x="-90" y="-160" width="180" height="280" fill="#334155" />
-            {/* Screen */}
-            <rect x="-80" y="-150" width="160" height="260" fill="#0f172a" />
-            <rect x="-80" y="-150" width="160" height="260" fill="url(#hero-kiosk-screen)" opacity="0.8" />
-            
-            {/* Animated Screen Content */}
-            <g className="screen-scroll" clipPath="url(#screen-clip)">
-                <rect x="-70" y="-140" width="140" height="50" rx="4" fill="rgba(255,255,255,0.1)" />
-                <rect x="-60" y="-130" width="60" height="5" rx="2" fill="rgba(255,255,255,0.4)" />
-                <rect x="-70" y="-80" width="140" height="200" rx="4" fill="rgba(255,255,255,0.1)" />
-                <rect x="-60" y="-70" width="120" height="130" rx="2" fill="rgba(255,255,255,0.1)" />
-                <rect x="-60" y="70" width="55" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
-                <rect x="5" y="70" width="55" height="40" rx="2" fill="rgba(255,255,255,0.1)" />
-                <rect x="-70" y="140" width="140" height="50" rx="4" fill="rgba(255,255,255,0.1)" />
+    const handleMouseLeave = () => {
+        setGlarePosition({ x: -200, y: -200 });
+        setIsHovering(false);
+    };
+
+    const handleMouseEnter = () => {
+        setIsHovering(true);
+    };
+
+    const cardVariants = {
+        hover: { y: -8, scale: 1.05 },
+        initial: { y: 0, scale: 1 }
+    };
+
+    return (
+        <svg viewBox="0 0 800 600" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="kiosk-metal" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#475569" />
+                    <stop offset="50%" stopColor="#334155" />
+                    <stop offset="100%" stopColor="#475569" />
+                </linearGradient>
+                <linearGradient id="kiosk-stand" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#1e293b" />
+                    <stop offset="100%" stopColor="#0f172a" />
+                </linearGradient>
+                <filter id="kiosk-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="0" dy="15" stdDeviation="10" floodColor="#000" floodOpacity="0.4" />
+                </filter>
+            </defs>
+
+            {/* Kiosk Stand and Body */}
+            <g filter="url(#kiosk-shadow)">
+                <path d="M 280 580 L 260 595 L 540 595 L 520 580 Z" fill="#0f172a" />
+                <rect x="380" y="520" width="40" height="60" fill="url(#kiosk-stand)" />
+                <rect x="140" y="40" width="520" height="480" rx="20" fill="url(#kiosk-metal)" />
+                <rect x="150" y="50" width="500" height="460" rx="10" fill="#020617" />
             </g>
-        </g>
-        <clipPath id="screen-clip"><rect x="320" y="60" width="160" height="260" /></clipPath>
 
-        {/* Floating text elements */}
-        <g className="font-semibold text-lg text-white/80" textAnchor="middle">
-            <g className="hero-float-1" transform="translate(150 150)"><text>Offline-First</text></g>
-            <g className="hero-float-2" transform="translate(650 150)"><text>Cloud Sync</text></g>
-            <g className="hero-float-3" transform="translate(180 320)"><text>Analytics</text></g>
-            <g className="hero-float-4" transform="translate(620 320)"><text>Customizable</text></g>
-        </g>
-    </svg>
-);
-
-const SystemEcosystemDiagramSVG: React.FC = () => (
-    <svg viewBox="0 0 600 350" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <filter id="card-shadow-eco" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
-                <feOffset in="blur" dy="5" result="offsetBlur"/>
-                <feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <marker id="eco-arrowhead-new" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/>
-            </marker>
-        </defs>
-
-        {/* Kiosk Device Representation */}
-        <g transform="translate(140, 175)" filter="url(#card-shadow-eco)">
-            <rect x="-120" y="-125" width="240" height="250" rx="16" className="fill-white dark:fill-gray-800 stroke-gray-200 dark:stroke-gray-700"/>
-            <foreignObject x="-110" y="-115" width="220" height="230">
-                <div className="flex flex-col h-full items-center p-4 text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-indigo-500 dark:text-indigo-400">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                    </svg>
-                    <h3 className="mt-2 font-bold text-lg text-gray-800 dark:text-gray-100 section-heading">Kiosk Device</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Runs independently using its on-device storage.</p>
-                    <div className="my-4 w-full h-px bg-gray-200 dark:bg-gray-700"></div>
-                    <div className="flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-gray-500 dark:text-gray-400">
-                           <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-                        </svg>
-                        <div>
-                            <p className="font-semibold text-sm text-left text-gray-700 dark:text-gray-300">On-Device Database</p>
-                            <p className="text-xs text-left text-gray-500 dark:text-gray-400">(IndexedDB)</p>
+            {/* Screen Content with embedded HTML */}
+            <foreignObject x="150" y="50" width="500" height="460" style={{ borderRadius: '10px', overflow: 'hidden' }}>
+                <div 
+                    // FIX: Add xmlns attribute via spread to satisfy TypeScript while ensuring correct rendering of HTML inside SVG foreignObject.
+                    {...{xmlns: "http://www.w3.org/1999/xhtml"}}
+                    ref={screenRef}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseEnter={handleMouseEnter}
+                    className="w-full h-full bg-slate-900 relative overflow-hidden cursor-pointer"
+                    style={{ perspective: '1200px' }}
+                >
+                    <motion.div 
+                        className="p-8 space-y-6 absolute inset-0 transition-transform duration-300 ease-out"
+                        animate={{ transform: isHovering ? 'rotateX(5deg) scale(1.03)' : 'rotateX(0deg) scale(1)' }}
+                    >
+                        <div className="text-white text-3xl font-bold section-heading">Shop by Brand</div>
+                        <div className="grid grid-cols-4 gap-4">
+                            {[...Array(4)].map((_, i) => (
+                                <motion.div key={i} className="bg-white/5 aspect-square rounded-lg border border-white/10" whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.15)' }}></motion.div>
+                            ))}
                         </div>
+                        <div className="text-white text-3xl font-bold section-heading">Featured</div>
+                        <div className="grid grid-cols-2 gap-6">
+                            {[...Array(2)].map((_, i) => (
+                                <motion.div key={i} className="bg-white/5 aspect-[4/3] rounded-lg border border-white/10 p-4" initial="initial" whileHover="hover">
+                                    <motion.div className="w-full h-2/3 bg-white/10 rounded" variants={cardVariants}></motion.div>
+                                    <motion.div className="w-3/4 h-4 bg-white/20 rounded mt-3" variants={cardVariants}></motion.div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                    
+                    {/* Dynamic Glare Effect */}
+                    <div 
+                        className="absolute top-0 left-0 pointer-events-none transition-opacity duration-300"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            background: `radial-gradient(circle at ${glarePosition.x}px ${glarePosition.y}px, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%)`,
+                            opacity: isHovering ? 1 : 0,
+                        }}
+                    />
+                </div>
+            </foreignObject>
+        </svg>
+    );
+};
+
+const SystemEcosystemDiagramSVG: React.FC = () => {
+    const providers = [
+        { icon: <ServerStackIcon className="w-8 h-8"/>, name: "Local Folder" },
+        { icon: <CodeBracketIcon className="w-8 h-8"/>, name: "Custom API" },
+        { icon: <SupabaseIcon className="w-8 h-8"/>, name: "Supabase" },
+        { icon: <VercelIcon className="w-8 h-8"/>, name: "Vercel" },
+        { icon: <FtpIcon className="w-8 h-8"/>, name: "FTP" },
+        { icon: <LinkIcon className="w-8 h-8"/>, name: "Shared URL" },
+    ];
+    
+    return (
+        <svg viewBox="0 0 400 400" className="w-full h-auto max-w-lg mx-auto">
+            <defs>
+                <radialGradient id="eco-bg-grad-new" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#1e293b" />
+                    <stop offset="100%" stopColor="#0f172a" />
+                </radialGradient>
+                <filter id="eco-glow-filter-new"><feGaussianBlur stdDeviation="5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <style>{`
+                    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } }
+                    @keyframes data-flow { to { stroke-dashoffset: 1000; } }
+                    .kiosk-pulse { animation: pulse 4s ease-in-out infinite; transform-origin: center; }
+                    .data-line { stroke-dasharray: 4 6; stroke-dashoffset: 0; animation: data-flow 40s linear infinite; }
+                `}</style>
+            </defs>
+
+            <rect x="0" y="0" width="400" height="400" fill="url(#eco-bg-grad-new)" rx="20"/>
+
+            {/* Central Kiosk */}
+            <g transform="translate(200, 200)">
+                <circle r="60" className="fill-indigo-500/10" />
+                <circle r="50" className="fill-indigo-500/20 kiosk-pulse" />
+                <circle r="40" className="fill-indigo-500/80 stroke-indigo-300" strokeWidth="1" filter="url(#eco-glow-filter-new)" />
+                <foreignObject x="-20" y="-20" width="40" height="40">
+                    <div className="flex items-center justify-center h-full">
+                        <CubeIcon className="w-8 h-8 text-white"/>
                     </div>
-                    <div className="mt-4 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50 rounded-full px-3 py-1">FAST & RELIABLE</div>
-                </div>
-            </foreignObject>
-        </g>
-        
-        {/* Sync Provider Representation */}
-        <g transform="translate(460, 175)">
-            <rect x="-120" y="-125" width="240" height="250" rx="16" strokeDasharray="6 4" className="stroke-gray-400 dark:stroke-gray-600 fill-transparent"/>
-            <foreignObject x="-110" y="-115" width="220" height="230">
-                <div className="flex flex-col h-full items-center p-4 text-center">
-                     <h3 className="font-bold text-lg text-gray-800 dark:text-gray-100 section-heading">Optional Sync Provider</h3>
-                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Single source of truth for all devices.</p>
-                     
-                     <div className="mt-2 w-full flex-grow grid grid-cols-2 gap-2 content-center">
-                        <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <ServerStackIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">Local Folder</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <CodeBracketIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">Custom API</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <SupabaseIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">Supabase</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <VercelIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">Vercel</p>
-                        </div>
-                        <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <FtpIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">FTP</p>
-                        </div>
-                         <div className="flex items-center justify-center gap-2 p-1 rounded-lg bg-gray-100 dark:bg-gray-700/50">
-                            <LinkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400"/>
-                            <p className="text-xs font-semibold">Shared URL</p>
-                        </div>
-                     </div>
-                     
-                     <div className="mt-2 text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50 rounded-full px-3 py-1">CENTRALIZED</div>
-                </div>
-            </foreignObject>
-        </g>
-        
-        {/* Connection Arrows */}
-        <g className="text-gray-400 dark:text-gray-500">
-            <motion.path
-                d="M 265 150 C 315 120, 375 120, 340 175"
-                transform="translate(80, 0) scale(0.8, 1)"
-                fill="none" className="stroke-current" strokeWidth="1.5"
-                markerEnd="url(#eco-arrowhead-new)"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1, ease: 'easeInOut' }}
-            />
-            <motion.path
-                d="M 425 200 C 375 230, 315 230, 265 200"
-                transform="scale(0.8, 1) translate(90, 0)"
-                fill="none" className="stroke-current" strokeWidth="1.5"
-                markerEnd="url(#eco-arrowhead-new)"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1, ease: 'easeInOut', delay: 0.2 }}
-            />
-             <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                <text x="345" y="125" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Push Changes (Sync)</text>
-                <text x="345" y="230" textAnchor="middle" className="text-xs font-semibold fill-gray-600 dark:fill-gray-300">Pull Updates</text>
-            </motion.g>
-        </g>
-    </svg>
-);
+                </foreignObject>
+            </g>
 
+            {/* Orbital path and providers */}
+            <path id="orbit-new" d="M 200, 200 m -140, 0 a 140,140 0 1,0 280,0 a 140,140 0 1,0 -280,0" fill="none" />
+
+            {providers.map((p, i) => (
+                <g key={p.name}>
+                    <animateMotion dur="20s" repeatCount="indefinite" begin={`${i * (20 / providers.length)}s`}>
+                        <mpath href="#orbit-new" />
+                    </animateMotion>
+                    <line x1="200" y1="200" x2="0" y2="0" className="stroke-indigo-500/20 data-line" strokeWidth="1"/>
+                    <foreignObject x="-22" y="-32" width="44" height="64">
+                         <div className="flex flex-col items-center justify-center h-full text-center text-indigo-200">
+                            {p.icon}
+                            <div className="text-[8px] font-semibold mt-1">{p.name}</div>
+                        </div>
+                    </foreignObject>
+                </g>
+            ))}
+        </svg>
+    );
+};
 
 const SystemEcosystemDiagram: React.FC = () => (
     <div className="text-center">
-        <div className="max-w-prose mx-auto text-base space-y-4">
-            <h3 className="font-bold text-3xl text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
-            <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient application that stores all its data and media assets locally on the device in an <strong>On-Device Database</strong>. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable, as it always reads data from the local storage first.</p>
-            <p>For multi-device setups or centralized management, it can connect to an <strong>Optional Sync Provider</strong> (like a cloud API or a shared network folder). When connected, the kiosk intelligently syncs data in the background—pushing local changes and pulling remote updates to ensure all devices stay aligned with a single source of truth.</p>
+        <div className="max-w-prose mx-auto text-[14px] space-y-3">
+            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-4 section-heading">How It Works: The Offline-First Core</h3>
+            <p>The kiosk is engineered for resilience. At its heart, it's a completely self-sufficient Progressive Web App (PWA) that stores all its data locally on the device. This <strong>offline-first architecture</strong> means it's incredibly fast and reliable. It doesn't need a constant internet connection to function perfectly, ensuring a smooth customer experience even with unstable network conditions.</p>
+            <p>For multi-device setups or centralized management, it uses an <strong>optional sync provider</strong> (like a local network folder or a cloud server) to keep all kiosks updated. This hybrid model gives you the best of both worlds: the rock-solid stability of an offline app with the powerful scalability of the cloud.</p>
         </div>
         <div className="mt-8"><SystemEcosystemDiagramSVG /></div>
     </div>
@@ -240,8 +239,8 @@ const SystemEcosystemDiagram: React.FC = () => (
 
 const ValueLoopDiagram: React.FC = () => (
     <div className="text-center">
-        <div className="max-w-prose mx-auto text-base space-y-4">
-            <h3 className="font-bold text-3xl text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
+        <div className="max-w-prose mx-auto text-[14px] space-y-4">
+            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-4 section-heading">The Value Loop: Turning Browsing into Insight</h3>
             <p>By transforming passive browsing into active engagement, the kiosk turns your physical space into a source of rich customer data. It creates a powerful feedback loop: customers explore products, the system captures valuable interaction data, and you gain actionable insights to empower your sales team and refine your strategy.</p>
         </div>
         <div className="mt-8"><ValueLoopDiagramSVG /></div>
@@ -249,9 +248,9 @@ const ValueLoopDiagram: React.FC = () => (
 );
 
 const ValueLoopDiagramSVG: React.FC = () => {
-    const iconBaseClass = "w-10 h-10";
+    const iconBaseClass = "w-8 h-8";
     return (
-        <svg viewBox="0 0 400 400" className="w-full h-auto max-w-lg mx-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 400 400" className="w-full h-auto max-w-lg mx-auto" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <marker id="val-arrowhead-new" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
                 <filter id="val-shadow-new"><feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/><feOffset dy="4" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -321,74 +320,98 @@ const ValueLoopDiagramSVG: React.FC = () => {
     );
 };
 
-
 const ScenarioBoutiqueDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="boutique-kiosk-screen-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#a78bfa" /><stop offset="100%" stopColor="#3b82f6" /></linearGradient>
-            <linearGradient id="boutique-shelf-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#4b5563" /><stop offset="100%" stopColor="#374151" /></linearGradient>
+            <linearGradient id="boutique-screen-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#818cf8" />
+                <stop offset="100%" stopColor="#c084fc" />
+            </linearGradient>
             <style>{`
                 @keyframes boutique-shimmer { 0% { transform: translateX(-100%) skewX(-20deg); } 100% { transform: translateX(200%) skewX(-20deg); } }
-                .boutique-shimmer-rect { animation: boutique-shimmer 4s ease-in-out infinite; }
+                .boutique-shimmer-rect { animation: boutique-shimmer 4.5s ease-in-out infinite; animation-delay: 1.5s; }
             `}</style>
         </defs>
-        <rect x="5" y="5" width="90" height="70" rx="4" className="fill-slate-200 dark:fill-slate-700" />
-        <rect x="15" y="60" width="70" height="4" rx="1" fill="url(#boutique-shelf-grad)" />
-        <g transform="translate(42 48)">
-            <path d="M-5 12 L -7 14 L 17 14 L 15 12 Z" className="fill-slate-500 dark:fill-slate-400" />
-            <path d="M-1 -8 L -5 12 L 15 12 L 11 -8 Z" className="fill-slate-400 dark:fill-slate-300" />
-            <rect x="0" y="-7" width="10" height="18" rx="1" className="fill-slate-900"/>
-            <rect x="1" y="-5" width="8" height="14" rx="0.5" fill="url(#boutique-kiosk-screen-grad)" />
-            <rect x="1" y="-5" width="8" height="14" rx="0.5" fill="rgba(255,255,255,0.7)" className="boutique-shimmer-rect" opacity="0.4"/>
+        {/* Pedestal */}
+        <path d="M 35 75 L 38 60 H 62 L 65 75 Z" className="fill-slate-300 dark:fill-slate-600" />
+        <rect x="38" y="40" width="24" height="20" className="fill-slate-400 dark:fill-slate-500" />
+        
+        {/* Kiosk */}
+        <g transform="translate(50, 25)">
+            <rect x="-20" y="-15" width="40" height="28" rx="3" className="fill-slate-700 dark:fill-slate-800" />
+            <rect x="-18" y="-13" width="36" height="24" rx="1.5" fill="url(#boutique-screen-grad)" />
+            {/* Shimmer effect */}
+            <rect x="-18" y="-13" width="15" height="24" rx="1.5" fill="rgba(255,255,255,0.4)" className="boutique-shimmer-rect" opacity="0.5"/>
         </g>
     </svg>
 );
 
-const ScenarioFranchiseDiagram: React.FC = () => {
-    const storeIcon = <path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" />;
-    const iconStyle = "fill-none text-slate-500 dark:text-slate-400";
-    return (
-        <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="franchise-server-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#6366f1"/><stop offset="100%" stopColor="#a78bfa"/></linearGradient>
-            </defs>
-            <path id="franchise-path-1" d="M50 25 C 30 35, 25 50, 25 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path id="franchise-path-2" d="M50 25 C 50 35, 50 50, 50 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <path id="franchise-path-3" d="M50 25 C 70 35, 75 50, 75 60" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <circle r="2" fill="url(#franchise-server-grad)"><animateMotion dur="2.5s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-1"/></animateMotion></circle>
-            <circle r="2" fill="url(#franchise-server-grad)"><animateMotion dur="2.5s" begin="0.2s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-2"/></animateMotion></circle>
-            <circle r="2" fill="url(#franchise-server-grad)"><animateMotion dur="2.5s" begin="0.4s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-3"/></animateMotion></circle>
-            <circle cx="50" cy="25" r="12" fill="url(#franchise-server-grad)" className="stroke-white/50 dark:stroke-black/50" strokeWidth="1"/>
-            <ServerStackIcon className="w-5 h-5 text-white" x="42.5" y="17.5" />
-            <g transform="translate(18, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(42.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-            <g transform="translate(67.5, 58) scale(0.35)" className={iconStyle}>{storeIcon}</g>
-        </svg>
-    );
-};
+const ScenarioFranchiseDiagram: React.FC = () => (
+    <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="franchise-cloud-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#60a5fa" />
+                <stop offset="100%" stopColor="#818cf8" />
+            </linearGradient>
+        </defs>
+        {/* Paths for dots */}
+        <path id="franchise-path-1" d="M50 25 Q 30 45, 20 65" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="2 2" />
+        <path id="franchise-path-2" d="M50 25 V 65" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="2 2" />
+        <path id="franchise-path-3" d="M50 25 Q 70 45, 80 65" fill="none" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.5" strokeDasharray="2 2" />
+        
+        {/* Animated dots */}
+        <circle r="2.5" className="fill-purple-500">
+            <animateMotion dur="2s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-1" /></animateMotion>
+        </circle>
+        <circle r="2.5" className="fill-purple-500">
+            <animateMotion dur="2s" begin="0.3s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-2" /></animateMotion>
+        </circle>
+        <circle r="2.5" className="fill-purple-500">
+            <animateMotion dur="2s" begin="0.6s" repeatCount="indefinite" rotate="auto"><mpath href="#franchise-path-3" /></animateMotion>
+        </circle>
+
+        {/* Cloud Icon */}
+        <g transform="translate(50, 25)">
+            <path d="M -18 2 C -25 2, -25 -10, -15 -10 C -10 -20, 5 -20, 10 -10 C 20 -10, 20 2, 12 2 Z" fill="url(#franchise-cloud-grad)" />
+        </g>
+
+        {/* Storefront Icons */}
+        <g className="text-slate-500 dark:text-slate-400 fill-current">
+            <path transform="translate(13, 65)" d="M0 10 L15 10 L15 0 L7.5 -5 L0 0 Z M2 4 H13 V8 H2Z"/>
+            <path transform="translate(43, 65)" d="M0 10 L15 10 L15 0 L7.5 -5 L0 0 Z M2 4 H13 V8 H2Z"/>
+            <path transform="translate(73, 65)" d="M0 10 L15 10 L15 0 L7.5 -5 L0 0 Z M2 4 H13 V8 H2Z"/>
+        </g>
+    </svg>
+);
 
 const ScenarioB2bDiagram: React.FC = () => (
     <svg viewBox="0 0 100 80" className="w-24 h-20 mx-auto" xmlns="http://www.w3.org/2000/svg">
         <defs>
+            <linearGradient id="b2b-scan-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="rgba(239, 68, 68, 0)" />
+                <stop offset="50%" stopColor="rgba(239, 68, 68, 0.8)" />
+                <stop offset="100%" stopColor="rgba(239, 68, 68, 0)" />
+            </linearGradient>
             <style>{`
-                @keyframes b2b-scan { 0% { transform: translateY(0); } 50% { transform: translateY(18px); } 100% { transform: translateY(0); } }
+                @keyframes b2b-scan { 0% { transform: translateY(-5px); } 100% { transform: translateY(40px); } }
                 .b2b-scan-line { animation: b2b-scan 2.5s ease-in-out infinite; }
             `}</style>
         </defs>
-        <path d="M 5 75 L 5 15 C 5 10, 15 5, 25 5 H 75 C 85 5, 95 10, 95 15 V 75" className="fill-slate-200 dark:fill-slate-700" />
-        <g transform="translate(42 35)">
-            <rect x="-8" y="28" width="36" height="4" rx="1" className="fill-slate-400 dark:fill-slate-500" />
-            <rect x="4" y="-5" width="2" height="35" rx="1" className="fill-slate-400 dark:fill-slate-500" />
-            <rect x="-2" y="-4" width="14" height="25" rx="1.5" className="fill-slate-800" />
-            <rect x="0" y="-2" width="10" height="21" rx="0.5" className="fill-indigo-500" />
-            <rect x="0" y="-2" width="10" height="2" fill="rgba(255,255,255,0.8)" className="b2b-scan-line" />
-        </g>
-        <UserCircleIcon x="15" y="45" className="w-10 h-10 text-slate-400 dark:text-slate-500"/>
-        <g transform="translate(70 15)">
-            <ClipboardDocumentListIcon className="w-10 h-10 text-indigo-500 dark:text-indigo-400" />
-            <circle r="1.5" className="fill-indigo-400">
-                <animateMotion dur="2s" repeatCount="indefinite" path="M -22 25 C -10 20, -10 30, 2 25" />
-            </circle>
+        {/* Kiosk Base */}
+        <path d="M 30 75 L 40 45 H 60 L 70 75 Z" className="fill-slate-300 dark:fill-slate-600" />
+        <rect x="40" y="20" width="20" height="25" className="fill-slate-400 dark:fill-slate-500" />
+        
+        {/* Kiosk Screen */}
+        <g transform="translate(50, 20)">
+            <rect x="-25" y="-15" width="50" height="35" rx="3" className="fill-slate-700 dark:fill-slate-800" />
+            <rect x="-23" y="-13" width="46" height="31" rx="1.5" className="fill-slate-900" />
+            {/* Scanning line */}
+            <rect x="-23" y="-13" width="46" height="1.5" fill="url(#b2b-scan-grad)" className="b2b-scan-line" />
+
+            {/* Placeholder UI on screen */}
+            <rect x="-18" y="-8" width="15" height="15" rx="1" className="fill-slate-600/50" />
+            <rect x="2" y="-8" width="16" height="3" rx="1" className="fill-slate-600/50" />
+            <rect x="2" y="-2" width="12" height="3" rx="1" className="fill-slate-600/50" />
         </g>
     </svg>
 );
@@ -411,8 +434,8 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                     <MotionSection variants={itemVariants} className="text-center flex flex-col items-center justify-center min-h-[50vh] md:min-h-[80vh] px-6 py-16">
                         <div className="w-full max-w-4xl"><HeroDiagram /></div>
                         <h1 className="text-4xl md:text-5xl font-bold section-heading text-gray-800 dark:text-white mt-8">The Retail OS</h1>
-                        <p className="max-w-3xl mx-auto mt-4 text-lg text-gray-600 dark:text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
-                        <div className="mt-6 max-w-prose mx-auto text-base space-y-4 text-gray-500 dark:text-gray-400">
+                        <p className="max-w-3xl mx-auto mt-4 text-[14px] text-gray-600 dark:text-gray-400">Bridging Your Physical Space with Digital Intelligence</p>
+                        <div className="mt-6 max-w-prose mx-auto text-[14px] space-y-4 text-gray-500 dark:text-gray-400">
                            <p>In today's retail landscape, the digital and physical worlds are often disconnected. Customers browse online but purchase in-store; they discover in-store but research on their phones. This system was born from a simple yet powerful idea: **your physical retail space should be as dynamic, informative, and measurable as your website.**</p>
                            <p>It's engineered to be more than just a digital sign—it's a strategic platform designed to digitize your in-store customer journey. By providing an interactive, engaging experience, it empowers you with the tools to create a seamless brand story, capture actionable data that was previously invisible, and ultimately, convert passive browsing into active sales engagement.</p>
                        </div>
@@ -428,8 +451,8 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-3xl text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-base">
+                            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-[14px]">
                                 <FeatureItem icon={<CloudSlashIcon className="w-5 h-5"/>} title="Offline-First Reliability">Runs flawlessly with or without an internet connection, ensuring 100% uptime.</FeatureItem>
                                 <FeatureItem icon={<ArrowPathIcon className="w-5 h-5"/>} title="Flexible Syncing">Use a local network folder or a cloud API for multi-location franchises.</FeatureItem>
                                 <FeatureItem icon={<CircleStackIcon className="w-5 h-5"/>} title="Centralized Management">Update product data from a single admin panel and sync changes everywhere.</FeatureItem>
@@ -444,19 +467,31 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
-                            <h3 className="font-bold text-3xl text-gray-800 dark:text-white mb-8 section-heading text-center">Perfect For Any Environment</h3>
+                            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-12 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioBoutiqueDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">High-End Boutiques</h4><p className="text-sm text-gray-500 dark:text-gray-400">Provide a sophisticated, interactive catalogue.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioFranchiseDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">Multi-Location Franchises</h4><p className="text-sm text-gray-500 dark:text-gray-400">Ensure brand consistency and manage data centrally.</p></div>
-                                <div className="text-center p-4 rounded-xl bg-gray-100 dark:bg-gray-800/50"><ScenarioB2bDiagram /><h4 className="font-semibold mt-2 text-gray-800 dark:text-white">B2B & Trade Shows</h4><p className="text-sm text-gray-500 dark:text-gray-400">Capture leads and generate quotes instantly.</p></div>
+                                <div className="text-center p-8 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                    <ScenarioBoutiqueDiagram />
+                                    <h4 className="font-bold text-[17px] mt-6 text-gray-900 dark:text-white">High-End Boutiques</h4>
+                                    <p className="text-[14px] text-gray-600 dark:text-gray-400 mt-2">Provide a sophisticated, interactive catalogue.</p>
+                                </div>
+                                <div className="text-center p-8 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                    <ScenarioFranchiseDiagram />
+                                    <h4 className="font-bold text-[17px] mt-6 text-gray-900 dark:text-white">Multi-Location Franchises</h4>
+                                    <p className="text-[14px] text-gray-600 dark:text-gray-400 mt-2">Ensure brand consistency and manage data centrally.</p>
+                                </div>
+                                <div className="text-center p-8 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                                    <ScenarioB2bDiagram />
+                                    <h4 className="font-bold text-[17px] mt-6 text-gray-900 dark:text-white">B2B & Trade Shows</h4>
+                                    <p className="text-[14px] text-gray-600 dark:text-gray-400 mt-2">Capture leads and generate quotes instantly.</p>
+                                </div>
                             </div>
                         </div>
                     </MotionSection>
 
                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-3xl mx-auto text-center">
-                            <h3 className="font-bold text-3xl text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
-                            <p className="text-base text-gray-500 dark:text-gray-400 mb-6">This application is open-source and designed to be fully self-hostable. For developers, the complete project source code can be downloaded from GitHub.</p>
+                            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
+                            <p className="text-[14px] text-gray-500 dark:text-gray-400 mb-6">This application is open-source and designed to be fully self-hostable. For developers, the complete project source code can be downloaded from GitHub.</p>
                             <a href="https://github.com/jasonankeodendaal/JSTYP.ME.git" target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full sm:w-auto">
                                 Click Me
                             </a>

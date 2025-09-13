@@ -9,6 +9,7 @@ import { StorageProvider } from '../types';
 
 // FIX: Cast motion.div to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
+const MotionButton = motion.button as any;
 
 const SyncStatusIndicator: React.FC = () => {
     const { syncStatus, storageProvider, lastUpdated } = useAppContext();
@@ -196,13 +197,23 @@ const Footer: React.FC = () => {
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                   {creatorProfile.enabled && (
-                    <button 
+                    <MotionButton
                         onClick={() => setIsCreatorPopupOpen(true)}
                         className="group transition-all text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
                         aria-label="Show creator details"
+                        animate={{
+                            scale: [1, 1.1, 1],
+                            opacity: [1, 0.7, 1],
+                        }}
+                        transition={{
+                            duration: 2.5,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                            repeatType: "loop"
+                        }}
                     >
                          <QuestionMarkCircleIcon className="h-7 w-7"/>
-                    </button>
+                    </MotionButton>
                   )}
                   <p className="text-sm">
                       JSTYP.me &copy; 2025. All rights reserved.
