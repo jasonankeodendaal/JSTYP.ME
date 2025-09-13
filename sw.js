@@ -1,4 +1,5 @@
 
+
 const CACHE_NAME = 'product-catalogue-cache-v8'; // Incremented version
 const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v8'; // Incremented version
 
@@ -17,7 +18,6 @@ const IMMUTABLE_URLS = [
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
   // aistudiocdn dependencies from importmap
   'https://aistudiocdn.com/react@^19.1.1',
-  'https://aistudiocdn.com/react-dom@^19.1.1/client',
   'https://aistudiocdn.com/react-dom@^19.1.1/',
   'https://aistudiocdn.com/react-router-dom@^7.8.2',
   'https://aistudiocdn.com/framer-motion@^12.23.12',

@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAppContext } from '../context/AppContext.tsx';
 import type { Product, Brand, Category, Quote } from '../../types';
@@ -116,8 +118,14 @@ const StockPick: React.FC = () => {
             kioskId: kioskId,
         };
         addQuote(newQuote);
-        alert("Quote saved successfully!");
-        navigate(loggedInUser ? "/admin" : "/");
+
+        if (loggedInUser) {
+            alert("Quote saved successfully!");
+            navigate("/admin");
+        } else {
+            alert("Quote will be emailed or WhatsApp soon thank you for your request need a quote faster speak to an in-store employee");
+            navigate("/");
+        }
     };
 
     const selectedItemCount = Object.keys(selectedItems).length;

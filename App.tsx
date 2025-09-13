@@ -1,8 +1,11 @@
 /// <reference path="./swiper.d.ts" />
 
 import React, { useEffect, useRef, useCallback } from 'react';
-// FIX: Consolidate react-router-dom imports into a single line.
-import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
+import { Routes } from 'react-router-dom';
+import { Route } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { register } from 'swiper/element/bundle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';

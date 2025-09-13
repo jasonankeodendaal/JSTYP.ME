@@ -1,6 +1,6 @@
 
+
 import React from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { Link } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import { EyeIcon, EyeOffIcon, PlusIcon, CubeIcon, AndroidIcon } from './Icons.tsx';
@@ -13,19 +13,19 @@ const BrandGrid: React.FC = () => {
     return (
         <div>
             <h2 className="text-2xl tracking-tight text-gray-900 dark:text-gray-100 mb-6 section-heading">Shop by Brand</h2>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                 {brands.filter(brand => !brand.isDeleted).map((brand) => (
                     <Link
                         key={brand.id}
                         to={`/brand/${brand.id}`}
-                        className="group flex items-center justify-center aspect-square transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--primary-color)] rounded-lg"
+                        className="group flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-800/50 rounded-2xl aspect-[2/1] border border-gray-200 dark:border-white/10 transition-all duration-300 hover:scale-105 hover:border-[var(--primary-color)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-[var(--primary-color)]"
                         title={brand.name}
                     >
                         <LocalMedia
                             src={brand.logoUrl}
                             alt={`${brand.name} Logo`}
                             type="image"
-                            className="max-h-full max-w-full object-contain"
+                            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                         />
                     </Link>
                 ))}

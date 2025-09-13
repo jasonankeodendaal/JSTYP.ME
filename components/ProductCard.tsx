@@ -1,5 +1,4 @@
 import React from 'react';
-// @FIX: Split react-router-dom imports to resolve potential module resolution issues.
 import { Link } from 'react-router-dom';
 import { Product } from '../types.ts';
 import { useAppContext } from './context/AppContext.tsx';

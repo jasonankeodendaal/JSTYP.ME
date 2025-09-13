@@ -92,7 +92,6 @@
       }
 
       body {
-        zoom: 0.75;
         background-color: var(--app-bg);
         background-image: var(--app-bg-image);
         color: var(--main-text);
@@ -298,6 +297,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <!-- ES Module Shims for legacy browser support of import maps -->
+    <script async src="https://ga.jspm.io/npm:es-module-shims@1.10.0/dist/es-module-shims.js"></script>
 <script type="importmap">
 {
   "imports": {

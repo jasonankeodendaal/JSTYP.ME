@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// FIX: Consolidate react-router-dom import.
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
 import type { AdLink, Product } from '../types.ts';

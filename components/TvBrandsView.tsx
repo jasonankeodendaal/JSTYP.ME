@@ -1,6 +1,9 @@
 
+
 import React, { useMemo, useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 // FIX: Correct import path for AppContext
 import { useAppContext } from './context/AppContext.tsx';
 import { ChevronLeftIcon } from './Icons';
