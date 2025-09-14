@@ -18,14 +18,14 @@ const BrandGrid: React.FC = () => {
                     <Link
                         key={brand.id}
                         to={`/brand/${brand.id}`}
-                        className="group flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-800/50 rounded-2xl aspect-[2/1] border border-gray-200 dark:border-white/10 transition-all duration-300 hover:scale-105 hover:border-[var(--primary-color)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-[var(--primary-color)]"
+                        className="group flex items-center justify-center p-4 h-24 rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-[var(--primary-color)]"
                         title={brand.name}
                     >
                         <LocalMedia
                             src={brand.logoUrl}
                             alt={`${brand.name} Logo`}
                             type="image"
-                            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                            className="max-h-full max-w-full object-contain transition-transform duration-300"
                         />
                     </Link>
                 ))}

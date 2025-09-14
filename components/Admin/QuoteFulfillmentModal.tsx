@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAppContext } from '../context/AppContext.tsx';
-import type { Quote, Product } from '../../types.ts';
+import type { Quote, Product } from '../../types';
 import { XIcon, UploadIcon, CheckIcon } from '../Icons.tsx';
 import LocalMedia from '../LocalMedia.tsx';
 

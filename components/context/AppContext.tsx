@@ -20,6 +20,7 @@ import {
 import type { Settings, Brand, Product, Catalogue, Pamphlet, ScreensaverAd, BackupData, AdminUser, StorageProvider, ProductDocument, TvContent, Category, Client, Quote, ViewCounts, ActivityLog, KioskSession, RemoteCommand, BackupProgress } from '../../types.ts';
 import { idbGet, idbSet } from './idb.ts';
 import JSZip from 'jszip';
+import { TrashIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
 
 
 // --- UTILITY FUNCTIONS ---
@@ -76,7 +77,17 @@ const isApiEndpoint = (url: string | undefined): boolean => {
 
 
 // --- TYPE DEFINITIONS ---
-interface ConfirmationState { isOpen: boolean; message: string; onConfirm: () => void; }
+interface ConfirmationState {
+  isOpen: boolean;
+  message: string | React.ReactNode;
+  onConfirm: () => void;
+  onCancel?: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  title?: string;
+  isDestructive?: boolean;
+  icon?: React.ReactNode;
+}
 interface BookletModalState { isOpen: boolean; title: string; imageUrls: string[]; }
 interface PdfModalState { isOpen: boolean; url: string; title: string; }
 interface QuoteStartModalState { isOpen: boolean; }
@@ -160,6 +171,7 @@ interface AppContextType {
   triggerInstallPrompt: () => void;
   confirmation: ConfirmationState;
   showConfirmation: (message: string, onConfirm: () => void) => void;
+  showInfoModal: (title: string, message: string | React.ReactNode, onConfirm?: () => void) => void;
   hideConfirmation: () => void;
   bookletModalState: BookletModalState;
   closeBookletModal: () => void;
@@ -213,6 +225,9 @@ interface AppContextType {
   createZipBackup: () => Promise<void>;
   restoreZipBackup: (file: File) => Promise<void>;
   uploadApk: (file: File) => Promise<void>;
+  // FIX: Add fulfillingQuote and setFulfillingQuote to the context type to manage the fulfillment modal globally.
+  fulfillingQuote: Quote | null;
+  setFulfillingQuote: (quote: Quote | null) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -244,6 +259,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [apkDownloadUrl, setApkDownloadUrl] = useState<string>('');
     const [backupProgress, setBackupProgressState] = useState<BackupProgress>({ active: false, message: '', percent: 0 });
     const [projectZipBlob, setProjectZipBlob] = useState<Blob | null>(null);
+    // FIX: Add state for the quote being fulfilled to manage the modal globally.
+    const [fulfillingQuote, setFulfillingQuote] = useState<Quote | null>(null);
 
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loggedInUser, setLoggedInUser] = useState<AdminUser | null>(null);
@@ -468,8 +485,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     // --- MODALS ---
-    const showConfirmation = (message: string, onConfirm: () => void) => setConfirmation({ isOpen: true, message, onConfirm });
-    const hideConfirmation = () => setConfirmation({ isOpen: false, message: '', onConfirm: () => {} });
+    const hideConfirmation = () => {
+        const cancelCallback = confirmation.onCancel;
+        setConfirmation({ isOpen: false, message: '', onConfirm: () => {} });
+        if (cancelCallback) {
+          cancelCallback();
+        }
+    };
+    const showConfirmation = (message: string, onConfirm: () => void) => {
+        setConfirmation({
+            isOpen: true,
+            message,
+            onConfirm,
+            title: 'Confirm Action',
+            confirmText: 'Confirm',
+            cancelText: 'Cancel',
+            isDestructive: true,
+            icon: <TrashIcon className="h-6 w-6 text-red-600 dark:text-red-400" />,
+        });
+    };
+    const showInfoModal = (title: string, message: string | React.ReactNode, onConfirm?: () => void) => {
+        setConfirmation({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: onConfirm || (() => {}),
+            confirmText: 'OK',
+            isDestructive: false,
+            icon: <ClipboardDocumentListIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />,
+        });
+    };
     const openDocument = (doc: DocumentType, title: string) => {
         if (doc.type === 'image') setBookletModalState({ isOpen: true, title, imageUrls: doc.imageUrls });
         if (doc.type === 'pdf') setPdfModalState({ isOpen: true, url: doc.url, title });
@@ -1424,7 +1469,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateSettings, restoreBackup, deleteAllMockData,
         isScreensaverActive, isScreensaverEnabled, startScreensaver, exitScreensaver, toggleScreensaver,
         deferredPrompt, triggerInstallPrompt: () => deferredPrompt?.prompt(),
-        confirmation, showConfirmation, hideConfirmation,
+        confirmation, showConfirmation, showInfoModal, hideConfirmation,
         bookletModalState, closeBookletModal,
         pdfModalState, closePdfModal,
         quoteStartModal, openQuoteStartModal, closeQuoteStartModal,
@@ -1458,6 +1503,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createZipBackup,
         restoreZipBackup,
         uploadApk,
+        fulfillingQuote,
+        setFulfillingQuote,
     };
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

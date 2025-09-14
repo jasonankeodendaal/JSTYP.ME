@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -202,7 +201,7 @@ const MobileQuoteCTA: React.FC<{ totalQuantity: number; onOpen: () => void }> = 
 
 
 const StockPick: React.FC = () => {
-    const { brands, categories, products, clients, loggedInUser, addQuote, kioskId, showInfoModal } = useAppContext();
+    const { brands, categories, products, clients, loggedInUser, addQuote, kioskId } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
     const { clientId } = location.state || {};
@@ -257,7 +256,6 @@ const StockPick: React.FC = () => {
             if (uncategorized.length > 0) { brandGroup.categories.push({ category: { id: `uncat-${brand.id}`, name: 'Other Products' }, products: uncategorized }); }
             
             brandGroup.categories.sort((a,b) => a.category.name.localeCompare(b.category.name));
-            // FIX: The `group` array was being pushed into itself. Changed to push the `brandGroup` object.
             group.push(brandGroup);
         }
         return group;
@@ -293,23 +291,11 @@ const StockPick: React.FC = () => {
         addQuote(newQuote);
 
         if (loggedInUser) {
-            showInfoModal(
-                'Quote Saved',
-                'The quote has been saved successfully in the admin panel.',
-                () => navigate("/admin", { state: { defaultSubTab: 'quotes' } })
-            );
+            alert("Quote saved successfully!");
+            navigate("/admin", { state: { defaultSubTab: 'quotes' } });
         } else {
-            const message = (
-                <div>
-                    <p className="mt-2 text-gray-600 dark:text-gray-300">Your quote will be sent via WhatsApp or E-mail shortly.</p>
-                    <p className="mt-2 text-gray-600 dark:text-gray-300">Need one sooner? Please speak to one of our sales employees.</p>
-                </div>
-            );
-            showInfoModal(
-                'Quote Request Received',
-                message,
-                () => navigate("/")
-            );
+            alert("Thank you for your request! Your quote will be processed shortly.");
+            navigate("/");
         }
     };
     

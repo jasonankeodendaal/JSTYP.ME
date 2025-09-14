@@ -2,6 +2,10 @@
 
 
 
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
@@ -110,8 +114,8 @@ export const AdminDashboard: React.FC = () => {
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
     const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
-    const [fulfillingQuote, setFulfillingQuote] = useState<Quote | null>(null);
-    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal } = useAppContext();
+    // FIX: Removed local state for fulfillingQuote. It is now managed globally by AppContext.
+    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal, setFulfillingQuote } = useAppContext();
 
     useEffect(() => {
         sessionStorage.setItem('adminFooterTab', activeFooterTab);
@@ -353,7 +357,7 @@ export const AdminDashboard: React.FC = () => {
                 const sortedQuotes = [...quotes].sort((a, b) => b.createdAt - a.createdAt);
                 return (
                      <div className="space-y-6">
-                        {fulfillingQuote && <QuoteFulfillmentModal quote={fulfillingQuote} onClose={() => setFulfillingQuote(null)} />}
+                        {/* FIX: Removed redundant modal rendering. It is now handled globally in App.tsx. */}
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Manage Quotes</h3>
                             <button onClick={openQuoteStartModal} className="btn btn-primary">

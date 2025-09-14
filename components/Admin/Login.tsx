@@ -1,11 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
-import { motion } from 'framer-motion';
-import { UserCircleIcon, ShieldCheckIcon } from '../Icons.tsx';
+import { motion, AnimatePresence } from 'framer-motion';
+import { UserCircleIcon, ShieldCheckIcon, HomeIcon, QuestionMarkCircleIcon, XIcon, PhoneIcon, EnvelopeIcon, GlobeAltIcon, WhatsAppIcon } from '../Icons.tsx';
 
 const MotionDiv = motion.div as any;
+const MotionButton = motion.button as any;
+
+// --- Creator Popup Component (adapted from Footer) ---
+const CreatorPopup: React.FC<{ onClose: () => void; theme: 'light' | 'dark' }> = ({ onClose, theme }) => {
+    const { settings } = useAppContext();
+    const creator = settings.creatorProfile;
+
+    if (!creator || !creator.enabled) return null;
+
+    const whatsappUrl = creator.whatsapp.startsWith('http')
+        ? creator.whatsapp
+        : `https://wa.me/${creator.whatsapp}`;
+    
+    return (
+        <MotionDiv
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[60] overflow-hidden"
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        >
+          <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-20">
+            <XIcon className="h-4 w-4" />
+          </button>
+    
+          <div className="relative">
+            <div className="h-28 bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-800 dark:to-purple-900"></div>
+            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                <LocalMedia
+                    src={creator.imageUrl} 
+                    alt={creator.name}
+                    type="image"
+                    className="h-24 w-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
+                />
+            </div>
+          </div>
+          
+          <div className="pt-16 pb-6 px-6 text-center">
+            <h3 className="text-2xl font-bold section-heading text-gray-900 dark:text-gray-100">{creator.name}</h3>
+            <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{creator.title}</p>
+
+            <div className="my-4 flex justify-center">
+                <LocalMedia
+                    src={theme === 'light' ? (creator.logoUrlLight || creator.logoUrlDark || '') : (creator.logoUrlDark || creator.logoUrlLight || '')}
+                    alt="Creator Logo"
+                    type="image"
+                    className="h-10 w-auto"
+                />
+            </div>
+            
+            <div className="mt-4 text-left space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <a href={`tel:${creator.phone}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <span>{creator.phone}</span>
+                </a>
+                <a href={`mailto:${creator.email}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <EnvelopeIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <span>{creator.email}</span>
+                </a>
+                <a href={creator.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
+                    <GlobeAltIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <span>{creator.websiteText}</span>
+                </a>
+            </div>
+            
+            <div className="mt-6">
+                <a 
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn w-full bg-[#25D366] hover:bg-[#1DAE53] text-white"
+                >
+                    <WhatsAppIcon className="w-5 h-5" />
+                    <span>Get a Quote on WhatsApp</span>
+                </a>
+            </div>
+          </div>
+        </MotionDiv>
+    );
+}
+
 
 const AdminLoginForm: React.FC<{
     onSubmit: (e: React.FormEvent) => Promise<void>;
@@ -82,10 +164,11 @@ const AdminLoginForm: React.FC<{
 
 
 const AdminLogin: React.FC = () => {
-    const { adminUsers, login, loggedInUser, settings } = useAppContext();
+    const { adminUsers, login, loggedInUser, settings, theme } = useAppContext();
     const [selectedUserId, setSelectedUserId] = useState<string>('');
     const [pin, setPin] = useState('');
     const [error, setError] = useState('');
+    const [isCreatorPopupOpen, setIsCreatorPopupOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -118,6 +201,7 @@ const AdminLogin: React.FC = () => {
     };
 
     const loginSettings = settings.loginScreen;
+    const creatorProfile = settings.creatorProfile;
 
     const pageStyle: React.CSSProperties = {
         backgroundImage: loginSettings.backgroundImageUrl ? `url(${loginSettings.backgroundImageUrl})` : 'none',
@@ -129,7 +213,38 @@ const AdminLogin: React.FC = () => {
     };
 
     return (
-        <div style={pageStyle} className="min-h-screen w-full bg-cover bg-center text-white">
+        <div style={pageStyle} className="min-h-screen w-full bg-cover bg-center text-white relative">
+            
+            {/* Action Buttons */}
+            <div className="fixed top-4 left-4 z-10">
+                <Link to="/" className="btn bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm border border-white/10 !py-2 !px-4">
+                    <HomeIcon className="h-5 w-5" />
+                    <span>Home</span>
+                </Link>
+            </div>
+            
+            {creatorProfile.enabled && (
+                <div className="fixed top-4 right-4 z-10">
+                     <MotionButton
+                        onClick={() => setIsCreatorPopupOpen(true)}
+                        className="group transition-all text-white/70 hover:text-white"
+                        aria-label="Show creator details"
+                        animate={{
+                            scale: [1, 1.1, 1],
+                            opacity: [0.7, 1, 0.7],
+                        }}
+                        transition={{
+                            duration: 2.5,
+                            ease: "easeInOut",
+                            repeat: Infinity,
+                            repeatType: "loop"
+                        }}
+                    >
+                         <QuestionMarkCircleIcon className="h-9 w-9 drop-shadow-lg"/>
+                    </MotionButton>
+                </div>
+            )}
+            
             {/* Desktop Layout (LG and up) */}
             <div className="hidden lg:flex min-h-screen w-full flex-row">
                 <div className="flex flex-col items-center justify-center w-full lg:w-3/5 p-12 text-center relative overflow-hidden">
@@ -163,48 +278,20 @@ const AdminLogin: React.FC = () => {
                 </div>
             </div>
 
-            {/* Tablet Layout (MD to LG) */}
-            <div className="hidden md:flex lg:hidden min-h-screen w-full items-center justify-center p-8">
+            {/* Mobile & Tablet Layout (below LG) */}
+            <div className="lg:hidden flex min-h-screen w-full items-center justify-center p-4 sm:p-8">
                 <MotionDiv
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 backdrop-blur-xl border border-white/10"
+                    className="w-full max-w-md rounded-[2.5rem] shadow-2xl p-6 sm:p-8 backdrop-blur-xl border border-white/10"
                     style={formPanelStyle}
                 >
-                    <div className="flex flex-col items-center text-center mb-8" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-                        <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto drop-shadow-lg" />
-                        <h1 className="text-3xl font-bold mt-4 section-heading">{settings.appName}</h1>
-                        <p className="mt-1 text-sm max-w-md opacity-90">{settings.appDescription}</p>
+                    <div className="flex flex-col items-center text-center mb-6 sm:mb-8" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                        <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-16 sm:h-20 w-auto drop-shadow-lg" />
+                        <h1 className="text-3xl sm:text-4xl font-bold mt-4 section-heading">{settings.appName}</h1>
+                        <p className="mt-1 text-sm sm:text-base max-w-md opacity-90">{settings.appDescription}</p>
                     </div>
-                    <AdminLoginForm 
-                        onSubmit={handleSubmit}
-                        selectedUserId={selectedUserId}
-                        onUserChange={setSelectedUserId}
-                        pin={pin}
-                        onPinChange={setPin}
-                        error={error}
-                    />
-                </MotionDiv>
-            </div>
-
-            {/* Mobile Layout (below MD) */}
-            <div className="md:hidden flex flex-col min-h-screen w-full">
-                <div className="flex-grow flex flex-col items-center justify-center p-8 text-center" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-                    <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-20 w-auto drop-shadow-lg" />
-                    <h1 className="text-4xl font-bold mt-4 section-heading">{settings.appName}</h1>
-                    <p className="mt-1 text-md max-w-md opacity-90">{settings.appDescription}</p>
-                </div>
-                <MotionDiv
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                    className="flex-shrink-0 p-8 rounded-t-[2.5rem] shadow-2xl backdrop-blur-xl border-t border-white/10"
-                    style={formPanelStyle}
-                >
-                    <h2 className="text-2xl font-bold tracking-tight section-heading text-center mb-6">
-                        Admin Login
-                    </h2>
                     <AdminLoginForm 
                         onSubmit={handleSubmit}
                         selectedUserId={selectedUserId}
@@ -219,6 +306,21 @@ const AdminLogin: React.FC = () => {
             <p className="fixed bottom-4 left-1/2 -translate-x-1/2 text-center text-xs opacity-50" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                 &copy; {new Date().getFullYear()} All rights reserved.
             </p>
+            
+            {/* Creator Popup */}
+             <AnimatePresence>
+                {isCreatorPopupOpen && (
+                  <MotionDiv
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] flex items-center justify-center p-4"
+                    onClick={() => setIsCreatorPopupOpen(false)}
+                  >
+                    <CreatorPopup onClose={() => setIsCreatorPopupOpen(false)} theme={'dark'} />
+                  </MotionDiv>
+                )}
+              </AnimatePresence>
         </div>
     );
 };

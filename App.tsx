@@ -53,6 +53,7 @@ import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
 // FIX: Add Settings type to import
 import type { FontStyleSettings, Settings } from './types';
 import { idbSet } from './components/context/idb.ts';
+import QuoteFulfillmentModal from './components/Admin/QuoteFulfillmentModal.tsx';
 
 // FIX: Cast motion.div to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
@@ -234,7 +235,7 @@ const BackupProgressModal: React.FC = () => {
 
 
 const AppContent: React.FC = () => {
-  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal, playTouchSound, theme } = useAppContext();
+  const { isScreensaverActive, settings, bookletModalState, closeBookletModal, pdfModalState, closePdfModal, activeTvContent, stopTvContent, isSetupComplete, quoteStartModal, playTouchSound, theme, fulfillingQuote, setFulfillingQuote } = useAppContext();
   const location = useLocation();
   const MotionMain = motion.main as any;
   // FIX: Pass settings object to useNativeMobileSetup.
@@ -275,12 +276,12 @@ const AppContent: React.FC = () => {
 
             const applyFontStyles = (prefix: string, styles: FontStyleSettings) => {
                 if(!styles) return;
-                root.style.setProperty(`--\${prefix}-font-family`, `'${styles.fontFamily}', sans-serif`);
-                root.style.setProperty(`--\${prefix}-font-weight`, styles.fontWeight);
-                root.style.setProperty(`--\${prefix}-font-style`, styles.fontStyle);
-                root.style.setProperty(`--\${prefix}-font-decoration`, styles.textDecoration);
-                root.style.setProperty(`--\${prefix}-letter-spacing`, styles.letterSpacing);
-                root.style.setProperty(`--\${prefix}-text-transform`, styles.textTransform);
+                root.style.setProperty(`--${prefix}-font-family`, `'${styles.fontFamily}', sans-serif`);
+                root.style.setProperty(`--${prefix}-font-weight`, styles.fontWeight);
+                root.style.setProperty(`--${prefix}-font-style`, styles.fontStyle);
+                root.style.setProperty(`--${prefix}-font-decoration`, styles.textDecoration);
+                root.style.setProperty(`--${prefix}-letter-spacing`, styles.letterSpacing);
+                root.style.setProperty(`--${prefix}-text-transform`, styles.textTransform);
             };
 
             applyFontStyles('body', typography.body);
@@ -377,6 +378,7 @@ const AppContent: React.FC = () => {
   const isPrinting = location.pathname.includes('/print');
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStockPickRoute = location.pathname.startsWith('/stock-pick');
+  const isLoginRoute = location.pathname === '/login';
 
   return (
     <>
@@ -397,6 +399,7 @@ const AppContent: React.FC = () => {
           />
       )}
       {quoteStartModal.isOpen && <ClientDetailsModal />}
+      {fulfillingQuote && <QuoteFulfillmentModal quote={fulfillingQuote} onClose={() => setFulfillingQuote(null)} />}
       <ConfirmationModal />
       <ScreensaverPinModal />
       <BackupProgressModal />
@@ -409,9 +412,12 @@ const AppContent: React.FC = () => {
            <Routes>
                 <Route path="/stock-pick" element={<StockPick />} />
            </Routes>
+      ) : isLoginRoute ? (
+           <Routes>
+                <Route path="/login" element={<AdminLogin />} />
+           </Routes>
       ) : isAdminRoute ? (
            <Routes>
-               <Route path="/login" element={<AdminLogin />} />
                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
                <Route path="/admin/remote-control" element={<ProtectedRoute mainAdminOnly><AdminRemoteControl /></ProtectedRoute>} />
                <Route path="/admin/brand/new" element={<ProtectedRoute><BrandEdit /></ProtectedRoute>} />
@@ -447,7 +453,6 @@ const AppContent: React.FC = () => {
                     <Route path="/tvs" element={<TvBrandsView />} />
                     <Route path="/tvs/:brandId" element={<TvBrandModelsView />} />
                     <Route path="/search" element={<SearchResults />} />
-                    <Route path="/login" element={<AdminLogin />} />
                 </Routes>
                 </MotionMain>
             </AnimatePresence>
