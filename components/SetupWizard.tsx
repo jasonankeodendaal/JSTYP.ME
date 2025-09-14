@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
-import { motion, AnimatePresence } from 'framer-motion';
-import type { Variants } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, type Variants, animate } from 'framer-motion';
 import { useAppContext } from './context/AppContext.tsx';
 // FIX: Add CubeIcon to imports to fix missing component error.
 import { ServerStackIcon, ChevronRightIcon, LinkIcon, ChevronLeftIcon, BookOpenIcon, CloudSlashIcon, PaintBrushIcon, ChartBarIcon, ClipboardDocumentListIcon, ArrowPathIcon, CircleStackIcon, ShieldCheckIcon, CodeBracketIcon, ArrowDownTrayIcon, UserCircleIcon, UsersIcon, FtpIcon, CubeIcon } from './Icons.tsx';
@@ -22,12 +21,15 @@ const stepVariants = {
 const MotionDiv = motion.div as any;
 const MotionSection = motion.section as any;
 const MotionG = motion.g as any;
+const MotionPath = motion.path as any;
 
 const containerVariants = {
+    hidden: { opacity: 0 },
     visible: {
+        opacity: 1,
         transition: {
-            staggerChildren: 0.15,
-            delayChildren: 0.1,
+            staggerChildren: 0.1,
+            delayChildren: 0.3,
         }
     }
 };
@@ -505,6 +507,333 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
 };
 
 
+const AnimatedGradientBackground = () => (
+    <>
+        <style>{`
+            @keyframes gradient-animation {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            .animated-gradient {
+                background: linear-gradient(-45deg, #0f172a, #1e293b, #3b82f6, #8b5cf6);
+                background-size: 400% 400%;
+                animation: gradient-animation 20s ease infinite;
+            }
+        `}</style>
+        <div className="absolute inset-0 animated-gradient -z-10" />
+    </>
+);
+
+const Particles: React.FC<{ count?: number }> = ({ count = 50 }) => (
+    <div className="absolute inset-0 -z-10 overflow-hidden">
+        {[...Array(count)].map((_, i) => (
+            <motion.div
+                key={i}
+                className="absolute bg-white/10 rounded-full"
+                initial={{ 
+                    x: `${Math.random() * 100}vw`, 
+                    y: `${Math.random() * 100}vh`,
+                    scale: 0,
+                    opacity: 0,
+                }}
+                animate={{
+                    x: `${Math.random() * 100}vw`,
+                    y: `${Math.random() * 100}vh`,
+                    scale: [0, Math.random() * 0.8 + 0.2, 0],
+                    opacity: [0, 1, 0],
+                }}
+                transition={{
+                    duration: 10 + Math.random() * 20,
+                    repeat: Infinity,
+                    repeatType: 'loop',
+                    ease: 'linear',
+                    delay: Math.random() * 10
+                }}
+                style={{
+                    width: `${Math.random() * 3 + 1}px`,
+                    height: `${Math.random() * 3 + 1}px`,
+                }}
+            />
+        ))}
+    </div>
+);
+
+
+const DataSphere: React.FC = () => {
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const rotateX = useTransform(mouseY, [-400, 400], [10, -10]);
+    const rotateY = useTransform(mouseX, [-400, 400], [-10, 10]);
+
+    const handleMouseMove = (event: React.MouseEvent) => {
+        const { clientX, clientY, currentTarget } = event;
+        const { left, top, width, height } = currentTarget.getBoundingClientRect();
+        const x = clientX - (left + width / 2);
+        const y = clientY - (top + height / 2);
+        mouseX.set(x); mouseY.set(y);
+    };
+    const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+    
+    // Generate points and connections for the data network
+    const { points, connections } = React.useMemo(() => {
+        const numPoints = 25;
+        const pts = [...Array(numPoints)].map(() => {
+            const theta = Math.random() * 2 * Math.PI;
+            const phi = Math.acos(2 * Math.random() - 1);
+            return {
+                x: 100 + 80 * Math.sin(phi) * Math.cos(theta),
+                y: 100 + 80 * Math.sin(phi) * Math.sin(theta),
+                z: 100 + 80 * Math.cos(phi)
+            };
+        });
+        const conns = [...Array(15)].map(() => {
+            const p1Index = Math.floor(Math.random() * numPoints);
+            const p2Index = Math.floor(Math.random() * numPoints);
+            return { p1: pts[p1Index], p2: pts[p2Index] };
+        });
+        return { points: pts, connections: conns };
+    }, []);
+
+    return (
+        <MotionDiv
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ rotateX, rotateY, perspective: 1000 }}
+            className="w-64 h-64 md:w-80 md:h-80 relative"
+        >
+             <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 } }}
+                className="w-full h-full"
+            >
+                 <svg viewBox="0 0 200 200" className="w-full h-full overflow-visible">
+                    <defs>
+                        <filter id="data-sphere-glow"><feGaussianBlur stdDeviation="3" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                    </defs>
+                    <motion.circle cx="100" cy="100" r="80" fill="transparent" stroke="url(#atmosphere-grad)" strokeWidth="0.5" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1 } }}/>
+                    
+                    {/* Pulsing Core */}
+                     <motion.circle cx="100" cy="100" r="10" className="fill-cyan-300" filter="url(#data-sphere-glow)"
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    
+                    {/* Network Lines & Data Pings */}
+                    {connections.map((c, i) => (
+                        <g key={i}>
+                             <MotionPath
+                                d={`M ${c.p1.x} ${c.p1.y} L ${c.p2.x} ${c.p2.y}`}
+                                stroke="rgba(75, 85, 99, 0.5)"
+                                strokeWidth="0.5"
+                                initial={{ pathLength: 0 }}
+                                animate={{ pathLength: 1, transition: { duration: 1, delay: 1.2, ease: 'easeOut' } }}
+                            />
+                             <motion.circle cx={c.p1.x} cy={c.p1.y} r="2.5" fill="rgba(0,0,0,0)">
+                                <animateMotion dur={`${2 + Math.random() * 2}s`} repeatCount="indefinite" begin={`${1.5 + Math.random()}s`}>
+                                    <mpath href={`#conn-path-${i}`}/>
+                                </animateMotion>
+                                <path id={`conn-path-${i}`} d={`M 0 0 L ${c.p2.x-c.p1.x} ${c.p2.y-c.p1.y}`} fill="none" />
+                                <motion.circle r="1.5" className="fill-cyan-400" initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, ease: 'linear', delay: 1.5 + Math.random() }}/>
+                            </motion.circle>
+                        </g>
+                    ))}
+
+                    {/* Nodes */}
+                    {points.map((p, i) => (
+                        <motion.circle key={i} cx={p.x} cy={p.y} r={p.z / 100 * 1.5 + 0.5} className="fill-slate-400"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1, transition: { duration: 0.5, delay: 1 + Math.random() * 0.5, ease: 'backOut' } }}
+                        />
+                    ))}
+                </svg>
+            </motion.div>
+        </MotionDiv>
+    );
+};
+
+
+const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> = ({ onNext, onLearnMore }) => {
+    const titleText = "Welcome to Your Kiosk";
+    const subtitleText = "The Retail OS for the Modern Age.";
+    
+    const textContainer = {
+        visible: { transition: { staggerChildren: 0.05, delayChildren: 1 } }
+    };
+
+    // FIX: Add Variants type to fix framer-motion type error.
+    const textChar: Variants = {
+        hidden: { opacity: 0, y: '100%' },
+        visible: { opacity: 1, y: '0%', transition: { type: 'spring', damping: 12, stiffness: 100 } }
+    };
+    
+    return (
+        <MotionDiv
+            key="step1-new"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full h-full flex flex-col items-center justify-center text-center p-6 relative overflow-hidden text-white"
+        >
+            <AnimatedGradientBackground />
+            <Particles />
+            <DataSphere />
+
+            <MotionDiv
+                variants={textContainer}
+                initial="hidden"
+                animate="visible"
+                aria-label={titleText}
+                className="text-4xl md:text-5xl font-bold section-heading mt-6" style={{textShadow: '0 2px 10px rgba(0,0,0,0.3)'}}
+            >
+                {titleText.split(" ").map((word, wordIndex) => (
+                    <span key={wordIndex} className="inline-block whitespace-nowrap mr-[0.25em]">
+                        {word.split("").map((char, charIndex) => (
+                            <motion.span key={charIndex} variants={textChar} className="inline-block">
+                                {char}
+                            </motion.span>
+                        ))}
+                    </span>
+                ))}
+            </MotionDiv>
+
+            <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.8, delay: 2 } }}
+                className="mt-3 text-gray-300 max-w-xl mx-auto"
+            >
+                {subtitleText}
+            </motion.p>
+
+            <MotionDiv
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut', delay: 2.2 } }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
+            >
+                 <motion.button 
+                    onClick={onNext}
+                    className="relative btn bg-white text-indigo-700 w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
+                >
+                     <MotionDiv className="absolute inset-0 bg-white/30" whileHover={{ scale: 3, opacity: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} />
+                     <span className="relative z-10">Get Started</span>
+                     <ChevronRightIcon className="w-4 h-4 ml-2 relative z-10" />
+                </motion.button>
+                <motion.button
+                    onClick={onLearnMore} 
+                    className="relative btn bg-white/10 text-white border border-white/20 w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
+                >
+                    <MotionDiv className="absolute inset-0 bg-white/20" initial={{ scale: 0 }} whileHover={{ scale: 1 }} transition={{ duration: 0.3, ease: 'easeIn' }} />
+                    <span className="relative z-10">Learn More</span>
+                </motion.button>
+            </MotionDiv>
+        </MotionDiv>
+    );
+};
+
+const ProviderCard: React.FC<{ icon: React.ReactNode; title: string; description: string; onClick: () => void; disabled?: boolean; }> = ({ icon, title, description, onClick, disabled }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const rotateX = useTransform(mouseY, [-150, 150], [10, -10]);
+    const rotateY = useTransform(mouseX, [-150, 150], [-10, 10]);
+    const glowX = useTransform(mouseX, [-150, 150], [0, 100]);
+    const glowY = useTransform(mouseY, [-150, 150], [0, 100]);
+    const glowOpacity = useTransform(mouseX, [-150, 150], [0, 0.5]);
+    
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        mouseX.set(x); mouseY.set(y);
+    };
+
+    const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
+
+    return (
+        <MotionDiv
+            ref={cardRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{ perspective: 800 }}
+            className="w-full"
+            variants={itemVariants}
+        >
+            <MotionDiv
+                style={{ rotateX, rotateY }}
+                className={`relative bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center transition-all duration-300 text-white flex flex-col items-center justify-between min-h-[220px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+                <MotionDiv
+                    className="absolute inset-0 rounded-2xl pointer-events-none"
+                    style={{ 
+                        background: useTransform(
+                            [glowX, glowY, glowOpacity],
+                            ([x, y, o]) => `radial-gradient(circle at ${x}% ${y}%, rgba(139, 92, 246, ${o}), transparent 80%)`
+                        )
+                    }}
+                />
+                
+                <div className="relative z-10">
+                    <motion.div whileHover={{ scale: 1.1 }} className="mx-auto w-12 h-12 flex items-center justify-center text-indigo-300">{icon}</motion.div>
+                    <h3 className="font-semibold mt-3 text-slate-100">{title}</h3>
+                    <p className="text-xs text-slate-400 mt-1">{description}</p>
+                </div>
+                <button onClick={onClick} disabled={disabled} className="btn bg-indigo-600 hover:bg-indigo-500 text-white mt-4 relative z-10 !py-2 !px-4">
+                    Connect
+                </button>
+            </MotionDiv>
+        </MotionDiv>
+    );
+};
+
+const Step2Storage: React.FC<{ onSelect: (provider: 'local' | 'sharedUrl' | 'customApi') => void; onShowGuides: () => void; onSkip: () => void; isConnecting: boolean; isPotentiallyRestricted: boolean }> = ({ onSelect, onShowGuides, onSkip, isConnecting, isPotentiallyRestricted }) => (
+    <MotionDiv
+        key="step2-new"
+        variants={stepVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        className="w-full flex flex-col justify-center h-full relative"
+    >
+        <Particles count={20} />
+        <h2 className="text-2xl font-bold section-heading text-white mb-6 text-center">Choose a Storage Method</h2>
+        
+        <MotionDiv variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col md:flex-row gap-6">
+            <ProviderCard
+                icon={<ServerStackIcon className="w-8 h-8"/>}
+                title="Local or Network Folder"
+                description="Best for offline use or single-store setups. All data stays on your hardware."
+                onClick={() => onSelect('local')}
+                disabled={isPotentiallyRestricted || isConnecting}
+            />
+             <ProviderCard
+                icon={<LinkIcon className="w-8 h-8"/>}
+                title="Shared URL / API"
+                description="Sync with a web URL, like a static JSON file or a custom server."
+                onClick={() => onSelect('sharedUrl')}
+                disabled={isConnecting}
+            />
+             <ProviderCard
+                icon={<CodeBracketIcon className="w-8 h-8"/>}
+                title="Advanced API Sync"
+                description="For developers. Connect to Supabase, Vercel, or your own backend."
+                onClick={() => onSelect('customApi')}
+                disabled={isConnecting}
+            />
+        </MotionDiv>
+         <div className="text-center mt-6">
+            <button type="button" onClick={onShowGuides} className="text-sm text-indigo-400 hover:text-white hover:underline transition-colors">
+                Need help? View setup instructions
+            </button>
+        </div>
+        <div className="text-center mt-4 pt-4 border-t border-slate-700">
+            <button type="button" onClick={onSkip} className="text-sm font-medium text-slate-400 hover:text-white hover:underline transition-colors">
+                Skip for now &amp; go to Admin Login &rarr;
+            </button>
+        </div>
+    </MotionDiv>
+);
+
 const SetupWizard: React.FC = () => {
     const { 
         connectToLocalProvider, 
@@ -595,53 +924,16 @@ const SetupWizard: React.FC = () => {
     const renderStepContent = () => {
         switch (step) {
             case 1:
-                return (
-                    <MotionDiv key="step1" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="text-center w-full max-w-2xl mx-auto flex flex-col justify-center items-center h-full">
-                        <h2 className="text-2xl font-bold section-heading text-gray-800 dark:text-gray-100">Welcome to Your Kiosk!</h2>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">This quick setup will help you configure how your kiosk data is stored and synced. You can change these settings later in the admin panel.</p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-                            <button onClick={() => setStep(2)} className="btn btn-primary w-full sm:w-auto">
-                                Get Started <ChevronRightIcon className="w-4 h-4" />
-                            </button>
-                            <button type="button" onClick={() => setStep('info')} className="btn btn-secondary w-full sm:w-auto">
-                                Learn More
-                            </button>
-                        </div>
-                    </MotionDiv>
-                );
+                return <Step1Welcome onNext={() => setStep(2)} onLearnMore={() => setStep('info')} />;
             case 2:
                 return (
-                    <MotionDiv key="step2" variants={stepVariants} initial="hidden" animate="visible" exit="exit" className="w-full max-w-3xl mx-auto flex flex-col justify-center h-full">
-                        <h2 className="text-xl font-bold section-heading text-gray-800 dark:text-gray-100 mb-4 text-center">Choose a Storage Method</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <button onClick={() => handleSelectProvider('local')} disabled={isPotentiallyRestricted} className="p-6 border-2 border-transparent rounded-xl text-left bg-gray-100 dark:bg-gray-700/50 hover:border-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-transparent">
-                                <ServerStackIcon className="w-8 h-8 text-indigo-500 mb-3" />
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Local or Network Folder</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Best for offline use or single-store setups.</p>
-                                {isPotentiallyRestricted && <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">Unavailable in this embedded environment.</p>}
-                            </button>
-                             <button onClick={() => handleSelectProvider('sharedUrl')} className="p-6 border-2 border-transparent rounded-xl text-left bg-gray-100 dark:bg-gray-700/50 hover:border-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <LinkIcon className="w-8 h-8 text-indigo-500 mb-3" />
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Shared URL / Simple API</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Connect to a web URL. Can be read-only or read/write depending on your server.</p>
-                            </button>
-                             <button onClick={() => handleSelectProvider('customApi')} className="p-6 border-2 border-transparent rounded-xl text-left bg-gray-100 dark:bg-gray-700/50 hover:border-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <CodeBracketIcon className="w-8 h-8 text-indigo-500 mb-3" />
-                                <h3 className="font-semibold text-gray-800 dark:text-gray-100">Custom API Sync</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">For advanced users with their own cloud server.</p>
-                            </button>
-                        </div>
-                         <div className="text-center mt-6">
-                            <button type="button" onClick={() => setStep('guides')} className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Need help? View setup instructions
-                            </button>
-                        </div>
-                        <div className="text-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <button type="button" onClick={handleSkipToLogin} className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:underline">
-                                Skip for now &amp; go to Admin Login &rarr;
-                            </button>
-                        </div>
-                    </MotionDiv>
+                   <Step2Storage 
+                        onSelect={handleSelectProvider}
+                        onShowGuides={() => setStep('guides')}
+                        onSkip={handleSkipToLogin}
+                        isConnecting={isConnecting}
+                        isPotentiallyRestricted={isPotentiallyRestricted}
+                   />
                 );
             case 3:
                 const isConnected = storageProvider !== 'none';
@@ -786,13 +1078,31 @@ const SetupWizard: React.FC = () => {
         }
     };
     
+    const isWelcomeStep = step === 1;
+    const isInfoStep = step === 'info';
+    
+    // Conditional styling based on step
+    const containerClasses = [
+        "fixed inset-0 z-[100] flex items-center justify-center",
+        isWelcomeStep ? "bg-slate-900" : "bg-gray-100 dark:bg-slate-900/90 dark:backdrop-blur-sm p-4"
+    ].join(' ');
+
+    const wizardBoxClasses = [
+        "bg-white dark:bg-slate-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300",
+        isWelcomeStep || isInfoStep ? "w-full h-full rounded-none p-0" : "rounded-2xl w-full max-w-xl min-h-[500px] p-8",
+        step === 'guides' ? '!max-w-4xl !min-h-[600px] h-[80vh] !p-0' : '',
+        step === 2 ? '!max-w-5xl !bg-slate-900 !border !border-slate-700' : ''
+    ].join(' ');
+
+
     return (
-        <div className="fixed inset-0 bg-gray-100 dark:bg-gray-900/90 dark:backdrop-blur-sm z-[100] flex items-center justify-center">
+        <div className={containerClasses}>
             <MotionDiv 
-                initial={{ scale: 0.9, y: 30 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 30 }}
-                className="bg-white dark:bg-gray-800 shadow-2xl w-full h-full flex flex-col overflow-hidden"
+                initial={{ scale: isWelcomeStep ? 1 : 0.9, y: isWelcomeStep ? 0 : 30, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 30, opacity: 0 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className={wizardBoxClasses}
             >
                 <AnimatePresence mode="wait">
                     {renderStepContent()}
