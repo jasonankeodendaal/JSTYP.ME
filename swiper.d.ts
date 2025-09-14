@@ -57,6 +57,7 @@ declare global {
       sanitize(source: string | Node, config?: any): string;
     };
     html2canvas: (element: HTMLElement, options?: any) => Promise<HTMLCanvasElement>;
+    qrcode: any;
   }
 
   // Add missing types for File System Access API permissions

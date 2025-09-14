@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +71,7 @@ const ProductDetail: React.FC = () => {
             <swiper-container
               navigation="true"
               pagination="true"
-              loop={(product.images.length > 1).toString()}
+              loop={(product.images.length > 2).toString()}
               className="w-full rounded-2xl shadow-2xl overflow-hidden border border-black/5 dark:border-white/5 aspect-square bg-black/50"
             >
               {product.images.map((img, index) => (

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
 import { motion, AnimatePresence, useMotionValue, useTransform, type Variants, animate } from 'framer-motion';
@@ -420,7 +421,29 @@ const ScenarioB2bDiagram: React.FC = () => (
 );
 
 
+const ProviderInfoCard: React.FC<{icon: React.ReactNode, title: string, description: string}> = ({ icon, title, description }) => (
+    <div className="text-left p-6 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-lg">
+        <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                {icon}
+            </div>
+            <h4 className="font-bold text-[17px] text-gray-900 dark:text-white">{title}</h4>
+        </div>
+        <p className="text-[14px] text-gray-600 dark:text-gray-400 mt-4">{description}</p>
+    </div>
+);
+
+
 export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = false }) => {
+    const storageProviders = [
+        { icon: <ServerStackIcon className="w-8 h-8"/>, title: "Local / Network Folder", description: "The simplest setup. All data is stored in a folder on your computer or a shared network drive. Perfect for offline-first reliability and single-location businesses." },
+        { icon: <LinkIcon className="w-8 h-8"/>, title: "Shared URL / Simple API", description: "Connect to a simple cloud endpoint, like a static JSON file (for read-only) or a lightweight serverless function (for read/write)." },
+        { icon: <CodeBracketIcon className="w-8 h-8"/>, title: "Custom API Endpoint", description: "For developers. Connect to a custom backend server. An example server using Node.js + Express is included in the project source." },
+        { icon: <SupabaseIcon className="w-8 h-8"/>, title: "Supabase", description: "A powerful, scalable option using a Supabase project for a PostgreSQL database, storage, and serverless edge functions." },
+        { icon: <VercelIcon className="w-8 h-8"/>, title: "Vercel", description: "Deploy your backend to Vercel and sync data using Vercel KV for data and Vercel Blob for media assets." },
+        { icon: <FtpIcon className="w-8 h-8"/>, title: "FTP / SFTP", description: "Sync with a traditional FTP server through a simple 'bridge' API server that you can run locally or on a VPS." },
+    ];
+
     return (
         <div className={`w-full h-full ${isDashboard ? 'bg-transparent' : 'bg-slate-900 text-gray-300'} relative`}>
             {(onBack && !isDashboard) && (
@@ -449,10 +472,22 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                     </MotionSection>
                     
                      <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
+                        <div className="max-w-5xl mx-auto">
+                            <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-8 section-heading text-center">Flexible Storage Ecosystem</h3>
+                            <p className="text-center text-[14px] text-gray-500 dark:text-gray-400 max-w-3xl mx-auto mb-12">The kiosk is designed to adapt to your specific needs, from a single offline store to a multi-location franchise. Choose the storage method that's right for you. All options are fully self-hostable with no vendor lock-in.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {storageProviders.map(provider => (
+                                    <ProviderInfoCard key={provider.title} {...provider} />
+                                ))}
+                            </div>
+                        </div>
+                    </MotionSection>
+                    
+                     <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <ValueLoopDiagram />
                     </MotionSection>
 
-                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-8 section-heading text-center">Key Features at a Glance</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 text-[14px]">
@@ -468,7 +503,7 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         </div>
                     </MotionSection>
 
-                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
                         <div className="max-w-5xl mx-auto">
                             <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-12 section-heading text-center">Perfect For Any Environment</h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -491,7 +526,7 @@ export const AboutSystem: React.FC<AboutSystemProps> = ({ onBack, isDashboard = 
                         </div>
                     </MotionSection>
 
-                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6 bg-gray-50 dark:bg-gray-700/20">
+                    <MotionSection variants={itemVariants} className="py-16 sm:py-24 px-6">
                         <div className="max-w-3xl mx-auto text-center">
                             <h3 className="font-bold text-[17px] text-gray-800 dark:text-white mb-4 section-heading flex items-center justify-center gap-3"><ArrowDownTrayIcon className="w-6 h-6"/><span>Project Source Code</span></h3>
                             <p className="text-[14px] text-gray-500 dark:text-gray-400 mb-6">This application is open-source and designed to be fully self-hostable. For developers, the complete project source code can be downloaded from GitHub.</p>
@@ -793,7 +828,7 @@ const Step2Storage: React.FC<{ onSelect: (provider: 'local' | 'sharedUrl' | 'cus
         initial="hidden"
         animate="visible"
         exit="exit"
-        className="w-full flex flex-col justify-center h-full relative"
+        className="w-full flex flex-col justify-center relative"
     >
         <Particles count={20} />
         <h2 className="text-2xl font-bold section-heading text-white mb-6 text-center">Choose a Storage Method</h2>
@@ -1088,10 +1123,10 @@ const SetupWizard: React.FC = () => {
     ].join(' ');
 
     const wizardBoxClasses = [
-        "bg-white dark:bg-slate-800 shadow-2xl flex flex-col overflow-hidden transition-all duration-300",
-        isWelcomeStep || isInfoStep ? "w-full h-full rounded-none p-0" : "rounded-2xl w-full max-w-xl min-h-[500px] p-8",
-        step === 'guides' ? '!max-w-4xl !min-h-[600px] h-[80vh] !p-0' : '',
-        step === 2 ? '!max-w-5xl !bg-slate-900 !border !border-slate-700' : ''
+        "bg-white dark:bg-slate-800 shadow-2xl flex flex-col transition-all duration-300",
+        isWelcomeStep || isInfoStep ? "w-full h-full rounded-none p-0" : "rounded-2xl w-full max-w-xl p-8 max-h-[90vh] overflow-y-auto",
+        step === 'guides' ? '!max-w-4xl h-[80vh] !p-0' : '',
+        step === 2 ? '!max-w-5xl !bg-slate-900 !border !border-slate-700 overflow-visible' : ''
     ].join(' ');
 
 
