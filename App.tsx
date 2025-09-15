@@ -50,6 +50,7 @@ import TvContentEdit from './components/Admin/TvContentEdit.tsx';
 import StockPick from './components/Admin/StockPick.tsx';
 import PrintOrderView from './components/Admin/PrintOrderView.tsx';
 import AdminRemoteControl from './components/Admin/AdminRemoteControl.tsx';
+import SetupInstructions from './components/Admin/SetupInstructions.tsx';
 // FIX: Add Settings type to import
 import type { FontStyleSettings, Settings } from './types';
 import { idbSet } from './components/context/idb.ts';
@@ -379,6 +380,7 @@ const AppContent: React.FC = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isStockPickRoute = location.pathname.startsWith('/stock-pick');
   const isLoginRoute = location.pathname === '/login';
+  const isSetupInstructionsRoute = location.pathname === '/admin/setup-instructions';
 
   return (
     <>
@@ -416,6 +418,10 @@ const AppContent: React.FC = () => {
            <Routes>
                 <Route path="/login" element={<AdminLogin />} />
            </Routes>
+      ) : isSetupInstructionsRoute ? (
+            <Routes>
+                <Route path="/admin/setup-instructions" element={<ProtectedRoute><SetupInstructions /></ProtectedRoute>} />
+            </Routes>
       ) : isAdminRoute ? (
            <Routes>
                <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

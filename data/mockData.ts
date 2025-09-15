@@ -44,255 +44,266 @@ export const adminUsers: AdminUser[] = [
 ];
 
 export const brands: Brand[] = [
-    // Existing Brands
-    { "id": "b-quantum", "name": "Quantum Audio", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23111827'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Orbitron, sans-serif' font-size='26' font-weight='700' fill='%2393c5fd'%3eQUANTUM%3c/text%3e%3c/svg%3e", isTvBrand: true },
-    { "id": "b-zenith", "name": "Zenith Appliances", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23f0f9ff'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Poppins, sans-serif' font-size='28' font-weight='600' fill='%230c4a6e'%3eZENITH%3c/text%3e%3c/svg%3e" },
-    { "id": "b-evergreen", "name": "Evergreen Outdoor", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23f0fdf4'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Merriweather, serif' font-size='22' font-weight='900' fill='%23166534'%3eEvergreen Outdoor%3c/text%3e%3c/svg%3e" },
-    { "id": "b-stellar-tv", "name": "Stellar TV", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23f5f3ff'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Cinzel, serif' font-size='32' font-weight='700' fill='%235b21b6'%3eSTELLAR%3c/text%3e%3c/svg%3e", isTvBrand: true },
-    { "id": "b-visionix-tv", "name": "Visionix Displays", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23eef2ff'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat, sans-serif' font-size='24' font-weight='800' fill='%233730a3'%3eVISIONIX%3c/text%3e%3c/svg%3e", isTvBrand: true },
-    
-    // New Brands
-    { "id": "b-aura", "name": "Aura Living", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23fafaf9'/%3e%3cg transform='translate(150, 75)'%3e%3cpath d='M-40 -20 L-20 0 L-40 20' stroke='%2378716c' stroke-width='8' fill='none'/%3e%3cpath d='M-10 25 C 20 25, 30 -25, 0 -25 C -30 -25, -20 25, -10 25 Z' fill='%23a8a29e'/%3e%3c/g%3e%3ctext x='150' y='120' text-anchor='middle' font-family='Garamond, serif' font-size='20' fill='%2344403c'%3eAURA LIVING%3c/text%3e%3c/svg%3e" },
-    { "id": "b-kinetic", "name": "Kinetic", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%230a0a0a'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Saira, sans-serif' font-size='48' font-weight='800' fill='%23fafafa' letter-spacing='-2px'%3eKINETIC%3c/text%3e%3c/svg%3e" },
-    { "id": "b-nexus", "name": "Nexus", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23f9fafb'/%3e%3cg transform='translate(150, 75)'%3e%3cpath d='M-50 -30 L0 0 L-50 30 M50 -30 L0 0 L50 30' stroke='%236366f1' stroke-width='12' fill='none'/%3e%3ccircle cx='0' cy='0' r='8' fill='%236366f1'/%3e%3c/g%3e%3c/svg%3e" },
-    { "id": "b-apex-gaming", "name": "Apex Gaming", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23171717'/%3e%3cpolygon points='100,100 150,50 200,100' stroke='%23be123c' stroke-width='5' fill='none'/%3e%3ctext x='50%25' y='60%25' dominant-baseline='middle' text-anchor='middle' font-family='Aldrich, sans-serif' font-size='36' font-weight='bold' fill='%23fca5a5'%3eAPEX%3c/text%3e%3c/svg%3e", isTvBrand: true },
-    { "id": "b-generic", "name": "Generic Brand", "logoUrl": "data:image/svg+xml,%3csvg width='300' height='150' viewBox='0 0 300 150' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='300' height='150' fill='%23e2e8f0'/%3e%3ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Montserrat, sans-serif' font-size='24' font-weight='800' fill='%23475569'%3eGENERIC BRAND%3c/text%3e%3c/svg%3e" }
+    { id: "b-defy", name: "DEFY", logoUrl: "https://iili.io/KATH3Eg.png" },
+    { id: "b-edblo", name: "Edblo", logoUrl: "https://iili.io/KATHF4a.png" },
+    { id: "b-hisense", name: "Hisense", logoUrl: "https://iili.io/KATHJQ1.png", isTvBrand: true },
+    { id: "b-bosch", name: "Bosch", logoUrl: "https://iili.io/KATHHhP.png" },
+    { id: "b-whirlpool", name: "Whirlpool", logoUrl: "https://iili.io/KATHqYv.png" },
 ];
 
 export const categories: Category[] = [
-    // Existing Categories
-    { id: "cat-quantum-1", name: "Soundbars", brandId: "b-quantum" },
-    { id: "cat-quantum-2", name: "Headphones", brandId: "b-quantum" },
-    { id: "cat-zenith-1", name: "Refrigeration", brandId: "b-zenith" },
-    { id: "cat-zenith-2", name: "Cooking", brandId: "b-zenith" },
-    { id: "cat-evergreen-1", name: "Tents & Shelters", brandId: "b-evergreen" },
-    { id: "cat-evergreen-2", name: "Camping Gear", brandId: "b-evergreen" },
-    { id: "cat-generic-1", name: "Miscellaneous", brandId: "b-generic" },
-
-    // New Categories
-    { id: "cat-aura-1", name: "Home Fragrance", brandId: "b-aura" },
-    { id: "cat-aura-2", name: "Furniture", brandId: "b-aura" },
-    { id: "cat-kinetic-1", name: "Performance Apparel", brandId: "b-kinetic" },
-    { id: "cat-kinetic-2", name: "Footwear", brandId: "b-kinetic" },
-    { id: "cat-nexus-1", name: "Tablets & Mobile", brandId: "b-nexus" },
-    { id: "cat-nexus-2", name: "Audio Devices", brandId: "b-nexus" },
-    { id: "cat-apex-1", name: "Gaming Monitors", brandId: "b-apex-gaming" }
+    { id: "cat-defy-fridge", name: "Refrigeration", brandId: "b-defy" },
+    { id: "cat-defy-cook", name: "Cooking", brandId: "b-defy" },
+    { id: "cat-defy-laundry", name: "Laundry", brandId: "b-defy" },
+    { id: "cat-edblo-comfort", name: "Home Comfort", brandId: "b-edblo" },
+    { id: "cat-hisense-tv", name: "TV & AV", brandId: "b-hisense" },
+    { id: "cat-hisense-fridge", name: "Refrigeration", brandId: "b-hisense" },
+    { id: "cat-bosch-laundry", name: "Laundry", brandId: "b-bosch" },
+    { id: "cat-bosch-dish", name: "Dishwashers", brandId: "b-bosch" },
+    { id: "cat-bosch-cook", name: "Cooking", brandId: "b-bosch" },
+    { id: "cat-whirlpool-laundry", name: "Laundry", brandId: "b-whirlpool" },
+    { id: "cat-whirlpool-fridge", name: "Refrigeration", brandId: "b-whirlpool" },
+    { id: "cat-whirlpool-cook", name: "Cooking", brandId: "b-whirlpool" },
 ];
 
 export const products: Product[] = [
-    // Existing Products
-    {
-        "id": "p-zenith-fridge", "name": "Zenith FrostFree 450L", "sku": "ZEN-FF-450", "brandId": "b-zenith", "categoryId": "cat-zenith-1",
-        "description": "Experience the pinnacle of freshness with the Zenith FrostFree 450L refrigerator. Its advanced multi-flow air system ensures even cooling, while the spacious interior and smart storage solutions make organization a breeze. Finished in sleek stainless steel, it's the perfect centerpiece for any modern kitchen.",
-        "images": ["https://images.unsplash.com/photo-1616474328229-cad57a2cf1a0?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1571175443880-49e1d25b2b55?q=80&w=800&auto=format&fit=crop"],
-        "video": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-        "specifications": [{"id":"s7","key":"Capacity","value":"450 Litres"},{"id":"s8","key":"Energy Rating","value":"A++"},{"id":"s9","key":"Finish","value":"Brushed Stainless Steel"}], "whatsInTheBox": ["Refrigerator Unit", "Ice Tray", "Egg Holder", "User Manual"]
+    // DEFY (6)
+    { id: "p-defy-fridge-1", name: "DEFY 228L Bottom Freezer Fridge", sku: "DAC447", brandId: "b-defy", categoryId: "cat-defy-fridge",
+        description: "A reliable and energy-efficient bottom freezer fridge with an A+ energy rating, featuring adjustable shelving and a large crisper drawer to keep your produce fresh.",
+        images: ["https://images.unsplash.com/photo-1616474328229-cad57a2cf1a0?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s1", key:"Total Capacity", value:"228 Litres"}, {id:"s2", key:"Energy Rating", value:"A+"}, {id:"s3", key:"Finish", value:"Metallic"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+        documents: [
+            { id: "doc-defy-fridge-1", title: "Energy Label", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"},
+            { id: "doc-defy-fridge-2", title: "Installation Guide", type: "image", imageUrls: ["https://images.unsplash.com/photo-1633511479833-22879685a782?q=80&w=800", "https://images.unsplash.com/photo-1588594924333-afc45b36b53b?q=80&w=800"] }
+        ],
+        whatsInTheBox: ["Refrigerator Unit", "Ice Tray", "User Manual"]
     },
-    {
-        "id": "p-zenith-oven", "name": "Zenith Convection Oven", "sku": "ZEN-CO-90", "brandId": "b-zenith", "categoryId": "cat-zenith-2",
-        "description": "Unleash your culinary potential with the Zenith 90cm Convection Oven. Featuring 12 versatile cooking functions and a precision temperature probe, it delivers perfect results every time. The stylish black glass finish and intuitive touch controls add a touch of elegance to your kitchen.",
-        "images": ["https://images.unsplash.com/photo-1588695273392-62b11d889981?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s10","key":"Functions","value":"12 (including Steam & AirFry)"},{"id":"s11","key":"Capacity","value":"90 Litres"},{"id":"s12","key":"Control","value":"Touch TFT Display"}], "whatsInTheBox": ["Oven Unit", "Baking Tray", "Grill Rack", "Temperature Probe"]
+    { id: "p-defy-fridge-2", name: "DEFY 555L Side-by-Side Fridge", sku: "DSBS555", brandId: "b-defy", categoryId: "cat-defy-fridge",
+        description: "Experience superior space and convenience with this No Frost side-by-side refrigerator. It includes a water and ice dispenser for ultimate modern luxury.",
+        images: ["https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s4", key:"Total Capacity", value:"555 Litres"}, {id:"s5", key:"Technology", value:"No Frost"}, {id:"s6", key:"Features", value:"Water & Ice Dispenser"} ],
+        whatsInTheBox: ["Refrigerator Unit", "Water filter", "User Manual"]
     },
-    {
-        "id": "p-quantum-soundbar", "name": "Quantum Wave Soundbar", "sku": "QTM-WAVE-512", "brandId": "b-quantum", "categoryId": "cat-quantum-1",
-        "description": "Immerse yourself in cinematic audio with the Quantum Wave 5.1.2 soundbar. With Dolby Atmos support and dedicated upward-firing speakers, it creates a true 3D soundscape that brings movies and music to life. Wireless subwoofer included for deep, impactful bass.",
-        "images": ["https://images.unsplash.com/photo-1593452424683-9b04f67c0350?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1618384281358-d84122d2169a?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s13","key":"Channels","value":"5.1.2"},{"id":"s14","key":"Connectivity","value":"HDMI eARC, Bluetooth 5.2, Optical"},{"id":"s15","key":"Special","value":"Dolby Atmos, DTS:X"}], "whatsInTheBox": ["Soundbar", "Wireless Subwoofer", "Remote Control", "HDMI Cable"]
+    { id: "p-defy-oven-1", name: "DEFY Slimline Eye-Level Oven", sku: "DCB838", brandId: "b-defy", categoryId: "cat-defy-cook",
+        description: "A sleek, multifunction eye-level oven with an A energy rating. Its Thermofan+ technology ensures even cooking results every time, perfect for passionate bakers.",
+        images: ["https://images.unsplash.com/photo-1604867992523-a1b7a2769827?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s7", key:"Type", value:"Built-in Eye-Level"}, {id:"s8", key:"Function", value:"Multifunction Thermofan+"}, {id:"s9", key:"Energy Rating", value:"A"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+        documents: [{ id: "doc-defy-oven-1", title: "User Manual", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}],
+        whatsInTheBox: ["Oven Unit", "Baking Tray", "Wire Rack", "User Manual"]
     },
-    {
-        "id": "p-quantum-headphones", "name": "Quantum Aura ANC", "sku": "QTM-AURA-ANC", "brandId": "b-quantum", "categoryId": "cat-quantum-2",
-        "description": "Escape the noise and enter your world of sound with Quantum Aura ANC headphones. Featuring hybrid active noise cancellation and plush memory foam earcups, they provide exceptional comfort and immersion. Enjoy up to 40 hours of playtime on a single charge.",
-        "images": ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1618335829737-2228915674e0?q=80&w=800&auto=format&fit=crop"],
-        "video": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-        "specifications": [{"id":"s16","key":"Playtime","value":"40 hours (ANC on)"},{"id":"s17","key":"Noise Cancellation","value":"Hybrid Active"},{"id":"s18","key":"Weight","value":"250g"}], "whatsInTheBox": ["Headphones", "Carrying Case", "USB-C Cable", "3.5mm Audio Cable"]
+    { id: "p-defy-hob-1", name: "DEFY Touch Control Vitroceramic Hob", sku: "DHD406", brandId: "b-defy", categoryId: "cat-defy-cook",
+        description: "Modernize your kitchen with this 60cm touch control vitroceramic hob. It offers precise temperature control and a residual heat indicator for safety.",
+        images: ["https://images.unsplash.com/photo-1614707997439-74a48680514a?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s10", key:"Size", value:"60cm"}, {id:"s11", key:"Control Type", value:"Touch Control"}, {id:"s12", key:"Surface", value:"Vitroceramic Glass"} ],
+        whatsInTheBox: ["Hob Unit", "Mounting brackets", "User Manual"]
     },
-    {
-        "id": "p-evergreen-tent", "name": "Evergreen Vista 4P Tent", "sku": "EVG-VISTA-4", "brandId": "b-evergreen", "categoryId": "cat-evergreen-1",
-        "description": "The perfect home away from home for your family adventures. The Evergreen Vista 4-person tent features a simple setup design, a spacious interior, and a full-coverage rainfly to keep you dry in any weather. Large mesh windows provide excellent ventilation and stargazing opportunities.",
-        "images": ["https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1598131238426-17b5f25a9144?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s19","key":"Capacity","value":"4 Person"},{"id":"s20","key":"Weight","value":"5.5 kg"},{"id":"s21","key":"Waterproofing","value":"3000mm PU Coating"}], "whatsInTheBox": ["Tent Body", "Rainfly", "Poles", "Stakes", "Carry Bag"]
+    { id: "p-defy-washer-1", name: "DEFY 8kg Front Loader Washing Machine", sku: "DAW386", brandId: "b-defy", categoryId: "cat-defy-laundry",
+        description: "This 8kg front loader features Aquafusion Technology for energy savings and a SteamCure function to reduce wrinkles and allergens. A+++ energy efficiency.",
+        images: ["https://images.unsplash.com/photo-1582735689369-4d3753139316?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s13", key:"Capacity", value:"8kg"}, {id:"s14", key:"Energy Rating", value:"A+++ -10%"}, {id:"s15", key:"Special Feature", value:"SteamCure"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+        documents: [{ id: "doc-defy-washer-1", title: "Feature Highlights", type: "image", imageUrls: ["https://images.unsplash.com/photo-1627813293848-f8d5e1a79854?q=80&w=800"] }],
+        whatsInTheBox: ["Washing Machine", "Inlet & Outlet Hoses", "User Manual"]
     },
-     {
-        "id": "p-evergreen-chair", "name": "Evergreen Trail Chair", "sku": "EVG-TRAIL-CHR", "brandId": "b-evergreen", "categoryId": "cat-evergreen-2",
-        "description": "Relax in comfort wherever you are with the ultralight Evergreen Trail Chair. Packing down smaller than a water bottle, this chair is a must-have for backpacking, festivals, or just relaxing in the backyard. The durable aluminum frame supports up to 120kg.",
-        "images": ["https://images.unsplash.com/photo-1563298723-dcfebaa392e3?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s22","key":"Weight","value":"980g"},{"id":"s23","key":"Capacity","value":"120 kg"},{"id":"s24","key":"Packed Size","value":"35cm x 10cm"}], "whatsInTheBox": ["Chair Fabric", "Pole Set", "Carry Bag"]
+    { id: "p-defy-microwave-1", name: "DEFY 20L Solo Microwave", sku: "DMO382", brandId: "b-defy", categoryId: "cat-defy-cook",
+        description: "A compact and stylish 20L microwave oven with 6 power levels, perfect for quick meals and defrosting. Its metallic finish complements any kitchen decor.",
+        images: ["https://images.unsplash.com/photo-1643152292323-83a3108b9861?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s16", key:"Capacity", value:"20 Litres"}, {id:"s17", key:"Power Output", value:"700W"}, {id:"s18", key:"Finish", value:"Metallic"} ],
+        whatsInTheBox: ["Microwave Oven", "Glass Turntable", "User Manual"]
     },
-    // New Products
-    {
-        "id": "p-aura-diffuser", "name": "Serenity Stone Diffuser", "sku": "AURA-DIFF-01", "brandId": "b-aura", "categoryId": "cat-aura-1",
-        "description": "Transform your space into a tranquil oasis with the Serenity Stone Diffuser. Crafted from handcrafted porcelain, this ultrasonic diffuser gently disperses your favorite essential oils, filling the air with a calming, fragrant mist. Its minimalist design complements any decor.",
-        "images": ["https://images.unsplash.com/photo-1627993092285-b072c44243b7?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s25","key":"Material","value":"Handcrafted Porcelain"},{"id":"s26","key":"Capacity","value":"100ml"},{"id":"s27","key":"Run Time","value":"Up to 8 hours"}], "whatsInTheBox": ["Diffuser", "Power Adapter", "User Guide"]
+    
+    // Edblo (6)
+    { id: "p-edblo-bed-1", name: "Edblo Energiser Supreme Queen Bed Set", sku: "EDB789Q", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "Experience ultimate comfort and support with the Edblo Energiser Supreme. Featuring Bonnell Spring technology for a restful night's sleep.",
+        images: ["https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s19", key:"Size", value:"Queen"}, {id:"s20", key:"Type", value:"Bonnell Spring"}, {id:"s21", key:"Firmness", value:"Medium"} ],
+        documents: [{ id: "doc-edblo-bed-1", title: "Comfort Layers Guide", type: "image", imageUrls: ["https://images.unsplash.com/photo-1560185012-34f7b7fc868c?q=80&w=800"] }],
+        whatsInTheBox: ["Mattress", "Base"]
     },
-    {
-        "id": "p-kinetic-shorts", "name": "Velocity Running Shorts", "sku": "KIN-SHORT-M-01", "brandId": "b-kinetic", "categoryId": "cat-kinetic-1",
-        "description": "Engineered for speed and comfort, the Velocity Running Shorts feature a lightweight, sweat-wicking fabric and a built-in liner for support. A secure zip pocket holds your essentials, letting you focus on your run.",
-        "images": ["https://images.unsplash.com/photo-1591195853828-11db59a44f6b?q=80&w=800&auto=format&fit=crop"],
-        "specifications": [{"id":"s28","key":"Fabric","value":"Kine-Dry™ Polyester/Spandex Blend"},{"id":"s29","key":"Inseam","value":"5 inches"},{"id":"s30","key":"Features","value":"Reflective details, zip pocket"}], "whatsInTheBox": ["Running Shorts"]
+    { id: "p-edblo-bed-2", name: "Edblo Pocket Collection King Bed Set", sku: "EDBPOC-K", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "Individually wrapped pocket springs reduce motion transfer, providing undisturbed sleep. Luxurious foam layers offer pressure point relief and superior comfort.",
+        images: ["https://images.unsplash.com/photo-1594025341382-2dac121a938c?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s22", key:"Size", value:"King"}, {id:"s23", key:"Type", value:"Pocket Spring"}, {id:"s24", key:"Top Layer", value:"High-Density Foam"} ],
+        documents: [{ id: "doc-edblo-bed-2", title: "Warranty Information", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}],
+        whatsInTheBox: ["Mattress", "Base"]
     },
-    {
-        "id": "p-nexus-tablet", "name": "NexusTab Pro 11", "sku": "NEX-TAB-P11", "brandId": "b-nexus", "categoryId": "cat-nexus-1",
-        "description": "Unleash your productivity and creativity with the NexusTab Pro 11. Featuring a stunning 120Hz Liquid-Edge display, the powerful Nexus N1 chip, and all-day battery life. Perfect for work, play, and everything in between.",
-        "images": ["https://images.unsplash.com/photo-1561152019-411a5a0138ce?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1544228865-7d73678da864?q=80&w=800&auto=format&fit=crop"],
-        "video": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        "specifications": [{"id":"s31","key":"Display","value":"11-inch 120Hz Liquid-Edge"},{"id":"s32","key":"Processor","value":"Nexus N1 Chip"},{"id":"s33","key":"Storage","value":"128GB / 256GB / 512GB"}], "whatsInTheBox": ["NexusTab Pro 11", "USB-C Charging Cable", "20W Power Adapter"]
+    { id: "p-edblo-bed-3", name: "Edblo Hybrid Gel Memory Foam Double Bed", sku: "EDBGEL-D", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "A perfect hybrid of support and cooling comfort. Gel-infused memory foam regulates temperature while conforming to your body's unique shape.",
+        images: ["https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s25", key:"Size", value:"Double"}, {id:"s26", key:"Type", value:"Hybrid"}, {id:"s27", key:"Comfort Layer", value:"Gel Memory Foam"} ],
+        whatsInTheBox: ["Mattress", "Base"]
     },
-    {
-        "id": "p-generic-item", "name": "Sample Product", "sku": "SKU-001", "brandId": "b-generic", "categoryId": "cat-generic-1",
-        "description": "This is a sample product description. You can edit this or add new products in the admin panel. Use the bulk import feature to add multiple products at once from a CSV or ZIP file.",
-        "images": [ "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop", "https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=800&auto=format&fit=crop" ],
-        "specifications": [ { "id": "s1", "key": "Feature A", "value": "Value A" }, { "id": "s2", "key": "Feature B", "value": "Value B" } ], "documents": [], "whatsInTheBox": ["Sample Item", "User Manual"], "termsAndConditions": "This is a sample terms and conditions section."
-    }
+    { id: "p-edblo-bed-4", name: "Edblo OrthoCare Firm Queen Mattress", sku: "EDORTH-Q", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "Designed for superior back support, the OrthoCare Firm mattress provides a robust and stable sleeping surface to promote healthy spinal alignment.",
+        images: ["https://images.unsplash.com/photo-1567016526107-89da61f62b88?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s28", key:"Size", value:"Queen"}, {id:"s29", key:"Type", value:"Orthopedic Bonnell"}, {id:"s30", key:"Firmness", value:"Firm"} ],
+        whatsInTheBox: ["Mattress Only"]
+    },
+    { id: "p-edblo-bed-5", name: "Edblo Luxury Plush Pillow Top King Bed", sku: "EDBLUX-K", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "Sink into a cloud of comfort with this luxurious pillow top bed. Soft, breathable fabrics and plush foam layers create a five-star sleep experience.",
+        images: ["https://images.unsplash.com/photo-1560185127-6ed189bf02a4?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s31", key:"Size", value:"King"}, {id:"s32", key:"Type", value:"Pillow Top"}, {id:"s33", key:"Feel", value:"Plush"} ],
+        whatsInTheBox: ["Mattress", "Base"]
+    },
+    { id: "p-edblo-bed-6", name: "Edblo Studio Compact Single Bed", sku: "EDBSTU-S", brandId: "b-edblo", categoryId: "cat-edblo-comfort",
+        description: "Perfect for apartments, dorms, and guest rooms, this single bed provides reliable Edblo comfort in a compact and affordable package.",
+        images: ["https://images.unsplash.com/photo-1615875605825-5eb9bb5fea38?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s34", key:"Size", value:"Single"}, {id:"s35", key:"Type", value:"High-Density Foam Core"}, {id:"s36", key:"Ideal For", value:"Compact Spaces"} ],
+        whatsInTheBox: ["Mattress", "Base"]
+    },
+
+    // Hisense (6)
+    { id: "p-hisense-tv-1", name: "Hisense 55\" U6K Mini-LED ULED 4K TV", sku: "55U6K", brandId: "b-hisense", categoryId: "cat-hisense-tv",
+        description: "ULED Mini-LED technology delivers breathtaking detail and contrast. Quantum Dot Colour provides over a billion shades for a vibrant picture. Dolby Vision & Atmos for an immersive cinematic experience.",
+        images: ["https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s37", key:"Screen Size", value:"55 inches"}, {id:"s38", key:"Resolution", value:"4K Ultra HD"}, {id:"s39", key:"Display Type", value:"Mini-LED ULED"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        documents: [{ id: "doc-hisense-tv-1", title: "Quick Start Guide", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}],
+        whatsInTheBox: ["ULED TV", "Remote", "Power Cable", "Stand", "User Manual"]
+    },
+    { id: "p-hisense-tv-2", name: "Hisense 75\" A6K UHD 4K Smart TV", sku: "75A6K", brandId: "b-hisense", categoryId: "cat-hisense-tv",
+        description: "Immerse yourself in the action with a massive 75-inch screen. Featuring 4K resolution, DTS Virtual:X sound, and the intuitive VIDAA Smart TV platform.",
+        images: ["https://images.unsplash.com/photo-1628521763953-2067711de259?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s40", key:"Screen Size", value:"75 inches"}, {id:"s41", key:"Resolution", value:"4K Ultra HD"}, {id:"s42", key:"Smart Platform", value:"VIDAA U6"} ],
+        whatsInTheBox: ["UHD TV", "Remote", "Power Cable", "Stand", "User Manual"]
+    },
+    { id: "p-hisense-laser-1", name: "Hisense 100\" L9H Trichroma Laser TV", sku: "100L9H", brandId: "b-hisense", categoryId: "cat-hisense-tv",
+        description: "The ultimate home cinema experience. This Laser TV projects a brilliant 4K image onto a 100-inch ambient light rejecting screen. Pure-color Trichroma lasers achieve 107% of the BT.2020 color space.",
+        images: ["https://images.unsplash.com/photo-1611232882792-749e7d95355a?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s43", key:"Screen Size", value:"100 inches"}, {id:"s44", key:"Type", value:"Laser TV (UST Projector)"}, {id:"s45", key:"Light Source", value:"Trichroma Laser"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        whatsInTheBox: ["Laser Cinema Projector", "100\" ALR Screen", "Remote", "Power Cable"]
+    },
+    { id: "p-hisense-fridge-1", name: "Hisense 514L Black Glass French Door Fridge", sku: "H700FB-IDB", brandId: "b-hisense", categoryId: "cat-hisense-fridge",
+        description: "A statement piece for your kitchen. This French door fridge features a sleek black glass finish, a non-plumbed water dispenser, and Triple Zone Cooling for optimal food preservation.",
+        images: ["https://images.unsplash.com/photo-1605500262215-a751622c3c2d?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s46", key:"Capacity", value:"514 Litres"}, {id:"s47", key:"Style", value:"French Door"}, {id:"s48", key:"Finish", value:"Black Glass"} ],
+        whatsInTheBox: ["Refrigerator Unit", "User Manual"]
+    },
+    { id: "p-hisense-fridge-2", name: "Hisense 269L Combi Fridge Freezer", sku: "H370BI-WD", brandId: "b-hisense", categoryId: "cat-hisense-fridge",
+        description: "Stylish and practical, this combi fridge freezer comes in an inox finish and features a convenient non-plumbed water dispenser. Its reversible door design allows for versatile placement.",
+        images: ["https://images.unsplash.com/photo-1620912189874-32a2651a0219?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s49", key:"Capacity", value:"269 Litres"}, {id:"s50", key:"Type", value:"Bottom Freezer"}, {id:"s51", key:"Features", value:"Water Dispenser"} ],
+        whatsInTheBox: ["Refrigerator Unit", "User Manual"]
+    },
+    { id: "p-hisense-soundbar-1", name: "Hisense AX3100G 3.1Ch Dolby Atmos Soundbar", sku: "AX3100G", brandId: "b-hisense", categoryId: "cat-hisense-tv",
+        description: "Elevate your audio with this 3.1 channel soundbar featuring a wireless subwoofer and Dolby Atmos for immersive, cinematic sound that moves around you.",
+        images: ["https://images.unsplash.com/photo-1593929235339-a03970b13854?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s52", key:"Channels", value:"3.1"}, {id:"s53", key:"Sound Tech", value:"Dolby Atmos"}, {id:"s54", key:"Subwoofer", value:"Wireless"} ],
+        whatsInTheBox: ["Soundbar", "Wireless Subwoofer", "Remote", "HDMI Cable", "Power Cables"]
+    },
+
+    // Bosch (6)
+    { id: "p-bosch-washer-1", name: "Bosch Serie 4 8kg Front Loader", sku: "WAJ2426SZA", brandId: "b-bosch", categoryId: "cat-bosch-laundry",
+        description: "The Serie 4 washing machine with EcoSilence Drive: enjoy supremely quiet operation and excellent durability. SpeedPerfect cuts washing time by up to 65%.",
+        images: ["https://images.unsplash.com/photo-1626806819282-2c1dc01a5e0c?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s55", key:"Capacity", value:"8 kg"}, {id:"s56", key:"Spin Speed", value:"1200 rpm"}, {id:"s57", key:"Motor", value:"EcoSilence Drive"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+        documents: [{ id: "doc-bosch-washer-1", title: "User Manual", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}],
+        whatsInTheBox: ["Washing Machine", "Inlet hose", "User Manual"]
+    },
+    { id: "p-bosch-washer-2", name: "Bosch Serie 8 10kg Front Loader with i-DOS", sku: "WGB254A0ZA", brandId: "b-bosch", categoryId: "cat-bosch-laundry",
+        description: "The premium Serie 8 washer with i-DOS automatic dosing system uses the perfect amount of detergent. The AntiStain system removes common stains with ease.",
+        images: ["https://images.unsplash.com/photo-1604215887233-3c4a93540251?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s58", key:"Capacity", value:"10 kg"}, {id:"s59", key:"Dosing", value:"i-DOS Automatic"}, {id:"s60", key:"Special Feature", value:"AntiStain System"} ],
+        whatsInTheBox: ["Washing Machine", "Inlet & Outlet Hoses", "User Manual"]
+    },
+    { id: "p-bosch-dishwasher-1", name: "Bosch Serie 6 Freestanding Dishwasher", sku: "SMS6HCI01Z", brandId: "b-bosch", categoryId: "cat-bosch-dish",
+        description: "This smart dishwasher can be controlled via the Home Connect app. The ExtraDry option ensures perfectly dry dishes, and the VarioFlex baskets offer loading flexibility.",
+        images: ["https://images.unsplash.com/photo-1601574464146-51d7c8637746?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s61", key:"Type", value:"Freestanding"}, {id:"s62", key:"Connectivity", value:"Home Connect (Wi-Fi)"}, {id:"s63", key:"Place Settings", value:"14"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+        documents: [{ id: "doc-bosch-dish-1", title: "Loading Guide", type: "image", imageUrls: ["https://images.unsplash.com/photo-1633511479833-22879685a782?q=80&w=800"] }],
+        whatsInTheBox: ["Dishwasher", "Cutlery basket", "Hoses", "User Manual"]
+    },
+    { id: "p-bosch-dishwasher-2", name: "Bosch Serie 4 Built-in Dishwasher", sku: "SMV4HVX00K", brandId: "b-bosch", categoryId: "cat-bosch-dish",
+        description: "A fully integrated dishwasher that blends seamlessly into your kitchen. InfoLight projects a dot onto the floor so you know when it's running. SuperSilence operates at just 44 dB.",
+        images: ["https://images.unsplash.com/photo-1627902230782-d50ca932915c?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s64", key:"Type", value:"Fully Integrated"}, {id:"s65", key:"Noise Level", value:"44 dB"}, {id:"s66", key:"Feature", value:"InfoLight"} ],
+        whatsInTheBox: ["Dishwasher", "Hoses", "Installation Kit", "User Manual"]
+    },
+    { id: "p-bosch-cooker-1", name: "Bosch 90cm Gas/Electric Cooker", sku: "HGV1F0U50Z", brandId: "b-bosch", categoryId: "cat-bosch-cook",
+        description: "The best of both worlds. A 5-burner gas hob for precise heat control and a large multifunction electric oven for perfect baking and roasting.",
+        images: ["https://images.unsplash.com/photo-1628529242331-56158e723287?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s67", key:"Size", value:"90cm"}, {id:"s68", key:"Hob", value:"5-Burner Gas"}, {id:"s69", key:"Oven", value:"Multifunction Electric"} ],
+        whatsInTheBox: ["Freestanding Cooker", "Baking Tray", "Wire Rack", "User Manual"]
+    },
+    { id: "p-bosch-fridge-1", name: "Bosch Serie 4 KGN362IDR Fridge Freezer", sku: "KGN362IDR", brandId: "b-bosch", categoryId: "cat-defy-fridge",
+        description: "The NoFrost bottom freezer with VitaFresh XXL keeps your food fresh for longer. Perfect digital temperature control and a sleek Inox-look design.",
+        images: ["https://images.unsplash.com/photo-1601199963833-25a7a8d5f3a6?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s70", key:"Capacity", value:"321 Litres"}, {id:"s71", key:"Technology", value:"NoFrost"}, {id:"s72", key:"Crisper", value:"VitaFresh XXL"} ],
+        whatsInTheBox: ["Refrigerator Unit", "Egg tray", "User Manual"]
+    },
+
+    // Whirlpool (6)
+    { id: "p-whirlpool-fridge-1", name: "Whirlpool 6th Sense Side by Side Fridge", sku: "WSX5000", brandId: "b-whirlpool", categoryId: "cat-whirlpool-fridge",
+        description: "This American-style fridge freezer is packed with clever technology like 6th SENSE to keep your food fresher for longer. A spacious and stylish addition to any kitchen.",
+        images: ["https://images.unsplash.com/photo-1620912189874-32a2651a0219?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s73", key:"Total Capacity", value:"508 Litres"}, {id:"s74", key:"Technology", value:"6th SENSE"}, {id:"s75", key:"Finish", value:"Inox"} ],
+        whatsInTheBox: ["Side by Side Refrigerator", "User Manual"]
+    },
+    { id: "p-whirlpool-fridge-2", name: "Whirlpool 330L Combi Fridge Freezer", sku: "W5811EOX", brandId: "b-whirlpool", categoryId: "cat-whirlpool-fridge",
+        description: "LessFrost technology means you defrost less often. The modern optic inox design is fingerprint resistant, keeping your kitchen looking pristine.",
+        images: ["https://images.unsplash.com/photo-1618221523455-2a8a18a99496?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s76", key:"Capacity", value:"330 Litres"}, {id:"s77", key:"Technology", value:"LessFrost"}, {id:"s78", key:"Finish", value:"Optic Inox"} ],
+        whatsInTheBox: ["Refrigerator Unit", "User Manual"]
+    },
+    { id: "p-whirlpool-washer-1", name: "Whirlpool 10kg FreshCare+ Front Loader", sku: "W10FC+", brandId: "b-whirlpool", categoryId: "cat-whirlpool-laundry",
+        description: "Keep laundry fresh even after the cycle ends with FreshCare+. The 6th SENSE motor ensures a quiet yet powerful performance, adapting resources for perfect results.",
+        images: ["https://images.unsplash.com/photo-1623039014699-91e56b436a53?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s79", key:"Capacity", value:"10 kg"}, {id:"s80", key:"Technology", value:"6th SENSE"}, {id:"s81", key:"Feature", value:"FreshCare+"} ],
+        whatsInTheBox: ["Washing Machine", "Hoses", "User Manual"]
+    },
+    { id: "p-whirlpool-dryer-1", name: "Whirlpool 8kg Heat Pump Tumble Dryer", sku: "W8HPD", brandId: "b-whirlpool", categoryId: "cat-whirlpool-laundry",
+        description: "Achieve perfect drying results with exceptional energy efficiency thanks to Heat Pump technology. The FreshCare+ system keeps garments soft and fresh inside the dryer.",
+        images: ["https://images.unsplash.com/photo-1604998103924-89e012e5265a?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s82", key:"Capacity", value:"8 kg"}, {id:"s83", key:"Technology", value:"Heat Pump"}, {id:"s84", key:"Energy Class", value:"A++"} ],
+        whatsInTheBox: ["Tumble Dryer", "User Manual"]
+    },
+    { id: "p-whirlpool-hob-1", name: "Whirlpool 60cm Gas on Glass Hob", sku: "GOA6423NB", brandId: "b-whirlpool", categoryId: "cat-whirlpool-cook",
+        description: "The elegance of a glass surface with the power and precision of gas cooking. This 4-burner hob features cast iron pan supports and front controls for ease of use.",
+        images: ["https://images.unsplash.com/photo-1568248897217-15a0a38384b6?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s85", key:"Size", value:"60cm"}, {id:"s86", key:"Type", value:"Gas on Glass"}, {id:"s87", key:"Supports", value:"Cast Iron"} ],
+        whatsInTheBox: ["Gas Hob", "LPG conversion kit", "User Manual"]
+    },
+    { id: "p-whirlpool-microwave-1", name: "Whirlpool 25L Crisp & Grill Microwave", sku: "MCP345BL", brandId: "b-whirlpool", categoryId: "cat-whirlpool-cook",
+        description: "Go beyond reheating with the Crisp function for oven-like results and a powerful grill. JetDefrost technology defrosts up to 7 times faster than a conventional microwave.",
+        images: ["https://images.unsplash.com/photo-1556911220-bff31c812dba?q=80&w=800&auto=format&fit=crop"],
+        specifications: [ {id:"s88", key:"Capacity", value:"25 Litres"}, {id:"s89", key:"Functions", value:"Crisp, Grill, Defrost"}, {id:"s90", key:"Control", value:"Digital"} ],
+        video: "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+        documents: [{ id: "doc-whirlpool-micro-1", title: "Recipe Book", type: "pdf", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"}],
+        whatsInTheBox: ["Microwave Oven", "Crisp Plate", "Grill Rack", "User Manual"]
+    },
 ];
 
 export const clients: Client[] = [
-    {
-        id: "client-1",
-        companyName: "The Corner Cafe",
-        contactPerson: "Alice Johnson",
-        contactEmail: "alice@cornercafe.com",
-        contactTel: "111-222-3333"
-    },
-    {
-        id: "client-2",
-        companyName: "Gourmet Solutions Ltd.",
-        contactPerson: "Robert Chen",
-        contactEmail: "rob@gourmet.co",
-        contactTel: "444-555-6666"
-    }
+    { id: "client-1", companyName: "The Corner Cafe", contactPerson: "Alice Johnson", contactEmail: "alice@cornercafe.com", contactTel: "111-222-3333" },
+    { id: "client-2", companyName: "Gourmet Solutions Ltd.", contactPerson: "Robert Chen", contactEmail: "rob@gourmet.co", contactTel: "444-555-6666" }
 ];
 
 export const quotes: Quote[] = [];
 
 export const catalogues: Catalogue[] = [
-    // Existing Catalogues
-    {
-        "id": "cat-zenith-2024",
-        "title": "Zenith 2024 Collection",
-        "thumbnailUrl": "https://images.unsplash.com/photo-1579725842526-a931057d3637?q=80&w=800&auto=format&fit=crop",
-        "brandId": "b-zenith",
-        "year": 2024,
-        "type": "image",
-        "imageUrls": [
-            "https://images.unsplash.com/photo-1579725842526-a931057d3637?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1604405282933-281893451a66?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1574758394412-243d1a355ed5?q=80&w=1200&auto=format&fit=crop"
-        ]
-    },
-    {
-        "id": "cat-evergreen-2024",
-        "title": "Evergreen Adventure Guide",
-        "thumbnailUrl": "https://images.unsplash.com/photo-1525171254930-643c656b23a9?q=80&w=800&auto=format&fit=crop",
-        "brandId": "b-evergreen",
-        "year": 2024,
-        "type": "image",
-        "imageUrls": [
-            "https://images.unsplash.com/photo-1525171254930-643c656b23a9?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1534991959881-3f124e6a8836?q=80&w=1200&auto=format&fit=crop"
-        ]
-    },
-    // New Catalogues
-    {
-        "id": "cat-aura-2024",
-        "title": "Aura Winter Collection",
-        "thumbnailUrl": "https://images.unsplash.com/photo-1531991113949-a1e27a40954b?q=80&w=800&auto=format&fit=crop",
-        "brandId": "b-aura",
-        "year": 2024,
-        "type": "image",
-        "imageUrls": [
-            "https://images.unsplash.com/photo-1531991113949-a1e27a40954b?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1554995207-c18c203602cb?q=80&w=1200&auto=format&fit=crop"
-        ]
-    }
+  { id: "catlg-defy-2024", title: "DEFY Kitchen & Laundry 2024", thumbnailUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=400&q=80", brandId: "b-defy", year: new Date().getFullYear(), type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&q=80", "https://images.unsplash.com/photo-1555448248-2571daf6344b?w=800&q=80", "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=800&q=80", "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=800&q=80" ] },
+  { id: "catlg-hisense-2024", title: "Hisense Entertainment 2024", thumbnailUrl: "https://images.unsplash.com/photo-1554034483-04fda0d3507b?w=400&q=80", brandId: "b-hisense", year: new Date().getFullYear(), type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1554034483-04fda0d3507b?w=800&q=80", "https://images.unsplash.com/photo-1596731362294-f8a84bca213c?w=800&q=80", "https://images.unsplash.com/photo-1574169208507-84376144848b?w=800&q=80" ] },
+  { id: "catlg-bosch-2024", title: "Bosch Home Appliances 2024", thumbnailUrl: "https://images.unsplash.com/photo-1605191141575-def5ade85b23?w=400&q=80", brandId: "b-bosch", year: new Date().getFullYear(), type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1605191141575-def5ade85b23?w=800&q=80", "https://images.unsplash.com/photo-1618022732103-6a0ea1a433e5?w=800&q=80", "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80" ] },
+  { id: "catlg-edblo-2023", title: "Edblo Comfort Collection 2023", thumbnailUrl: "https://images.unsplash.com/photo-1576502200916-3808e07386a5?w=400&q=80", brandId: "b-edblo", year: new Date().getFullYear() - 1, type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1576502200916-3808e07386a5?w=800&q=80" ] },
+  { id: "catlg-whirlpool-2024", title: "Whirlpool Innovation 2024", thumbnailUrl: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&q=80", brandId: "b-whirlpool", year: new Date().getFullYear(), type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=800&q=80", "https://images.unsplash.com/photo-1538688423619-a83d0f084044?w=800&q=80" ] },
 ];
 
 export const pamphlets: Pamphlet[] = [
-    {
-        "id": "pam-quantum-launch",
-        "title": "Quantum Audio Launch Sale",
-        "imageUrl": "https://images.unsplash.com/photo-1511370235399-1802ca523234?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-07-01",
-        "endDate": "2024-08-31",
-        "type": "image",
-        "imageUrls": [
-            "https://images.unsplash.com/photo-1511370235399-1802ca523234?q=80&w=1200&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1612333798487-37a544604533?q=80&w=1200&auto=format&fit=crop"
-        ]
-    },
-    {
-        "id": "pam-zenith-summer",
-        "title": "Zenith Summer Savings",
-        "imageUrl": "https://images.unsplash.com/photo-1607992922514-adc54c9256db?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-06-15",
-        "endDate": "2024-09-15",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1607992922514-adc54c9256db?q=80&w=1200&auto=format&fit=crop" ]
-    },
-    {
-        "id": "pam-kinetic-spring",
-        "title": "Kinetic Spring Sale",
-        "imageUrl": "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-08-15",
-        "endDate": "2024-09-30",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1200&auto=format&fit=crop" ]
-    },
-    {
-        "id": "pam-evergreen-clearance",
-        "title": "Evergreen Season Clearance",
-        "imageUrl": "https://images.unsplash.com/photo-1517824806704-9040b037703b?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-08-01",
-        "endDate": "2024-09-15",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1517824806704-9040b037703b?q=80&w=1200&auto=format&fit=crop" ]
-    },
-    {
-        "id": "pam-aura-cozy",
-        "title": "Aura Cozy Home Event",
-        "imageUrl": "https://images.unsplash.com/photo-1615873968403-89e068629265?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-09-01",
-        "endDate": "2024-10-31",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1615873968403-89e068629265?q=80&w=800&auto=format&fit=crop" ]
-    },
-    {
-        "id": "pam-nexus-backtoschool",
-        "title": "Nexus Back to School Deals",
-        "imageUrl": "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-07-15",
-        "endDate": "2024-08-31",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?q=80&w=1200&auto=format&fit=crop" ]
-    },
-    {
-        "id": "pam-apex-levelup",
-        "title": "Level Up Your Setup Sale",
-        "imageUrl": "https://images.unsplash.com/photo-1598550476439-6847785f5607?q=80&w=800&auto=format&fit=crop",
-        "startDate": "2024-08-01",
-        "endDate": "2024-08-31",
-        "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1598550476439-6847785f5607?q=80&w=1200&auto=format&fit=crop" ]
-    }
+  { id: "pamph-mid-year-2024", title: "Mid-Year Madness", imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80&auto=format&fit=crop", startDate: new Date().toISOString().split('T')[0], endDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split('T')[0], type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&q=80", "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=800&q=80", "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9e?w=800&q=80" ] },
+  { id: "pamph-clearance-2024", title: "Winter Clearance", imageUrl: "https://images.unsplash.com/photo-1572584642822-6e8de8dba0cb?w=400&q=80&auto=format&fit=crop", startDate: new Date().toISOString().split('T')[0], endDate: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString().split('T')[0], type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1572584642822-6e8de8dba0cb?w=800&q=80", "https://images.unsplash.com/photo-1526178613552-2b45c6c302f0?w=800&q=80" ] },
+  { id: "pamph-defy-2024", title: "DEFY Appliance Deals", imageUrl: "https://images.unsplash.com/photo-1526721664273-401d4131551a?w=400&q=80&auto=format&fit=crop", startDate: new Date().toISOString().split('T')[0], endDate: new Date(new Date().setDate(new Date().getDate() + 20)).toISOString().split('T')[0], type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1526721664273-401d4131551a?w=800&q=80", "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=800&q=80", "https://images.unsplash.com/photo-1607082348386-5388c5917454?w=800&q=80", "https://images.unsplash.com/photo-1607082348928-3e4b2a6d4b5a?w=800&q=80" ] },
+  { id: "pamph-hisense-2024", title: "Hisense Tech Fest", imageUrl: "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=400&q=80&auto=format&fit=crop", startDate: new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().split('T')[0], endDate: new Date(new Date().setDate(new Date().getDate() + 35)).toISOString().split('T')[0], type: 'image', imageUrls: [ "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=800&q=80" ] },
 ];
 
-export const screensaverAds: ScreensaverAd[] = [
-    { "id": "ad-3", "title": "Feel the Bass. Hear the Future.", "media": [{ "id": "media-ad3-1", "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-quantum-soundbar" } },
-    { "id": "ad-4", "title": "Your Adventure Awaits", "media": [{ "id": "media-ad4-1", "url": "https://images.unsplash.com/photo-1470246973918-29a93221c455?q=80&w=1920&auto=format&fit=crop", "type": "image", "duration": 10, "overlay": { "headline": "Your Adventure Awaits", "subheadline": "Explore the Evergreen Outdoor Collection", "textColor": "#FFFFFF", "backgroundColor": "rgba(0, 0, 0, 0.4)" } }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-evergreen" } },
-    { "id": "ad-5", "title": "The Art of Cool", "media": [{ "id": "media-ad5-1", "url": "https://images.unsplash.com/photo-1588691523445-3942a3a5c215?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-zenith-fridge" } },
-    { "id": "ad-6", "title": "Unleash Your Potential", "media": [{ "id": "media-ad6-1", "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-kinetic" } },
-    { "id": "ad-7", "title": "The Future is Now. The Future is Nexus.", "media": [{ "id": "media-ad7-1", "url": "https://images.unsplash.com/photo-1535378620166-273708d44e4c?q=80&w=1920&auto=format&fit=crop", "type": "image", "overlay": { "headline": "NexusTab Pro 11", "textColor": "#FFFFFF", "backgroundColor": "rgba(0, 0, 0, 0.5)" } }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-nexus-tablet" } },
-    { "id": "ad-8", "title": "Create Your Sanctuary", "media": [{ "id": "media-ad8-1", "url": "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-aura" } }
-];
+export const screensaverAds: ScreensaverAd[] = [];
 
 export const tvContent: TvContent[] = [
-    // Existing Content
-    { "id": "tv-stellar-1", "brandId": "b-stellar-tv", "modelName": "Nebula Series 65\"", "media": [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", "type": "video" }] },
-    { "id": "tv-visionix-1", "brandId": "b-visionix-tv", "modelName": "ProArt Monitor 32\"", "media": [{ "url": "https://images.unsplash.com/photo-1551645120-d70b9685a3a2?q=80&w=1920&auto=format&fit=crop", "type": "image" }, { "url": "https://images.unsplash.com/photo-1616588589676-62b3bd4d2b96?q=80&w=1920&auto=format&fit=crop", "type": "image" }] },
-    { "id": "tv-quantum-sb", "brandId": "b-quantum", "modelName": "Quantum Wave Demo", "media": [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "type": "video" }] },
-    // New Content
-    { "id": "tv-apex-1", "brandId": "b-apex-gaming", "modelName": "Predator 32\" Curved", "media": [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", "type": "video" }] }
+    { id: "tv-hisense-1", brandId: "b-hisense", modelName: "Hisense ULED Series", media: [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "type": "video" }] },
 ];
 
 const defaultLight: ThemeColors = {
@@ -303,16 +314,8 @@ const defaultLight: ThemeColors = {
   mainShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.07), 0 5px 10px -5px rgba(0, 0, 0, 0.04)",
   mainBorder: "1px solid #e5e7eb",
   primary: "#4f46e5",
-  primaryButton: {
-    background: "#4f46e5",
-    text: "#ffffff",
-    hoverBackground: "#4338ca",
-  },
-  destructiveButton: {
-    background: "#dc2626",
-    text: "#ffffff",
-    hoverBackground: "#b91c1c"
-  }
+  primaryButton: { background: "#4f46e5", text: "#ffffff", hoverBackground: "#4338ca" },
+  destructiveButton: { background: "#dc2626", text: "#ffffff", hoverBackground: "#b91c1c" }
 };
 
 const defaultDark: ThemeColors = {
@@ -323,16 +326,8 @@ const defaultDark: ThemeColors = {
   mainShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.03)",
   mainBorder: "1px solid rgba(255, 255, 255, 0.08)",
   primary: "#818cf8",
-  primaryButton: {
-    background: "#4f46e5",
-    text: "#ffffff",
-    hoverBackground: "#6366f1",
-  },
-  destructiveButton: {
-    background: "#be123c",
-    text: "#ffffff",
-    hoverBackground: "#9f1239"
-  }
+  primaryButton: { background: "#4f46e5", text: "#ffffff", hoverBackground: "#6366f1" },
+  destructiveButton: { background: "#be123c", text: "#ffffff", hoverBackground: "#9f1239" }
 };
 
 const defaultBodyFont: FontStyleSettings = { fontFamily: "Inter", fontWeight: "400", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
@@ -340,10 +335,10 @@ const defaultHeadingsFont: FontStyleSettings = { fontFamily: "Montserrat", fontW
 const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWeight: "600", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
 
 export const settings: Settings = {
-    appName: "Product Catalogue",
-    appDescription: "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
-    logoUrl: "https://iili.io/KAn4ekl.png",
-    pwaIconUrl: "https://iili.io/KAn4ekl.png",
+    appName: "Appliance World",
+    appDescription: "An interactive digital catalogue for premium home appliances.",
+    logoUrl: "https://iili.io/KAzX5il.png",
+    pwaIconUrl: "https://iili.io/KAzX5il.png",
     sharedUrl: "",
     customApiUrl: "",
     customApiKey: "",

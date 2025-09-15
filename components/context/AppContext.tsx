@@ -1,4 +1,3 @@
-
 /// <reference path="../../swiper.d.ts" />
 
 import React, { createContext, useState, useContext, useEffect, useRef, useCallback } from 'react';
@@ -216,9 +215,6 @@ interface AppContextType {
   playTouchSound: () => void;
   isScreensaverPinModalOpen: boolean;
   setIsScreensaverPinModalOpen: (isOpen: boolean) => void;
-  uploadProjectZip: (file: File) => Promise<void>;
-  projectZipBlob: Blob | null;
-  uploadProjectZipToLocalDB: (file: File) => Promise<void>;
   apkDownloadUrl: string;
   backupProgress: BackupProgress;
   setBackupProgress: (progress: Partial<BackupProgress>) => void;
@@ -258,7 +254,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [kioskSessions, setKioskSessions] = useState<KioskSession[]>([]);
     const [apkDownloadUrl, setApkDownloadUrl] = useState<string>('');
     const [backupProgress, setBackupProgressState] = useState<BackupProgress>({ active: false, message: '', percent: 0 });
-    const [projectZipBlob, setProjectZipBlob] = useState<Blob | null>(null);
     // FIX: Add state for the quote being fulfilled to manage the modal globally.
     const [fulfillingQuote, setFulfillingQuote] = useState<Quote | null>(null);
 
@@ -897,55 +892,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return fileToBase64(file);
     }, [storageProvider, directoryHandle, settings]);
     
-    const uploadProjectZip = useCallback(async (file: File): Promise<void> => {
-        if (storageProvider === 'local' && directoryHandle) {
-            try {
-                const fileHandle = await directoryHandle.getFileHandle('project.zip', { create: true });
-                const writable = await fileHandle.createWritable();
-                await writable.write(file);
-                await writable.close();
-                addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip to Local Folder.' });
-                return;
-            } catch (error) {
-                console.error('Error saving project.zip to local directory:', error);
-                throw new Error('Failed to save project.zip to local directory.');
-            }
-        }
-
-        if (storageProvider === 'customApi') {
-            const url = settings.customApiUrl;
-            if (!url) throw new Error("API URL is not configured for upload.");
-            
-            const uploadUrl = new URL(url);
-            uploadUrl.pathname = uploadUrl.pathname.replace(/\/data$/, '/upload-project');
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            const response = await fetch(uploadUrl.toString(), {
-                method: 'POST',
-                headers: { 'x-api-key': settings.customApiKey },
-                body: formData,
-            });
-            if (!response.ok) throw new Error(`Upload failed: ${await response.text()}`);
-            addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip to Custom API.' });
-            return;
-        }
-
-        throw new Error('No compatible storage provider (Local Folder or Custom API) is connected for this operation.');
-    }, [storageProvider, directoryHandle, settings, addActivityLog]);
-
-    const uploadProjectZipToLocalDB = useCallback(async (file: File): Promise<void> => {
-        try {
-            const blob = new Blob([file], { type: file.type });
-            await idbSet('project-zip-blob', blob);
-            setProjectZipBlob(blob);
-            addActivityLog({ actionType: 'UPDATE', entityType: 'System', details: 'Uploaded project.zip for offline download.' });
-        } catch (error) {
-            console.error('Error saving project.zip to local DB:', error);
-            throw new Error('Failed to save project.zip to local DB.');
-        }
-    }, [addActivityLog]);
-
     const getFileUrl = useCallback(async (filePath: string): Promise<string> => {
         if (!filePath || filePath.startsWith('http') || filePath.startsWith('data:')) {
             return filePath || '';
@@ -1082,7 +1028,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     const reconnectLastProvider = async (): Promise<{ success: boolean; message: string; }> => {
-        const lastProvider = await idbGet<StorageProvider>('lastConnectedProvider');
+        const lastProvider = await idbGet<StorageProvider | null>('lastConnectedProvider');
         if (!lastProvider || lastProvider === 'none') return { success: false, message: "No previous provider to reconnect to." };
 
         if (lastProvider === 'local') {
@@ -1151,11 +1097,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             
             const lastProvider = await idbGet<StorageProvider | null>('lastConnectedProvider');
             if(lastProvider) { setLastConnectedProvider(lastProvider); }
-
-            const blob = await idbGet<Blob>('project-zip-blob');
-            if (blob) {
-                setProjectZipBlob(blob);
-            }
 
             const provider = await idbGet<StorageProvider>('storageProvider');
             if (provider === 'local') {
@@ -1494,9 +1435,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         playTouchSound,
         isScreensaverPinModalOpen,
         setIsScreensaverPinModalOpen,
-        uploadProjectZip,
-        projectZipBlob,
-        uploadProjectZipToLocalDB,
         apkDownloadUrl,
         backupProgress,
         setBackupProgress,

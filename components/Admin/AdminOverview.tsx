@@ -1,23 +1,48 @@
 import React, { useMemo } from 'react';
 import { useAppContext } from '../context/AppContext.tsx';
-import { CircleStackIcon, CubeIcon, UsersIcon, ClockIcon, SignalIcon, ChartBarIcon, ClipboardDocumentListIcon } from '../Icons.tsx';
+import { CircleStackIcon, CubeIcon, UsersIcon, ClockIcon, SignalIcon, ChartBarIcon, ClipboardDocumentListIcon, QuestionMarkCircleIcon } from '../Icons.tsx';
 import type { SubTab } from './AdminDashboard.tsx';
+import { Link } from 'react-router-dom';
 
 interface AdminOverviewProps {
     setActiveSubTab: (tab: SubTab) => void;
 }
 
-const StatCard: React.FC<{ title: string, value: number, icon: React.ReactNode, onClick: () => void }> = ({ title, value, icon, onClick }) => (
-    <button onClick={onClick} className="bg-white dark:bg-gray-800/50 p-4 rounded-2xl shadow-lg border dark:border-gray-700/50 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-        <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
-            {icon}
-        </div>
-        <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-        </div>
-    </button>
-);
+// FIX: Corrected component logic to properly handle either a Link or a button, resolving a TypeScript error with incompatible props. The component now accepts a string for `to` when it's a link, or a function for `onClick` when it's a button.
+const StatCard: React.FC<{ title: string, value: number | string, icon: React.ReactNode, action: (() => void) | string }> = ({ title, value, icon, action }) => {
+    const isLink = typeof action === 'string';
+    const Component = isLink ? Link : 'button';
+    const props = isLink ? { to: action } : { onClick: action };
+  
+    const content = (
+        <>
+            <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                {icon}
+            </div>
+            <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+            </div>
+        </>
+    );
+  
+    const commonClassName = "bg-white dark:bg-gray-800/50 p-4 rounded-2xl shadow-lg border dark:border-gray-700/50 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full text-left";
+
+    if (isLink) {
+        return (
+            <Link to={action} className={commonClassName}>
+                {content}
+            </Link>
+        );
+    }
+  
+    return (
+        <button onClick={action} className={commonClassName}>
+            {content}
+        </button>
+    );
+};
+
 
 const Widget: React.FC<{ title: string, icon: React.ReactNode, children: React.ReactNode, viewAllLink?: () => void, viewAllText?: string }> = ({ title, icon, children, viewAllLink, viewAllText }) => (
     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50 flex flex-col">
@@ -82,10 +107,10 @@ const AdminOverview: React.FC<AdminOverviewProps> = ({ setActiveSubTab }) => {
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard title="Total Brands" value={brands.filter(b => !b.isDeleted).length} icon={<CircleStackIcon className="w-6 h-6"/>} onClick={() => setActiveSubTab('brands')} />
-                <StatCard title="Total Products" value={products.filter(p => !p.isDeleted).length} icon={<CubeIcon className="w-6 h-6"/>} onClick={() => setActiveSubTab('brands')} />
-                <StatCard title="Total Clients" value={clients.filter(c => !c.isDeleted).length} icon={<ClipboardDocumentListIcon className="w-6 h-6"/>} onClick={() => setActiveSubTab('clients')} />
-                <StatCard title="Admin Users" value={adminUsers.length} icon={<UsersIcon className="w-6 h-6"/>} onClick={() => setActiveSubTab('users')} />
+                <StatCard title="Total Brands" value={brands.filter(b => !b.isDeleted).length} icon={<CircleStackIcon className="w-6 h-6"/>} action={() => setActiveSubTab('brands')} />
+                <StatCard title="Total Products" value={products.filter(p => !p.isDeleted).length} icon={<CubeIcon className="w-6 h-6"/>} action={() => setActiveSubTab('brands')} />
+                <StatCard title="Total Clients" value={clients.filter(c => !c.isDeleted).length} icon={<ClipboardDocumentListIcon className="w-6 h-6"/>} action={() => setActiveSubTab('clients')} />
+                <StatCard title="Help & Setup" value="View Guides" icon={<QuestionMarkCircleIcon className="w-6 h-6"/>} action={'/admin/setup-instructions'} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

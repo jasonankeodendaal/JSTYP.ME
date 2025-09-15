@@ -1,14 +1,21 @@
 
 
+
+
+
+
+
+
+
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
 import AdminSettings from './AdminSettings.tsx';
 import AdminScreensaverAds from './AdminScreensaverAds.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import AdminBackupRestore from './AdminBackupRestore.tsx';
-import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon, IdentificationIcon, ArrowLeftOnRectangleIcon } from '../Icons.tsx';
+import { PlusIcon, PencilIcon, TrashIcon, CircleStackIcon, ChevronDownIcon, BookOpenIcon, EyeIcon, ServerStackIcon, RestoreIcon, UsersIcon, DocumentTextIcon, TvIcon, ChartPieIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon, HomeIcon, ComputerDesktopIcon, IdentificationIcon, ArrowLeftOnRectangleIcon, CheckIcon } from '../Icons.tsx';
 import AdminUserManagement from './AdminUserManagement.tsx';
 import AdminBulkImport from './AdminBulkImport.tsx';
 import AdminZipBulkImport from './AdminZipBulkImport.tsx';
@@ -21,6 +28,8 @@ import AdminActivityLog from './AdminActivityLog.tsx';
 import AdminOverview from './AdminOverview.tsx';
 import AdminRemoteControl from './AdminRemoteControl.tsx';
 import { AboutSystem } from '../SetupWizard.tsx';
+// FIX: Removed local modal rendering, as it's now handled globally in App.tsx.
+// import QuoteFulfillmentModal from './QuoteFulfillmentModal.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
 export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
@@ -108,7 +117,8 @@ export const AdminDashboard: React.FC = () => {
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
     const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
-    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal } = useAppContext();
+    // FIX: Replaced local state with global context for quote fulfillment to ensure modal is handled at the app level.
+    const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal, setFulfillingQuote } = useAppContext();
 
     useEffect(() => {
         sessionStorage.setItem('adminFooterTab', activeFooterTab);
@@ -358,46 +368,55 @@ export const AdminDashboard: React.FC = () => {
                             </button>
                         </div>
                         {sortedQuotes.length > 0 ? (
-                            <div className="overflow-x-auto bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border border-gray-200/80 dark:border-gray-700/50">
-                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                    <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                        <tr>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Client</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created By</th>
-                                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
-                                            <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                                            <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                        {sortedQuotes.map(quote => {
-                                            const client = clients.find(c => c.id === quote.clientId);
-                                            const admin = adminUsers.find(a => a.id === quote.adminId);
-                                            const adminName = admin ? `${admin.firstName} ${admin.lastName}` : (quote.adminId === 'kiosk_user' ? 'Kiosk' : 'Unknown User');
-                                            return (
-                                                <tr key={quote.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{client?.companyName || 'N/A'}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(quote.createdAt).toLocaleDateString()}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{adminName}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">{quote.items.length}</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                                        <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${quote.status === 'quoted' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
-                                                            {quote.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <div className="flex items-center justify-end gap-1">
-                                                            <Link to={`/admin/quote/${quote.id}/print`} target="_blank" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Print Quote"><EyeIcon className="h-4 w-4" /></Link>
-                                                            <button onClick={() => toggleQuoteStatus(quote.id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Toggle Status"><PencilIcon className="h-4 w-4" /></button>
-                                                            <button onClick={() => handleDeleteQuote(quote)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Delete Quote"><TrashIcon className="h-4 w-4" /></button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {sortedQuotes.map(quote => {
+                                    const client = clients.find(c => c.id === quote.clientId);
+                                    const admin = adminUsers.find(a => a.id === quote.adminId);
+                                    const adminName = admin ? `${admin.firstName} ${admin.lastName}` : (quote.adminId === 'kiosk_user' ? 'Kiosk' : 'Unknown User');
+                                    const tickedCount = quote.tickedItems?.length || 0;
+                                    const totalItems = quote.items.length;
+                                    const progress = totalItems > 0 ? (tickedCount / totalItems) * 100 : 0;
+
+                                    return (
+                                        <div key={quote.id} className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg border dark:border-gray-700/50 flex flex-col">
+                                            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-bold text-lg text-gray-900 dark:text-gray-100 item-title">{client?.companyName || 'N/A'}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {new Date(quote.createdAt).toLocaleDateString()} &bull; by {adminName}
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${quote.status === 'quoted' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
+                                                        {quote.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="p-4 flex-grow">
+                                                <div className="flex justify-between items-center text-sm mb-1">
+                                                    <span className="font-medium text-gray-700 dark:text-gray-300">Fulfillment Progress</span>
+                                                    <span className="font-semibold text-gray-800 dark:text-gray-200">{tickedCount} / {totalItems} items</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                    <div className="bg-indigo-500 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
+                                                </div>
+                                                {quote.quoteImageUrl && (
+                                                    <div className="mt-3">
+                                                         <a href={quote.quoteImageUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-600 hover:underline">View Uploaded Quote</a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-1">
+                                                <button onClick={() => setFulfillingQuote(quote)} className="btn !py-1 !px-3 text-sm" title="Fulfill Quote">
+                                                    <CheckIcon className="h-4 w-4" /> Fulfill
+                                                </button>
+                                                <Link to={`/admin/quote/${quote.id}/print`} target="_blank" className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Print Quote"><EyeIcon className="h-4 w-4" /></Link>
+                                                <button onClick={() => toggleQuoteStatus(quote.id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Toggle Status"><PencilIcon className="h-4 w-4" /></button>
+                                                <button onClick={() => handleDeleteQuote(quote)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" title="Delete Quote"><TrashIcon className="h-4 w-4" /></button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ) : (
                            <EmptyState icon={<ClipboardDocumentListIcon className="w-full h-full" />} title="No Quotes Found" message="Create your first client quote to see it here." ctaText="Create New Quote" onCtaClick={openQuoteStartModal} canAdd={true} />
@@ -542,6 +561,7 @@ export const AdminDashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+            
             <header className="p-4 sm:p-6 lg:p-8 shrink-0">
                  <div className="w-full max-w-6xl mx-auto flex justify-between items-center">
                     <div>
@@ -588,3 +608,5 @@ export const AdminDashboard: React.FC = () => {
         </div>
     );
 };
+
+export default AdminDashboard;

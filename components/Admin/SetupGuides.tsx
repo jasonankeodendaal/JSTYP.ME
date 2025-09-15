@@ -59,53 +59,7 @@ export const CloudSyncGuideContent: React.FC = () => (
         <ol>
             <li><strong>Install Node.js:</strong> This is the runtime environment for the server. If you don't have it, go to <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer">nodejs.org</a>, download and install the <strong>LTS version</strong>. Verify the installation by opening a terminal (like Command Prompt, PowerShell, or Terminal) and running <code>node -v</code>.</li>
             <li><strong>Install PM2:</strong> This is a powerful tool that keeps your server running 24/7. In your terminal, run this command to install PM2 globally: <pre><code>npm install -g pm2</code></pre></li>
-            <li><strong>Install Cloudflare Tunnel:</strong> This free tool creates a secure, public URL for your local server. Follow the official guide to install the <code>cloudflared</code> tool from <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/" target="_blank" rel="noopener noreferrer">this link</a>.</li>
         </ol>
-
-        <h4>Part 2: Configure the Server Project</h4>
-        <ol>
-            <li><strong>Open a Terminal in the `server` Folder:</strong> In your kiosk project folder, navigate into the <code>server</code> directory.</li>
-            <li><strong>Install Server Dependencies:</strong> Run this command once: <pre><code>npm install</code></pre></li>
-            <li><strong>CRITICAL - Set Your Secret API Key:</strong> In the <code>server</code> folder, rename the file <code>.env.example</code> to exactly <code>.env</code>. Open this new file and replace the placeholder key with your own private password. Make it long and secure!</li>
-        </ol>
-
-        <h4>Part 3: Run and Persist the Server with PM2</h4>
-        <ol>
-            <li>
-                <strong>Start Both Services:</strong> In your terminal (still inside the <code>server</code> folder), run this command. It uses the project's configuration file to start both your API server and the Cloudflare tunnel in the background.
-                <pre><code>pm2 start</code></pre>
-                <p className="text-xs"><strong>Tip:</strong> You can check that both <code>kiosk-api</code> and <code>kiosk-tunnel</code> are "online" with the command <code>pm2 list</code>.</p>
-            </li>
-            <li>
-                <strong>Get Your Public URL:</strong> The Cloudflare tunnel is now running in the background. To see its output and get your permanent public URL, run:
-                <pre><code>pm2 logs kiosk-tunnel</code></pre>
-                Look for a URL like <code>https://...trycloudflare.com</code>. <strong>Copy this URL</strong>. You can press <code>Ctrl + C</code> to exit the logs view.
-            </li>
-            <li>
-                <strong>Make it Permanent (Crucial for Reliability):</strong> To make PM2 restart everything automatically after a computer reboot, run this command:
-                <pre><code>pm2 startup</code></pre>
-                <strong>The command will output another command.</strong> You must copy that entire new command, paste it back into the same terminal, and press Enter. Finally, save your current process list so it knows what to restart:
-                <pre><code>pm2 save</code></pre>
-                <p>Your server is now fully configured and will run 24/7. You can close the terminal.</p>
-            </li>
-        </ol>
-        <hr/>
-        <h4>Part 4: Connect Your Kiosks to Your Server</h4>
-        <p>You must do this on <strong>every single device</strong> you want to sync, including your main PC's browser.</p>
-        <ol>
-            <li>In the kiosk setup, choose the <strong>"Custom API Sync"</strong> option.</li>
-            <li>In <strong>"Custom API URL"</strong>, paste your public Cloudflare URL from Part 1. You do not need to add anything to the end.</li>
-            <li>In <strong>"Custom API Auth Key"</strong>, enter the secret <code>API_KEY</code> from your server's <code>.env</code> file.</li>
-            <li>Click <strong>"Test &amp; Connect"</strong>. If it succeeds, click <strong>"Finish Setup"</strong>.</li>
-            <li>After setup, log in as admin and go to the <strong>System &gt; Backup &amp; Restore</strong> tab.
-                <ul>
-                    <li><strong>On your main admin PC:</strong> Click <strong>"Push to Cloud"</strong>. This uploads your local data to the server for the first time.</li>
-                    <li><strong>On all other devices:</strong> Click <strong>"Pull from Cloud"</strong>. This downloads the master data from your server.</li>
-                </ul>
-            </li>
-            <li><strong>Enable Auto-Sync:</strong> On <strong>every device</strong>, go to <strong>System &gt; Storage &gt; Sync &amp; API Settings</strong> and turn on the <strong>"Enable Auto-Sync"</strong> toggle.</li>
-        </ol>
-        <p>Your multi-device kiosk system is now fully configured and running!</p>
     </>
 );
 

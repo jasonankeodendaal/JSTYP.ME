@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Brand, Catalogue, Pamphlet, TvContent, Quote } from '../../types';
@@ -26,7 +18,6 @@ import AdminActivityLog from './AdminActivityLog.tsx';
 import AdminOverview from './AdminOverview.tsx';
 import AdminRemoteControl from './AdminRemoteControl.tsx';
 import { AboutSystem } from '../SetupWizard.tsx';
-import QuoteFulfillmentModal from './QuoteFulfillmentModal.tsx';
 
 type FooterTab = 'admin' | 'content' | 'system';
 export type SubTab = 'overview' | 'remoteControl' | 'brands' | 'catalogues' | 'pamphlets' | 'screensaverAds' | 'tv-content' | 'trash' | 'settings' | 'storage' | 'backup' | 'users' | 'analytics' | 'quotes' | 'clients' | 'activityLog' | 'about';
@@ -108,19 +99,32 @@ const AdminContentCard: React.FC<{
     );
 };
 
-// FIX: Export the component to make it available for import in other modules.
 export const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const [activeFooterTab, setActiveFooterTab] = useState<FooterTab>(() => (sessionStorage.getItem('adminFooterTab') as FooterTab) || 'admin');
     const [activeSubTab, setActiveSubTab] = useState<SubTab>(() => (sessionStorage.getItem('adminSubTab') as SubTab) || 'overview');
     const [activeBulkImportTab, setActiveBulkImportTab] = useState<'csv' | 'zip'>('csv');
-    // FIX: Removed local state for fulfillingQuote. It is now managed globally by AppContext.
+    const [showScreensaverUpdate, setShowScreensaverUpdate] = useState(false);
     const { brands, products, catalogues, pamphlets, deleteBrand, deleteCatalogue, deletePamphlet, loggedInUser, logout, storageProvider, showConfirmation, tvContent, deleteTvContent, quotes, clients, adminUsers, toggleQuoteStatus, deleteQuote, openQuoteStartModal, setFulfillingQuote } = useAppContext();
+
+    useEffect(() => {
+        if (!sessionStorage.getItem('seenScreensaverUpdate')) {
+            setShowScreensaverUpdate(true);
+        }
+    }, []);
 
     useEffect(() => {
         sessionStorage.setItem('adminFooterTab', activeFooterTab);
         sessionStorage.setItem('adminSubTab', activeSubTab);
     }, [activeFooterTab, activeSubTab]);
+    
+    const handleSubTabClick = (tabId: SubTab) => {
+        setActiveSubTab(tabId);
+        if (tabId === 'screensaverAds' && showScreensaverUpdate) {
+            setShowScreensaverUpdate(false);
+            sessionStorage.setItem('seenScreensaverUpdate', 'true');
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -357,7 +361,6 @@ export const AdminDashboard: React.FC = () => {
                 const sortedQuotes = [...quotes].sort((a, b) => b.createdAt - a.createdAt);
                 return (
                      <div className="space-y-6">
-                        {/* FIX: Removed redundant modal rendering. It is now handled globally in App.tsx. */}
                         <div className="flex justify-between items-center">
                             <h3 className="text-xl text-gray-800 dark:text-gray-100 section-heading">Manage Quotes</h3>
                             <button onClick={openQuoteStartModal} className="btn btn-primary">
@@ -527,7 +530,7 @@ export const AdminDashboard: React.FC = () => {
                          <button
                             key={tab.id}
                             type="button"
-                            onClick={() => setActiveSubTab(tab.id)}
+                            onClick={() => handleSubTabClick(tab.id)}
                             className={`flex items-center gap-2 px-3 py-3 font-semibold text-sm rounded-t-lg transition-colors border-b-2 whitespace-nowrap ${
                                 activeSubTab === tab.id
                                     ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
@@ -535,6 +538,9 @@ export const AdminDashboard: React.FC = () => {
                             }`}
                         >
                             {tab.icon} {tab.label}
+                            {tab.id === 'screensaverAds' && showScreensaverUpdate && (
+                                <span className="ml-1 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">NEW</span>
+                            )}
                         </button>
                     ))}
                 </nav>

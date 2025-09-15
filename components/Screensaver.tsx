@@ -16,10 +16,8 @@ type PlaylistItem = {
     overlay?: ScreensaverMedia['overlay'];
 };
 
-// FIX: Cast motion components to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
 const MotionH2 = motion.h2 as any;
-const MotionP = motion.p as any;
 
 const transitionVariants: Record<string, any> = {
     'fade': {

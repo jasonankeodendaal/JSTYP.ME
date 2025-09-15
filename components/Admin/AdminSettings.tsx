@@ -9,7 +9,6 @@ import KioskPreview from './KioskPreview.tsx';
 
 // --- HELPER COMPONENTS (Inlined) ---
 
-// FIX: Cast motion.div to any to resolve framer-motion prop type errors.
 const MotionDiv = motion.div as any;
 
 const FormSection: React.FC<{
@@ -409,11 +408,33 @@ const NavigationSection: React.FC<{name: string, isOpen: boolean, onToggle: (nam
 
 const KioskBehaviorSection: React.FC<{name: string, isOpen: boolean, onToggle: (name: string) => void, formData: Settings, onNestedChange: any}> = ({name, isOpen, onToggle, formData, onNestedChange}) => (
     <FormSection name={name} isOpen={isOpen} onToggle={onToggle} title="Kiosk Behavior & Screensaver" description="Configure idle timeouts, screensaver settings, and other kiosk-specific options.">
-        <div><label className={labelStyle}>Idle Redirect Timeout (seconds)</label><input type="number" value={formData.kiosk.idleRedirectTimeout} onChange={e => onNestedChange('kiosk.idleRedirectTimeout', parseInt(e.target.value, 10) || 0)} className={inputStyle} /><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Time until the app redirects to the homepage after inactivity. Set to 0 to disable.</p></div>
-        <div><label className={labelStyle}>Screensaver Delay (seconds)</label><input type="number" value={formData.screensaverDelay} onChange={e => onNestedChange('screensaverDelay', parseInt(e.target.value, 10) || 0)} className={inputStyle} /></div>
-        <div><label className={labelStyle}>Screensaver Content Source</label><select value={formData.screensaverContentSource} onChange={e => onNestedChange('screensaverContentSource', e.target.value)} className={inputStyle}><option value="products_and_ads">Products & Ads</option><option value="ads_only">Ads Only</option></select></div>
-        <div className="flex items-center justify-between"><label htmlFor="kiosk-pin" className={labelStyle}>Require PIN to Exit Screensaver</label><input id="kiosk-pin" type="checkbox" checked={formData.kiosk.pinProtectScreensaver} onChange={e => onNestedChange('kiosk.pinProtectScreensaver', e.target.checked)} className="h-5 w-5 rounded" /></div>
-        <div className="flex items-center justify-between"><label htmlFor="kiosk-context" className={labelStyle}>Disable Right-Click Menu</label><input id="kiosk-context" type="checkbox" checked={formData.kiosk.disableContextMenu} onChange={e => onNestedChange('kiosk.disableContextMenu', e.target.checked)} className="h-5 w-5 rounded" /></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div><label className={labelStyle}>Idle Redirect Timeout (sec)</label><input type="number" value={formData.kiosk.idleRedirectTimeout} onChange={e => onNestedChange('kiosk.idleRedirectTimeout', parseInt(e.target.value, 10) || 0)} className={inputStyle} /><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Time until returning to home page. 0 to disable.</p></div>
+            <div><label className={labelStyle}>Screensaver Delay (sec)</label><input type="number" value={formData.screensaverDelay} onChange={e => onNestedChange('screensaverDelay', parseInt(e.target.value, 10) || 0)} className={inputStyle} /></div>
+            <div><label className={labelStyle}>Image Duration (sec)</label><input type="number" value={formData.screensaverImageDuration} onChange={e => onNestedChange('screensaverImageDuration', parseInt(e.target.value, 10) || 8)} className={inputStyle} /></div>
+            <div><label className={labelStyle}>Transition Effect</label><select value={formData.screensaverTransitionEffect} onChange={e => onNestedChange('screensaverTransitionEffect', e.target.value)} className={inputStyle}>
+                    <option value="gentle-drift">Gentle Drift</option>
+                    <option value="fade">Fade</option>
+                    <option value="slide">Slide</option>
+                    <option value="scale">Scale</option>
+                    <option value="zoom-in">Zoom In</option>
+                    <option value="slide-fade">Slide & Fade</option>
+                    <option value="slide-up">Slide Up</option>
+                    <option value="reveal-blur">Reveal & Blur</option>
+                    <option value="slow-pan">Slow Pan (Ken Burns)</option>
+                </select>
+            </div>
+             <div><label className={labelStyle}>Content Source</label><select value={formData.screensaverContentSource} onChange={e => onNestedChange('screensaverContentSource', e.target.value)} className={inputStyle}><option value="products_and_ads">Products & Ads</option><option value="ads_only">Ads Only</option></select></div>
+             <div><label className={labelStyle}>Items Per Prompt</label><input type="number" value={formData.screensaverItemsPerPrompt} onChange={e => onNestedChange('screensaverItemsPerPrompt', parseInt(e.target.value, 10) || 3)} className={inputStyle} /><p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Number of items to show before the 'Touch to Explore' prompt.</p></div>
+             <div className="md:col-span-2"><label className={labelStyle}>"Touch to Explore" Text</label><input type="text" value={formData.screensaverTouchPromptText} onChange={e => onNestedChange('screensaverTouchPromptText', e.target.value)} className={inputStyle} /></div>
+             <div><label className={labelStyle}>Product Info Style</label><select value={formData.screensaverProductInfoStyle} onChange={e => onNestedChange('screensaverProductInfoStyle', e.target.value)} className={inputStyle} disabled={!formData.screensaverShowProductInfo}><option value="overlay">Overlay</option><option value="banner">Banner</option></select></div>
+        </div>
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="flex items-center justify-between py-3"><label htmlFor="kiosk-pin" className={labelStyle}>Require PIN to Exit Screensaver</label><input id="kiosk-pin" type="checkbox" checked={formData.kiosk.pinProtectScreensaver} onChange={e => onNestedChange('kiosk.pinProtectScreensaver', e.target.checked)} className="h-5 w-5 rounded" /></div>
+            <div className="flex items-center justify-between py-3"><label htmlFor="kiosk-context" className={labelStyle}>Disable Right-Click Menu</label><input id="kiosk-context" type="checkbox" checked={formData.kiosk.disableContextMenu} onChange={e => onNestedChange('kiosk.disableContextMenu', e.target.checked)} className="h-5 w-5 rounded" /></div>
+            <div className="flex items-center justify-between py-3"><label htmlFor="ss-clock" className={labelStyle}>Show Clock in Screensaver</label><input id="ss-clock" type="checkbox" checked={formData.screensaverShowClock} onChange={e => onNestedChange('screensaverShowClock', e.target.checked)} className="h-5 w-5 rounded" /></div>
+            <div className="flex items-center justify-between py-3"><label htmlFor="ss-prod-info" className={labelStyle}>Show Product Info in Screensaver</label><input id="ss-prod-info" type="checkbox" checked={formData.screensaverShowProductInfo} onChange={e => onNestedChange('screensaverShowProductInfo', e.target.checked)} className="h-5 w-5 rounded" /></div>
+        </div>
     </FormSection>
 );
 
@@ -519,12 +540,12 @@ const AdminSettings: React.FC = () => {
                     <form onSubmit={handleSave} className="space-y-8">
                         <BrandingAndIdentitySection name="branding" isOpen={openSection === 'branding'} onToggle={handleSectionToggle} formData={formData} onFileChange={handleFileChange} onNestedChange={handleNestedChange} kioskId={kioskId} setKioskId={setKioskId} loggedInUser={loggedInUser} />
                         <ThemeAndAppearanceSection name="theme" isOpen={openSection === 'theme'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
+                        <KioskBehaviorSection name="kioskBehavior" isOpen={openSection === 'kioskBehavior'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
                         <CreatorProfileSection name="creatorProfile" isOpen={openSection === 'creatorProfile'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                         <LoginPageStyleSection name="loginPage" isOpen={openSection === 'loginPage'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} onFileChange={handleFileChange} />
                         <PamphletPlaceholderSection name="pamphletPlaceholder" isOpen={openSection === 'pamphletPlaceholder'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
                         <TypographySection name="typography" isOpen={openSection === 'typography'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
                         <NavigationSection name="navigation" isOpen={openSection === 'navigation'} onToggle={handleSectionToggle} navLinks={formData.navigation.links} onNavLinksChange={(links) => handleNestedChange('navigation.links', links)} />
-                        <KioskBehaviorSection name="kioskBehavior" isOpen={openSection === 'kioskBehavior'} onToggle={handleSectionToggle} formData={formData} onNestedChange={handleNestedChange} />
 
                         <div className="pt-8 border-t border-gray-200 dark:border-gray-700 space-y-4">
                              <AnimatePresence>

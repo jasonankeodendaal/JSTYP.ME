@@ -245,41 +245,8 @@ const AdminLogin: React.FC = () => {
                 </div>
             )}
             
-            {/* Desktop Layout (LG and up) */}
-            <div className="hidden lg:flex min-h-screen w-full flex-row">
-                <div className="flex flex-col items-center justify-center w-full lg:w-3/5 p-12 text-center relative overflow-hidden">
-                    <div className="absolute inset-0 bg-black/20"></div>
-                    <div className="relative z-10" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
-                        <LocalMedia src={settings.logoUrl} alt="Logo" type="image" className="h-24 w-auto drop-shadow-lg" />
-                        <h1 className="text-4xl lg:text-5xl font-bold mt-6 section-heading">{settings.appName}</h1>
-                        <p className="mt-2 text-lg max-w-md opacity-90">{settings.appDescription}</p>
-                    </div>
-                </div>
-                <div className="w-full lg:w-2/5 flex items-center justify-center p-4 sm:p-8">
-                    <MotionDiv
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: 'easeOut' }}
-                        className="w-full max-w-sm rounded-[2.5rem] shadow-2xl p-8 backdrop-blur-xl border border-white/10"
-                        style={formPanelStyle}
-                    >
-                        <h2 className="text-3xl font-bold tracking-tight section-heading text-center mb-8">
-                            Admin Login
-                        </h2>
-                        <AdminLoginForm 
-                            onSubmit={handleSubmit}
-                            selectedUserId={selectedUserId}
-                            onUserChange={setSelectedUserId}
-                            pin={pin}
-                            onPinChange={setPin}
-                            error={error}
-                        />
-                    </MotionDiv>
-                </div>
-            </div>
-
-            {/* Mobile & Tablet Layout (below LG) */}
-            <div className="lg:hidden flex min-h-screen w-full items-center justify-center p-4 sm:p-8">
+            {/* Unified Layout for all screen sizes */}
+            <div className="flex min-h-screen w-full items-center justify-center p-4 sm:p-8">
                 <MotionDiv
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
