@@ -4,13 +4,13 @@
   "description": "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
   "icons": [
     {
-      "src": "https://iili.io/KzWOen4.png",
+      "src": "https://iili.io/KAn4ekl.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "https://iili.io/KzWOen4.png",
+      "src": "https://iili.io/KAn4ekl.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -40,14 +40,14 @@
       "short_name": "Catalogues",
       "description": "Browse all available catalogues",
       "url": "/#/catalogues",
-      "icons": [{ "src": "https://iili.io/KzWOen4.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://iili.io/KAn4ekl.png", "sizes": "192x192" }]
     },
     {
       "name": "View TV Brands",
       "short_name": "TVs",
       "description": "See TV display content",
       "url": "/#/tvs",
-      "icons": [{ "src": "https://iili.io/KzWOen4.png", "sizes": "192x192" }]
+      "icons": [{ "src": "https://iili.io/KAn4ekl.png", "sizes": "192x192" }]
     }
   ],
   "screenshots": [

@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import type { ScreensaverAd, AdLink } from '../../types.ts';
-import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon } from '../Icons.tsx';
+import type { ScreensaverAd, AdLink, ScreensaverMedia } from '../../types.ts';
+import { ChevronLeftIcon, SaveIcon, UploadIcon, TrashIcon, Bars3Icon } from '../Icons.tsx';
 import { useAppContext } from '../context/AppContext.tsx';
 import LocalMedia from '../LocalMedia.tsx';
+import { Reorder, motion } from 'framer-motion';
 
 const inputStyle = "mt-1 block w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-2.5 px-4 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:text-sm";
 const selectStyle = inputStyle;
@@ -16,6 +16,62 @@ const getInitialFormData = (): ScreensaverAd => ({
     startDate: '',
     endDate: '',
 });
+
+const MediaItemEditor: React.FC<{
+    item: ScreensaverMedia;
+    onDelete: (id: string) => void;
+    onUpdate: (id: string, field: string, value: any) => void;
+}> = ({ item, onDelete, onUpdate }) => {
+    
+    const handleOverlayChange = (field: 'headline' | 'subheadline' | 'textColor' | 'backgroundColor', value: string) => {
+        onUpdate(item.id, `overlay.${field}`, value);
+    };
+
+    return (
+         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700 flex flex-col sm:flex-row gap-4">
+            <div className="flex-shrink-0 flex items-center gap-3">
+                 <button type="button" className="cursor-grab p-2 text-gray-400"><Bars3Icon className="h-5 w-5"/></button>
+                 <LocalMedia src={item.url} alt="Media preview" type={item.type} className="w-24 h-24 object-cover rounded-md bg-gray-200 dark:bg-gray-700" />
+            </div>
+            <div className="flex-grow space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     {item.type === 'image' && (
+                        <div>
+                            <label htmlFor={`duration-${item.id}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300">Duration (seconds)</label>
+                            <input
+                                id={`duration-${item.id}`}
+                                type="number"
+                                value={item.duration || ''}
+                                onChange={e => onUpdate(item.id, 'duration', parseInt(e.target.value, 10) || undefined)}
+                                className={inputStyle}
+                                placeholder={`Default (${useAppContext().settings.screensaverImageDuration}s)`}
+                            />
+                        </div>
+                    )}
+                     <div className="md:col-span-2">
+                         <label htmlFor={`headline-${item.id}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300">Overlay Headline</label>
+                        <input id={`headline-${item.id}`} type="text" value={item.overlay?.headline || ''} onChange={e => handleOverlayChange('headline', e.target.value)} className={inputStyle} />
+                    </div>
+                     <div className="md:col-span-2">
+                        <label htmlFor={`subheadline-${item.id}`} className="block text-xs font-medium text-gray-700 dark:text-gray-300">Overlay Subheadline</label>
+                        <input id={`subheadline-${item.id}`} type="text" value={item.overlay?.subheadline || ''} onChange={e => handleOverlayChange('subheadline', e.target.value)} className={inputStyle} />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Text Color</label>
+                        <input type="color" value={item.overlay?.textColor || '#FFFFFF'} onChange={e => handleOverlayChange('textColor', e.target.value)} className="mt-1 p-1 h-10 w-full block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 cursor-pointer rounded-lg"/>
+                    </div>
+                     <div>
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">Background Color</label>
+                        <input type="text" value={item.overlay?.backgroundColor || 'rgba(0,0,0,0.4)'} onChange={e => handleOverlayChange('backgroundColor', e.target.value)} className={inputStyle} placeholder="e.g., rgba(0,0,0,0.5)" />
+                    </div>
+                </div>
+            </div>
+            <div className="flex-shrink-0">
+                <button type="button" onClick={() => onDelete(item.id)} className="p-2 text-gray-400 hover:text-red-500"><TrashIcon className="h-5 w-5"/></button>
+            </div>
+        </div>
+    );
+};
 
 
 const AdEdit: React.FC = () => {
@@ -83,9 +139,15 @@ const AdEdit: React.FC = () => {
                 const fileType = file.type.startsWith('image/') ? 'image' : 'video';
                 try {
                     const fileName = await saveFileToStorage(file, ['ads', formData.id]);
+                    const newMediaItem: ScreensaverMedia = {
+                        id: `media_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+                        url: fileName,
+                        type: fileType,
+                        overlay: { headline: '', subheadline: '', textColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.4)' }
+                    };
                     setFormData(prev => ({
                         ...prev,
-                        media: [...prev.media, { url: fileName, type: fileType }]
+                        media: [...prev.media, newMediaItem]
                     }));
                 } catch (error) {
                     alert(error instanceof Error ? error.message : "Failed to save media file.");
@@ -95,11 +157,28 @@ const AdEdit: React.FC = () => {
         }
     };
 
-    const handleMediaDelete = (indexToDelete: number) => {
+    const handleMediaDelete = (idToDelete: string) => {
         setFormData(prev => ({
             ...prev,
-            media: prev.media.filter((_, index) => index !== indexToDelete)
+            media: prev.media.filter((item) => item.id !== idToDelete)
         }));
+    };
+
+    const handleMediaItemUpdate = (itemId: string, field: string, value: any) => {
+        setFormData(prev => {
+            const newMedia = prev.media.map(item => {
+                if (item.id === itemId) {
+                    if (field.startsWith('overlay.')) {
+                        const overlayField = field.split('.')[1];
+                        const newOverlay = { ...(item.overlay || { headline: '', subheadline: '', textColor: '#FFFFFF', backgroundColor: 'rgba(0,0,0,0.4)' }), [overlayField]: value };
+                        return { ...item, overlay: newOverlay };
+                    }
+                    return { ...item, [field]: value };
+                }
+                return item;
+            });
+            return { ...prev, media: newMedia };
+        });
     };
 
     const handleSave = (e: React.FormEvent) => {
@@ -172,19 +251,19 @@ const AdEdit: React.FC = () => {
                 </div>
                 {/* Form Content */}
                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-1 space-y-6">
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Ad Details</h3>
-                             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="sm:col-span-2">
+                             <div className="mt-6 space-y-4">
+                                <div>
                                     <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ad Title</label>
                                     <input type="text" name="title" id="title" value={formData.title} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                <div className="sm:col-span-1">
+                                <div>
                                     <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
                                     <input type="date" name="startDate" id="startDate" value={formData.startDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
-                                 <div className="sm:col-span-1">
+                                 <div>
                                     <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
                                     <input type="date" name="endDate" id="endDate" value={formData.endDate} onChange={handleInputChange} className={inputStyle} required />
                                 </div>
@@ -193,7 +272,7 @@ const AdEdit: React.FC = () => {
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
                             <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Link (Optional)</h3>
                             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">When the screensaver is touched while this ad is showing, it will navigate to this link.</p>
-                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             <div className="mt-4 space-y-4">
                                 <div>
                                     <label htmlFor="linkType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Link Type</label>
                                     <select id="linkType" value={linkType} onChange={e => { setLinkType(e.target.value); setLinkTarget(''); }} className={selectStyle}>
@@ -224,34 +303,28 @@ const AdEdit: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-6">
+                    <div className="lg:col-span-2 space-y-6">
                          <div className="bg-white dark:bg-gray-800/50 p-6 rounded-2xl shadow-xl border dark:border-gray-700/50">
-                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Media Files</h3>
-                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Upload one or more images or videos.</p>
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                                {formData.media.map((item, index) => (
-                                    <div key={index} className="relative group aspect-video">
-                                        <LocalMedia src={item.url} alt="Media preview" type={item.type} className="rounded-xl object-cover w-full h-full" />
-                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all flex items-center justify-center rounded-xl">
-                                            <button type="button" onClick={() => handleMediaDelete(index)} className="p-2 bg-white/80 text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Delete media">
-                                                <TrashIcon className="w-5 h-5"/>
-                                            </button>
-                                        </div>
-                                    </div>
+                            <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 section-heading">Media Files & Overlays</h3>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Upload one or more images or videos. Drag to reorder.</p>
+                            <Reorder.Group axis="y" values={formData.media} onReorder={(newOrder) => setFormData(p => ({...p, media: newOrder}))} className="mt-4 space-y-3">
+                                {formData.media.map(item => (
+                                    <Reorder.Item key={item.id} value={item} as="div" className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-700 flex flex-col sm:flex-row gap-4">
+                                        <MediaItemEditor item={item} onDelete={handleMediaDelete} onUpdate={handleMediaItemUpdate} />
+                                    </Reorder.Item>
                                 ))}
-                                <label htmlFor="media-upload" className="cursor-pointer aspect-video border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors">
-                                    <UploadIcon className="w-8 h-8"/>
-                                    <span className="mt-2 text-sm font-medium">{formData.media.length > 0 ? 'Add More' : 'Add Media'}</span>
-                                    <input id="media-upload" type="file" multiple onChange={handleMediaChange} className="sr-only" accept="image/*,video/mp4,video/webm" />
-                                </label>
-                            </div>
+                            </Reorder.Group>
+                            <label htmlFor="media-upload" className="mt-4 cursor-pointer w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center p-6 text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors">
+                                <UploadIcon className="w-8 h-8"/>
+                                <span className="mt-2 text-sm font-medium">Add Media</span>
+                                <input id="media-upload" type="file" multiple onChange={handleMediaChange} className="sr-only" accept="image/*,video/mp4,video/webm" />
+                            </label>
                         </div>
                     </div>
                  </div>
             </form>
         )
     );
-    // FIX: Add a return statement for the component's JSX.
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-6xl mx-auto">

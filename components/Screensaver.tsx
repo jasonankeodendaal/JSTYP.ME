@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from './context/AppContext.tsx';
-import type { AdLink, Product } from '../types.ts';
+import type { AdLink, Product, ScreensaverMedia } from '../types.ts';
 import LocalMedia from './LocalMedia.tsx';
 
 type PlaylistItem = {
@@ -12,6 +12,8 @@ type PlaylistItem = {
     link?: AdLink;
     brandName?: string;
     productId?: string;
+    duration?: number;
+    overlay?: ScreensaverMedia['overlay'];
 };
 
 // FIX: Cast motion components to any to resolve framer-motion prop type errors.
@@ -172,6 +174,29 @@ const ProductInfoOverlay: React.FC<{product: Product, style: 'overlay' | 'banner
     )
 }
 
+const AdOverlay: React.FC<{ overlay: ScreensaverMedia['overlay'] }> = ({ overlay }) => {
+    if (!overlay) return null;
+
+    const overlayStyle: React.CSSProperties = {
+        backgroundColor: overlay.backgroundColor || 'rgba(0,0,0,0.4)',
+        color: overlay.textColor || '#FFFFFF',
+        textShadow: '0 2px 5px rgba(0,0,0,0.5)'
+    };
+    
+    return (
+        <MotionDiv
+            className="absolute bottom-0 left-0 right-0 p-6 md:p-8"
+            style={overlayStyle}
+            initial={{ y: '100%' }}
+            animate={{ y: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.5 } }}
+            exit={{ y: '100%', transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }}
+        >
+             <h2 className="text-3xl md:text-5xl font-bold section-heading">{overlay.headline}</h2>
+             {overlay.subheadline && <p className="text-lg md:text-xl mt-2 item-title">{overlay.subheadline}</p>}
+        </MotionDiv>
+    );
+}
+
 
 const Screensaver: React.FC = () => {
     const { settings, products, screensaverAds, exitScreensaver, openDocument, catalogues, pamphlets, brands, localVolume, setIsScreensaverPinModalOpen } = useAppContext();
@@ -218,6 +243,8 @@ const Screensaver: React.FC = () => {
                     title: ad.title,
                     link: ad.link,
                     sourceId: ad.id,
+                    duration: mediaItem.duration,
+                    overlay: mediaItem.overlay,
                 }))
             );
 
@@ -323,9 +350,11 @@ const Screensaver: React.FC = () => {
 
     useEffect(() => {
         if (currentItem?.type === 'image' || currentItem?.type === 'touch-prompt') {
-            const duration = currentItem.type === 'touch-prompt'
-                ? 6000
-                : settings.screensaverImageDuration * 1000;
+            const duration = currentItem.duration
+                ? currentItem.duration * 1000
+                : (currentItem.type === 'touch-prompt'
+                    ? 6000
+                    : settings.screensaverImageDuration * 1000);
             const timer = window.setTimeout(goToNextItem, duration);
             return () => clearTimeout(timer);
         }
@@ -407,18 +436,6 @@ const Screensaver: React.FC = () => {
     
     const selectedTransition = transitionVariants[settings.screensaverTransitionEffect] || transitionVariants['gentle-drift'];
     
-    const textContainerVariants = {
-        hidden: {},
-        visible: { transition: { staggerChildren: 0.1, delayChildren: 0.5 } },
-        exit: { transition: { staggerChildren: 0.05, staggerDirection: -1 } }
-    };
-
-    const textLineVariants = {
-        hidden: { opacity: 0, y: '110%' },
-        visible: { opacity: 1, y: '0%', transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } },
-        exit: { opacity: 0, y: '-110%', transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } }
-    };
-    
     return (
         <div 
             className="fixed inset-0 bg-black z-50 flex items-center justify-center overflow-hidden cursor-pointer"
@@ -463,13 +480,13 @@ const Screensaver: React.FC = () => {
                             className="w-full h-full overflow-hidden"
                             key={`kb-${currentItem.url}`}
                             animate={settings.screensaverTransitionEffect === 'slow-pan' ? kbVariant : {}}
-                            transition={{ duration: settings.screensaverImageDuration + 2, ease: 'linear' }}
+                            transition={{ duration: (currentItem.duration || settings.screensaverImageDuration) + 2, ease: 'linear' }}
                         >
                             <LocalMedia
                                 src={currentItem.url}
                                 alt={currentItem.title}
                                 type="image"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain"
                                 onError={goToNextItem}
                             />
                         </MotionDiv>
@@ -494,29 +511,7 @@ const Screensaver: React.FC = () => {
             </div>
 
             <AnimatePresence>
-                {currentItem.type !== 'touch-prompt' && !currentProduct && (
-                     <MotionDiv 
-                        key={`${currentItem.url}-text`}
-                        className="absolute bottom-10 left-10 right-10 pointer-events-none"
-                        variants={textContainerVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                    >
-                        <div className="overflow-hidden">
-                             <MotionH2 variants={textLineVariants} className="section-heading text-3xl md:text-5xl font-bold text-white" style={{ textShadow: '0 3px 8px rgba(0,0,0,0.7)' }}>
-                                {currentItem.title}
-                            </MotionH2>
-                        </div>
-                        {currentItem.brandName && (
-                            <div className="overflow-hidden">
-                                <MotionP variants={textLineVariants} className="item-title text-lg md:text-xl text-white/80" style={{ textShadow: '0 2px 5px rgba(0,0,0,0.7)' }}>
-                                    {currentItem.brandName}
-                                </MotionP>
-                            </div>
-                        )}
-                    </MotionDiv>
-                )}
+                {!currentProduct && <AdOverlay overlay={currentItem.overlay} />}
                 {currentProduct && (
                      <ProductInfoOverlay key={currentProduct.id} product={currentProduct} style={settings.screensaverProductInfoStyle} />
                 )}

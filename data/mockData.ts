@@ -1,5 +1,3 @@
-
-
 import type { Brand, Product, Catalogue, Pamphlet, Settings, ScreensaverAd, AdminUser, TvContent, Category, FontStyleSettings, ThemeColors, Client, Quote, ViewCounts, ActivityLog } from '../types';
 
 export const adminUsers: AdminUser[] = [
@@ -257,7 +255,7 @@ export const pamphlets: Pamphlet[] = [
         "startDate": "2024-09-01",
         "endDate": "2024-10-31",
         "type": "image",
-        "imageUrls": [ "https://images.unsplash.com/photo-1615873968403-89e068629265?q=80&w=1200&auto=format&fit=crop" ]
+        "imageUrls": [ "https://images.unsplash.com/photo-1615873968403-89e068629265?q=80&w=800&auto=format&fit=crop" ]
     },
     {
         "id": "pam-nexus-backtoschool",
@@ -280,14 +278,12 @@ export const pamphlets: Pamphlet[] = [
 ];
 
 export const screensaverAds: ScreensaverAd[] = [
-    // Existing Ads
-    { "id": "ad-3", "title": "Feel the Bass. Hear the Future.", "media": [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-quantum-soundbar" } },
-    { "id": "ad-4", "title": "Your Adventure Awaits", "media": [{ "url": "https://images.unsplash.com/photo-1470246973918-29a93221c455?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-evergreen" } },
-    { "id": "ad-5", "title": "The Art of Cool", "media": [{ "url": "https://images.unsplash.com/photo-1588691523445-3942a3a5c215?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-zenith-fridge" } },
-    // New Ads
-    { "id": "ad-6", "title": "Unleash Your Potential", "media": [{ "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-kinetic" } },
-    { "id": "ad-7", "title": "The Future is Now. The Future is Nexus.", "media": [{ "url": "https://images.unsplash.com/photo-1535378620166-273708d44e4c?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-nexus-tablet" } },
-    { "id": "ad-8", "title": "Create Your Sanctuary", "media": [{ "url": "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-aura" } }
+    { "id": "ad-3", "title": "Feel the Bass. Hear the Future.", "media": [{ "id": "media-ad3-1", "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-quantum-soundbar" } },
+    { "id": "ad-4", "title": "Your Adventure Awaits", "media": [{ "id": "media-ad4-1", "url": "https://images.unsplash.com/photo-1470246973918-29a93221c455?q=80&w=1920&auto=format&fit=crop", "type": "image", "duration": 10, "overlay": { "headline": "Your Adventure Awaits", "subheadline": "Explore the Evergreen Outdoor Collection", "textColor": "#FFFFFF", "backgroundColor": "rgba(0, 0, 0, 0.4)" } }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-evergreen" } },
+    { "id": "ad-5", "title": "The Art of Cool", "media": [{ "id": "media-ad5-1", "url": "https://images.unsplash.com/photo-1588691523445-3942a3a5c215?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-zenith-fridge" } },
+    { "id": "ad-6", "title": "Unleash Your Potential", "media": [{ "id": "media-ad6-1", "url": "https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4", "type": "video" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-kinetic" } },
+    { "id": "ad-7", "title": "The Future is Now. The Future is Nexus.", "media": [{ "id": "media-ad7-1", "url": "https://images.unsplash.com/photo-1535378620166-273708d44e4c?q=80&w=1920&auto=format&fit=crop", "type": "image", "overlay": { "headline": "NexusTab Pro 11", "textColor": "#FFFFFF", "backgroundColor": "rgba(0, 0, 0, 0.5)" } }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "product", "id": "p-nexus-tablet" } },
+    { "id": "ad-8", "title": "Create Your Sanctuary", "media": [{ "id": "media-ad8-1", "url": "https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1920&auto=format&fit=crop", "type": "image" }], "startDate": "2024-01-01", "endDate": "2025-12-31", "link": { "type": "brand", "id": "b-aura" } }
 ];
 
 export const tvContent: TvContent[] = [
@@ -346,8 +342,8 @@ const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWe
 export const settings: Settings = {
     appName: "Product Catalogue",
     appDescription: "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
-    logoUrl: "https://iili.io/KzWOen4.png",
-    pwaIconUrl: "https://iili.io/KzWOen4.png",
+    logoUrl: "https://iili.io/KAn4ekl.png",
+    pwaIconUrl: "https://iili.io/KAn4ekl.png",
     sharedUrl: "",
     customApiUrl: "",
     customApiKey: "",

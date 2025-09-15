@@ -200,10 +200,23 @@ export type AdLink =
   | { type: 'pamphlet'; id: string; }
   | { type: 'external'; url: string; };
 
+export interface ScreensaverMedia {
+  id: string; // For stable reordering
+  url: string;
+  type: 'image' | 'video';
+  duration?: number; // Optional duration in seconds for images
+  overlay?: {
+    headline: string;
+    subheadline?: string;
+    textColor: string;
+    backgroundColor: string; // e.g., rgba(0,0,0,0.5)
+  };
+}
+
 export interface ScreensaverAd {
   id: string;
   title: string;
-  media: Array<{ url: string; type: 'image' | 'video' }>;
+  media: ScreensaverMedia[];
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   link?: AdLink;
