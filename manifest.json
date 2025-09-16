@@ -1,7 +1,8 @@
+
 {
-  "short_name": "Appliance World",
-  "name": "Appliance World",
-  "description": "An interactive digital catalogue for premium home appliances.",
+  "short_name": "Store Display",
+  "name": "DIGITAL STORE DISPLAY",
+  "description": "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
   "icons": [
     {
       "src": "https://iili.io/KAzX5il.png",

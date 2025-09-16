@@ -335,8 +335,8 @@ const defaultHeadingsFont: FontStyleSettings = { fontFamily: "Montserrat", fontW
 const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWeight: "600", fontStyle: "normal", textDecoration: "none", letterSpacing: 'normal', textTransform: 'none' };
 
 export const settings: Settings = {
-    appName: "Appliance World",
-    appDescription: "An interactive digital catalogue for premium home appliances.",
+    appName: "DIGITAL STORE DISPLAY",
+    appDescription: "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
     logoUrl: "https://iili.io/KAzX5il.png",
     pwaIconUrl: "https://iili.io/KAzX5il.png",
     sharedUrl: "",

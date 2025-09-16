@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'me.jstyp.kiosk',
-  appName: 'JSTYP.me',
+  appName: 'DIGITAL STORE DISPLAY',
   webDir: 'dist',
   server: {
     androidScheme: 'https'
