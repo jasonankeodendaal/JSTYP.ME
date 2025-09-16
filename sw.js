@@ -1,7 +1,8 @@
 
 
-const CACHE_NAME = 'product-catalogue-cache-v8'; // Incremented version
-const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v8'; // Incremented version
+
+const CACHE_NAME = 'product-catalogue-cache-v9'; // Incremented version
+const IMMUTABLE_CACHE_NAME = 'product-catalogue-immutable-v9'; // Incremented version
 
 // Use explicit paths for the app shell to ensure reliability.
 const APP_SHELL_URLS = [
@@ -23,9 +24,8 @@ const IMMUTABLE_URLS = [
   'https://aistudiocdn.com/framer-motion@^12.23.12',
   'https://aistudiocdn.com/idb@^8.0.3',
   'https://aistudiocdn.com/jszip@^3.10.1',
-  'https://aistudiocdn.com/pdfjs-dist@^4.4.178',
-  'https://aistudiocdn.com/react-pageflip@^2.0.3',
-  'https://aistudiocdn.com/swiper@^11.2.10/element/bundle',
+  'https://aistudiocdn.com/pdfjs-dist@^5.4.149/build/pdf.mjs',
+  'https://aistudiocdn.com/swiper@^11.2.10/',
   // Fonts
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap',
   'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap',
@@ -151,40 +151,58 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Special handling for manifest.json
+  // Special handling for manifest.json, which needs dynamic data from IDB
   if (url.pathname.endsWith('/manifest.json')) {
     event.respondWith(generateManifestResponse());
     return;
   }
 
-  // Network-first strategy for navigation requests (the app launch)
-  if (request.mode === 'navigate') {
+  // Network-first for core app files (HTML, main CSS, main JS module)
+  // This ensures the app is always up-to-date when online.
+  if (
+    request.mode === 'navigate' ||
+    url.pathname === '/' ||
+    url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/index.tsx') ||
+    url.pathname.endsWith('/index.css')
+  ) {
     event.respondWith(
-      fetch(request).catch(() => {
-        console.log('Network failed for navigation, serving app shell from cache.');
-        return caches.match('./index.html');
-      })
+      fetch(request)
+        .then(networkResponse => {
+          if (networkResponse.ok) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(request).then(cachedResponse => {
+            return cachedResponse || caches.match('./index.html');
+          });
+        })
     );
     return;
   }
 
-  // Cache-first strategy for all other assets (CSS, images, etc.)
+  // Cache-first (then network) for all other assets (images, fonts, videos, libraries).
+  // This provides speed and offline support for media and libraries.
   event.respondWith(
     caches.match(request).then(cachedResponse => {
-      // Return the cached response if it exists.
       if (cachedResponse) {
         return cachedResponse;
       }
       
-      // If not in cache, fetch from the network.
       return fetch(request).then(networkResponse => {
         if (networkResponse.ok) {
-          // Check if it's an immutable asset and cache it in the right place.
           const isImmutable = IMMUTABLE_URLS.some(immutableUrl => url.href.startsWith(immutableUrl)) || url.hostname.startsWith('fonts.gstatic.com');
           const cacheName = isImmutable ? IMMUTABLE_CACHE_NAME : CACHE_NAME;
           
+          const responseToCache = networkResponse.clone();
           caches.open(cacheName).then(cache => {
-            cache.put(request, networkResponse.clone());
+            cache.put(request, responseToCache);
           });
         }
         return networkResponse;
