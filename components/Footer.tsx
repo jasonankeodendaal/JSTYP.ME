@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 // FIX: Consolidate react-router-dom imports into a single line.
 import { Link } from 'react-router-dom';
@@ -83,70 +85,90 @@ const CreatorPopup: React.FC<{ onClose: () => void; theme: 'light' | 'dark' }> =
         ? creator.whatsapp
         : `https://wa.me/${creator.whatsapp}`;
     
+    const containerVariants = {
+        hidden: {},
+        visible: {
+            transition: {
+                staggerChildren: 0.1,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 15 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                type: 'spring',
+                stiffness: 300,
+                damping: 24,
+            },
+        },
+    };
+
     return (
         <MotionDiv
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[60] overflow-hidden"
+          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          className="relative w-full max-w-sm bg-slate-100 dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 z-[60] overflow-hidden"
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-20">
             <XIcon className="h-4 w-4" />
           </button>
-    
-          <div className="relative">
-            <div className="h-28 bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-800 dark:to-purple-900"></div>
-            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-                <LocalMedia
-                    src={creator.imageUrl} 
-                    alt={creator.name}
-                    type="image"
-                    className="h-24 w-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg"
-                />
-            </div>
-          </div>
           
-          <div className="pt-16 pb-6 px-6 text-center">
-            <h3 className="text-2xl font-bold section-heading text-gray-900 dark:text-gray-100">{creator.name}</h3>
-            <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{creator.title}</p>
-
-            <div className="my-4 flex justify-center">
+          <div className="p-8 text-center">
+            <div className="mb-6 flex justify-center">
                 <LocalMedia
                     src={theme === 'light' ? (creator.logoUrlLight || creator.logoUrlDark || '') : (creator.logoUrlDark || creator.logoUrlLight || '')}
                     alt="Creator Logo"
                     type="image"
-                    className="h-10 w-auto"
+                    className={`h-16 w-auto transition-all duration-300 ${theme === 'light' ? 'invert' : ''}`}
                 />
             </div>
             
-            <div className="mt-4 text-left space-y-3 text-sm text-gray-700 dark:text-gray-300">
-                <a href={`tel:${creator.phone}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-                    <PhoneIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <span>{creator.phone}</span>
-                </a>
-                <a href={`mailto:${creator.email}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-                    <EnvelopeIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <span>{creator.email}</span>
-                </a>
-                <a href={creator.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors">
-                    <GlobeAltIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                    <span>{creator.websiteText}</span>
-                </a>
-            </div>
+            <h3 className="text-3xl font-bold section-heading text-slate-800 dark:text-white">{creator.name}</h3>
+            <p className="text-md font-medium text-indigo-500 dark:text-indigo-400">{creator.title}</p>
+
+            <MotionDiv variants={containerVariants} initial="hidden" animate="visible" className="text-left space-y-3 text-sm text-gray-700 dark:text-gray-300 mt-8">
+                <MotionDiv variants={itemVariants}>
+                    <a href={`tel:${creator.phone}`} className="flex items-center gap-4 p-3 rounded-xl bg-slate-200/70 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <PhoneIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{creator.phone}</span>
+                    </a>
+                </MotionDiv>
+                <MotionDiv variants={itemVariants}>
+                    <a href={`mailto:${creator.email}`} className="flex items-center gap-4 p-3 rounded-xl bg-slate-200/70 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <EnvelopeIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{creator.email}</span>
+                    </a>
+                </MotionDiv>
+                <MotionDiv variants={itemVariants}>
+                    <a href={creator.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-3 rounded-xl bg-slate-200/70 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <GlobeAltIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">{creator.websiteText}</span>
+                    </a>
+                </MotionDiv>
+            </MotionDiv>
             
-            <div className="mt-6">
+            <MotionDiv 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.5 } }}
+                className="mt-8"
+            >
                 <a 
                     href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn w-full bg-[#25D366] hover:bg-[#1DAE53] text-white"
+                    className="btn w-full bg-[#25D366] hover:bg-[#1DAE53] text-white !py-3 transform hover:scale-105"
                 >
-                    <WhatsAppIcon className="w-5 h-5" />
-                    <span>Get a Quote on WhatsApp</span>
+                    <WhatsAppIcon className="w-6 h-6" />
+                    <span className="font-bold">Message on WhatsApp</span>
                 </a>
-            </div>
+            </MotionDiv>
           </div>
         </MotionDiv>
     );

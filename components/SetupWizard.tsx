@@ -69,7 +69,7 @@ interface AboutSystemProps {
 const WelcomeDiagram: React.FC = () => {
     return (
         <img 
-            src="https://iili.io/KR99DJe.png" 
+            src="https://iili.io/KRFeGUl.png" 
             alt="Welcome to Kiosk" 
             className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" 
         />
@@ -80,7 +80,7 @@ const WelcomeDiagram: React.FC = () => {
 const HeroDiagram: React.FC = () => {
     return (
         <img 
-            src="https://iili.io/KR92X2I.png" 
+            src="https://iili.io/KRFeCog.png" 
             alt="About the Kiosk System" 
             className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" 
         />
@@ -178,10 +178,10 @@ const ValueLoopDiagramSVG: React.FC = () => {
                 <marker id="val-arrowhead-new" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" className="fill-current text-gray-400 dark:text-gray-500"/></marker>
                 <filter id="val-shadow-new"><feGaussianBlur in="SourceAlpha" stdDeviation="6" result="blur"/><feOffset dy="4" in="blur"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
                 <style>{`
+                    @keyframes draw-arrow-1 { to { stroke-dashoffset: 0; } }
                     .arrow-path-1 { stroke-dasharray: 126; stroke-dashoffset: 126; animation: draw-arrow-1 1s ease-out 0.5s forwards; }
                     .arrow-path-2 { stroke-dasharray: 126; stroke-dashoffset: 126; animation: draw-arrow-1 1s ease-out 0.8s forwards; }
                     .arrow-path-3 { stroke-dasharray: 126; stroke-dashoffset: 126; animation: draw-arrow-1 1s ease-out 1.1s forwards; }
-                    @keyframes draw-arrow-1 { to { stroke-dashoffset: 0; } }
                 `}</style>
             </defs>
 

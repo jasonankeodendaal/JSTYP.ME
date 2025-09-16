@@ -44,11 +44,11 @@ export const adminUsers: AdminUser[] = [
 ];
 
 export const brands: Brand[] = [
-    { id: "b-defy", name: "DEFY", logoUrl: "https://iili.io/KATH3Eg.png" },
-    { id: "b-edblo", name: "Edblo", logoUrl: "https://iili.io/KATHF4a.png" },
-    { id: "b-hisense", name: "Hisense", logoUrl: "https://iili.io/KATHJQ1.png", isTvBrand: true },
-    { id: "b-bosch", name: "Bosch", logoUrl: "https://iili.io/KATHHhP.png" },
-    { id: "b-whirlpool", name: "Whirlpool", logoUrl: "https://iili.io/KATHqYv.png" },
+    { id: "b-defy", name: "DEFY", logoUrl: "https://iili.io/KRFOc3Q.jpg" },
+    { id: "b-edblo", name: "Edblo", logoUrl: "https://iili.io/KRFeiWg.jpg" },
+    { id: "b-hisense", name: "Hisense", logoUrl: "https://iili.io/KRFeOib.jpg", isTvBrand: true },
+    { id: "b-bosch", name: "Bosch", logoUrl: "https://iili.io/KRFewxe.jpg" },
+    { id: "b-whirlpool", name: "Whirlpool", logoUrl: "https://iili.io/KRFeTSp.jpg" },
 ];
 
 export const categories: Category[] = [
@@ -337,8 +337,8 @@ const defaultItemTitlesFont: FontStyleSettings = { fontFamily: "Poppins", fontWe
 export const settings: Settings = {
     appName: "DIGITAL STORE DISPLAY",
     appDescription: "An interactive digital catalogue for any brand, allowing users to browse products, view details, and explore collections.",
-    logoUrl: "https://iili.io/KAzX5il.png",
-    pwaIconUrl: "https://iili.io/KAzX5il.png",
+    logoUrl: "https://iili.io/KRff3Sn.png",
+    pwaIconUrl: "https://iili.io/KRff3Sn.png",
     sharedUrl: "",
     customApiUrl: "",
     customApiKey: "",
@@ -419,9 +419,9 @@ export const settings: Settings = {
       enabled: true,
       name: "JSTYP.me",
       title: "Jason's Solution To Your Problems... yes me!",
-      imageUrl: "https://iili.io/FGWJCtj.jpg",
-      logoUrlLight: "https://iili.io/KxPZTT7.png",
-      logoUrlDark: "https://iili.io/KxPZTT7.png",
+      imageUrl: "https://iili.io/J152Wvj.jpg",
+      logoUrlLight: "https://iili.io/KRFeEl4.png",
+      logoUrlDark: "https://iili.io/KRFeEl4.png",
       phone: "+27695989427",
       email: "odendaaljason454@gmail.com",
       website: "https://jstyp.me",
