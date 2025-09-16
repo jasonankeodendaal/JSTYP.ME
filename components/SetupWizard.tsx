@@ -65,112 +65,25 @@ interface AboutSystemProps {
     isDashboard?: boolean;
 }
 
-const HeroDiagram: React.FC = () => {
-    const containerRef = useRef<SVGSVGElement>(null);
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-
-    const handleMouseMove = (event: React.MouseEvent) => {
-        if (!containerRef.current) return;
-        const { clientX, clientY } = event;
-        const { left, top, width, height } = containerRef.current.getBoundingClientRect();
-        mouseX.set(clientX - (left + width / 2));
-        mouseY.set(clientY - (top + height / 2));
-    };
-
-    const handleMouseLeave = () => {
-        animate(mouseX, 0, { duration: 0.5, ease: 'easeOut' });
-        animate(mouseY, 0, { duration: 0.5, ease: 'easeOut' });
-    };
-    
-    // Parallax transforms
-    const kioskX = useTransform(mouseX, [-400, 400], [5, -5]);
-    const manX = useTransform(mouseX, [-400, 400], [15, -15]);
-    const womanX = useTransform(mouseX, [-400, 400], [-8, 8]);
-    const manY = useTransform(mouseY, [-400, 400], [4, -4]);
-    const womanY = useTransform(mouseY, [-400, 400], [-3, 3]);
-
+// This image is specifically for the Welcome step
+const WelcomeDiagram: React.FC = () => {
     return (
-        <MotionDiv
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="w-full max-w-4xl"
-        >
-            <svg viewBox="0 0 800 500" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="floor-grad" x1="0.5" y1="0" x2="0.5" y2="1">
-                        <stop offset="0%" stopColor="#f3f4f6" />
-                        <stop offset="100%" stopColor="#e5e7eb" />
-                    </linearGradient>
-                     <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/>
-                        <feOffset in="blur" dx="0" dy="5" result="offsetBlur"/>
-                        <feComponentTransfer in="offsetBlur" result="less-opacity">
-                            <feFuncA type="linear" slope="0.3"/>
-                        </feComponentTransfer>
-                        <feMerge>
-                            <feMergeNode in="less-opacity"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-                <path d="M0 490 C 200 510, 600 510, 800 490 L 800 500 L 0 500 Z" fill="url(#floor-grad)" />
+        <img 
+            src="https://iili.io/KR99DJe.png" 
+            alt="Welcome to Kiosk" 
+            className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" 
+        />
+    );
+};
 
-                {/* Kiosk */}
-                <MotionG style={{ x: kioskX }} filter="url(#soft-shadow)">
-                    <rect x="320" y="140" width="220" height="350" fill="#dee3ed" />
-                    <rect x="330" y="150" width="200" height="280" rx="8" fill="#0f172a" />
-                    <rect x="330" y="440" width="200" height="10" fill="#c3cbe0" />
-
-                     <foreignObject x="330" y="150" width="200" height="280" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-                        <div {...{xmlns: "http://www.w3.org/1999/xhtml"}} className="w-full h-full bg-slate-900 relative p-4 flex flex-col gap-2">
-                             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1 } }} className="text-white font-bold text-lg section-heading">Welcome</motion.p>
-                             {[...Array(3)].map((_, i) => (
-                                <motion.div key={i} className="bg-slate-700/50 p-2 rounded-md space-y-1.5" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0, transition: { delay: 1.2 + i * 0.1 } }}>
-                                     <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }} className="w-3/4 h-2 bg-slate-500/50 rounded-full"></motion.div>
-                                     <motion.div className="w-1/2 h-2 bg-slate-500/30 rounded-full"></motion.div>
-                                </motion.div>
-                             ))}
-                             <motion.div className="w-full h-12 mt-auto bg-slate-700/50 rounded-md" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.6 } }}></motion.div>
-                        </div>
-                    </foreignObject>
-                    
-                    {/* Touch Ripple */}
-                    <g transform="translate(380, 310)">
-                        <circle r="15" fill="rgba(255,255,255,0.4)">
-                           <animate attributeName="r" from="0" to="15" dur="1.2s" repeatCount="indefinite" />
-                           <animate attributeName="opacity" from="1" to="0" dur="1.2s" repeatCount="indefinite" />
-                        </circle>
-                    </g>
-                </MotionG>
-
-                {/* Man Figure */}
-                <MotionG style={{ x: manX, y: manY }} filter="url(#soft-shadow)">
-                    <g transform="translate(250, 200)">
-                        {/* Body & Legs */}
-                        <path d="M 40,0 L 40,90 C 40,110 10,110 10,90 L 10,240 L 0,240 L 0,250 L 80,250 L 80,240 L 70,240 L 70,90 C 70,110 40,110 40,90" fill="#3b82f6" />
-                        {/* Head */}
-                        <circle cx="40" cy="-15" r="15" fill="#1e293b" />
-                        {/* Arm */}
-                        <path d="M 40,20 C 60,30 80,70 120,110" fill="none" stroke="#3b82f6" strokeWidth="16" strokeLinecap="round" />
-                    </g>
-                </MotionG>
-
-                 {/* Woman Figure */}
-                <MotionG style={{ x: womanX, y: womanY }} filter="url(#soft-shadow)">
-                    <g transform="translate(560, 210)">
-                        {/* Body & Legs */}
-                         <path d="M 40,0 L 40,90 C 40,110 10,110 10,90 L 10,230 L 0,230 L 0,240 L 80,240 L 80,230 L 70,230 L 70,90 C 70,110 40,110 40,90" fill="#f59e0b" />
-                        {/* Head */}
-                        <circle cx="40" cy="-15" r="15" fill="#4a2c2a" />
-                        {/* Arm */}
-                        <path d="M 15,20 C 5,40 -5,80 -5,100" fill="none" stroke="#f59e0b" strokeWidth="16" strokeLinecap="round" />
-                    </g>
-                </MotionG>
-
-            </svg>
-        </MotionDiv>
+// This is the new hero image for the About System page
+const HeroDiagram: React.FC = () => {
+    return (
+        <img 
+            src="https://iili.io/KR92X2I.png" 
+            alt="About the Kiosk System" 
+            className="w-full h-auto rounded-lg shadow-lg dark:shadow-2xl dark:shadow-black/20" 
+        />
     );
 };
 
@@ -607,9 +520,6 @@ const WelcomeHeroDiagram: React.FC = () => {
 
     const rotateX = useTransform(mouseY, [-400, 400], [10, -10]);
     const rotateY = useTransform(mouseX, [-400, 400], [-10, 10]);
-    const glareX = useTransform(mouseX, [-400, 400], [20, 80]);
-    const glareY = useTransform(mouseY, [-400, 400], [20, 80]);
-    const glareOpacity = useTransform(mouseX, [-400, 400], [0, 0.5, 0]);
 
     const handleMouseMove = (event: React.MouseEvent) => {
         if (!containerRef.current) return;
@@ -635,7 +545,7 @@ const WelcomeHeroDiagram: React.FC = () => {
             className="w-full max-w-4xl"
         >
             <MotionDiv style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}>
-                <HeroDiagram />
+                <WelcomeDiagram />
             </MotionDiv>
         </MotionDiv>
     );
