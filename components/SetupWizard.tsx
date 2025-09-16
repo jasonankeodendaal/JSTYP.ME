@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 // FIX: Correct 'framer-motion' import for Variants type and add AnimatePresence to resolve missing name errors.
 import { motion, AnimatePresence, useMotionValue, useTransform, type Variants, animate } from 'framer-motion';
@@ -67,104 +66,111 @@ interface AboutSystemProps {
 }
 
 const HeroDiagram: React.FC = () => {
-    const [glarePosition, setGlarePosition] = useState({ x: -200, y: -200 });
-    const [isHovering, setIsHovering] = useState(false);
-    const screenRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<SVGSVGElement>(null);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (screenRef.current) {
-            const rect = screenRef.current.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            setGlarePosition({ x, y });
-        }
+    const handleMouseMove = (event: React.MouseEvent) => {
+        if (!containerRef.current) return;
+        const { clientX, clientY } = event;
+        const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+        mouseX.set(clientX - (left + width / 2));
+        mouseY.set(clientY - (top + height / 2));
     };
 
     const handleMouseLeave = () => {
-        setGlarePosition({ x: -200, y: -200 });
-        setIsHovering(false);
+        animate(mouseX, 0, { duration: 0.5, ease: 'easeOut' });
+        animate(mouseY, 0, { duration: 0.5, ease: 'easeOut' });
     };
-
-    const handleMouseEnter = () => {
-        setIsHovering(true);
-    };
-
-    const cardVariants = {
-        hover: { y: -8, scale: 1.05 },
-        initial: { y: 0, scale: 1 }
-    };
+    
+    // Parallax transforms
+    const kioskX = useTransform(mouseX, [-400, 400], [5, -5]);
+    const manX = useTransform(mouseX, [-400, 400], [15, -15]);
+    const womanX = useTransform(mouseX, [-400, 400], [-8, 8]);
+    const manY = useTransform(mouseY, [-400, 400], [4, -4]);
+    const womanY = useTransform(mouseY, [-400, 400], [-3, 3]);
 
     return (
-        <svg viewBox="0 0 800 600" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <linearGradient id="kiosk-metal" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#475569" />
-                    <stop offset="50%" stopColor="#334155" />
-                    <stop offset="100%" stopColor="#475569" />
-                </linearGradient>
-                <linearGradient id="kiosk-stand" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#1e293b" />
-                    <stop offset="100%" stopColor="#0f172a" />
-                </linearGradient>
-                <filter id="kiosk-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="0" dy="15" stdDeviation="10" floodColor="#000" floodOpacity="0.4" />
-                </filter>
-            </defs>
+        <MotionDiv
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="w-full max-w-4xl"
+        >
+            <svg viewBox="0 0 800 500" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="floor-grad" x1="0.5" y1="0" x2="0.5" y2="1">
+                        <stop offset="0%" stopColor="#f3f4f6" />
+                        <stop offset="100%" stopColor="#e5e7eb" />
+                    </linearGradient>
+                     <filter id="soft-shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="blur"/>
+                        <feOffset in="blur" dx="0" dy="5" result="offsetBlur"/>
+                        <feComponentTransfer in="offsetBlur" result="less-opacity">
+                            <feFuncA type="linear" slope="0.3"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode in="less-opacity"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <path d="M0 490 C 200 510, 600 510, 800 490 L 800 500 L 0 500 Z" fill="url(#floor-grad)" />
 
-            {/* Kiosk Stand and Body */}
-            <g filter="url(#kiosk-shadow)">
-                <path d="M 280 580 L 260 595 L 540 595 L 520 580 Z" fill="#0f172a" />
-                <rect x="380" y="520" width="40" height="60" fill="url(#kiosk-stand)" />
-                <rect x="140" y="40" width="520" height="480" rx="20" fill="url(#kiosk-metal)" />
-                <rect x="150" y="50" width="500" height="460" rx="10" fill="#020617" />
-            </g>
+                {/* Kiosk */}
+                <MotionG style={{ x: kioskX }} filter="url(#soft-shadow)">
+                    <rect x="320" y="140" width="220" height="350" fill="#dee3ed" />
+                    <rect x="330" y="150" width="200" height="280" rx="8" fill="#0f172a" />
+                    <rect x="330" y="440" width="200" height="10" fill="#c3cbe0" />
 
-            {/* Screen Content with embedded HTML */}
-            <foreignObject x="150" y="50" width="500" height="460" style={{ borderRadius: '10px', overflow: 'hidden' }}>
-                <div 
-                    // FIX: Add xmlns attribute via spread to satisfy TypeScript while ensuring correct rendering of HTML inside SVG foreignObject.
-                    {...{xmlns: "http://www.w3.org/1999/xhtml"}}
-                    ref={screenRef}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                    onMouseEnter={handleMouseEnter}
-                    className="w-full h-full bg-slate-900 relative overflow-hidden cursor-pointer"
-                    style={{ perspective: '1200px' }}
-                >
-                    <MotionDiv 
-                        className="p-8 space-y-6 absolute inset-0 transition-transform duration-300 ease-out"
-                        animate={{ transform: isHovering ? 'rotateX(5deg) scale(1.03)' : 'rotateX(0deg) scale(1)' }}
-                    >
-                        <div className="text-white text-3xl font-bold section-heading">Shop by Brand</div>
-                        <div className="grid grid-cols-4 gap-4">
-                            {[...Array(4)].map((_, i) => (
-                                <MotionDiv key={i} className="bg-white/5 aspect-square rounded-lg border border-white/10" whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.15)' }}></MotionDiv>
-                            ))}
+                     <foreignObject x="330" y="150" width="200" height="280" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+                        <div {...{xmlns: "http://www.w3.org/1999/xhtml"}} className="w-full h-full bg-slate-900 relative p-4 flex flex-col gap-2">
+                             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1 } }} className="text-white font-bold text-lg section-heading">Welcome</motion.p>
+                             {[...Array(3)].map((_, i) => (
+                                <motion.div key={i} className="bg-slate-700/50 p-2 rounded-md space-y-1.5" initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0, transition: { delay: 1.2 + i * 0.1 } }}>
+                                     <motion.div animate={{ x: [0, 5, 0] }} transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }} className="w-3/4 h-2 bg-slate-500/50 rounded-full"></motion.div>
+                                     <motion.div className="w-1/2 h-2 bg-slate-500/30 rounded-full"></motion.div>
+                                </motion.div>
+                             ))}
+                             <motion.div className="w-full h-12 mt-auto bg-slate-700/50 rounded-md" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1.6 } }}></motion.div>
                         </div>
-                        <div className="text-white text-3xl font-bold section-heading">Featured</div>
-                        <div className="grid grid-cols-2 gap-6">
-                            {[...Array(2)].map((_, i) => (
-                                <MotionDiv key={i} className="bg-white/5 aspect-[4/3] rounded-lg border border-white/10 p-4" initial="initial" whileHover="hover">
-                                    <MotionDiv className="w-full h-2/3 bg-white/10 rounded" variants={cardVariants}></MotionDiv>
-                                    <MotionDiv className="w-3/4 h-4 bg-white/20 rounded mt-3" variants={cardVariants}></MotionDiv>
-                                </MotionDiv>
-                            ))}
-                        </div>
-                    </MotionDiv>
+                    </foreignObject>
                     
-                    {/* Dynamic Glare Effect */}
-                    <div 
-                        className="absolute top-0 left-0 pointer-events-none transition-opacity duration-300"
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            background: `radial-gradient(circle at ${glarePosition.x}px ${glarePosition.y}px, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 40%)`,
-                            opacity: isHovering ? 1 : 0,
-                        }}
-                    />
-                </div>
-            </foreignObject>
-        </svg>
+                    {/* Touch Ripple */}
+                    <g transform="translate(380, 310)">
+                        <circle r="15" fill="rgba(255,255,255,0.4)">
+                           <animate attributeName="r" from="0" to="15" dur="1.2s" repeatCount="indefinite" />
+                           <animate attributeName="opacity" from="1" to="0" dur="1.2s" repeatCount="indefinite" />
+                        </circle>
+                    </g>
+                </MotionG>
+
+                {/* Man Figure */}
+                <MotionG style={{ x: manX, y: manY }} filter="url(#soft-shadow)">
+                    <g transform="translate(250, 200)">
+                        {/* Body & Legs */}
+                        <path d="M 40,0 L 40,90 C 40,110 10,110 10,90 L 10,240 L 0,240 L 0,250 L 80,250 L 80,240 L 70,240 L 70,90 C 70,110 40,110 40,90" fill="#3b82f6" />
+                        {/* Head */}
+                        <circle cx="40" cy="-15" r="15" fill="#1e293b" />
+                        {/* Arm */}
+                        <path d="M 40,20 C 60,30 80,70 120,110" fill="none" stroke="#3b82f6" strokeWidth="16" strokeLinecap="round" />
+                    </g>
+                </MotionG>
+
+                 {/* Woman Figure */}
+                <MotionG style={{ x: womanX, y: womanY }} filter="url(#soft-shadow)">
+                    <g transform="translate(560, 210)">
+                        {/* Body & Legs */}
+                         <path d="M 40,0 L 40,90 C 40,110 10,110 10,90 L 10,230 L 0,230 L 0,240 L 80,240 L 80,230 L 70,230 L 70,90 C 70,110 40,110 40,90" fill="#f59e0b" />
+                        {/* Head */}
+                        <circle cx="40" cy="-15" r="15" fill="#4a2c2a" />
+                        {/* Arm */}
+                        <path d="M 15,20 C 5,40 -5,80 -5,100" fill="none" stroke="#f59e0b" strokeWidth="16" strokeLinecap="round" />
+                    </g>
+                </MotionG>
+
+            </svg>
+        </MotionDiv>
     );
 };
 
@@ -594,99 +600,46 @@ const Particles: React.FC<{ count?: number }> = ({ count = 50 }) => (
     </div>
 );
 
-
-const DataSphere: React.FC = () => {
+const WelcomeHeroDiagram: React.FC = () => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
+
     const rotateX = useTransform(mouseY, [-400, 400], [10, -10]);
     const rotateY = useTransform(mouseX, [-400, 400], [-10, 10]);
+    const glareX = useTransform(mouseX, [-400, 400], [20, 80]);
+    const glareY = useTransform(mouseY, [-400, 400], [20, 80]);
+    const glareOpacity = useTransform(mouseX, [-400, 400], [0, 0.5, 0]);
 
     const handleMouseMove = (event: React.MouseEvent) => {
-        const { clientX, clientY, currentTarget } = event;
-        const { left, top, width, height } = currentTarget.getBoundingClientRect();
+        if (!containerRef.current) return;
+        const { clientX, clientY } = event;
+        const { left, top, width, height } = containerRef.current.getBoundingClientRect();
         const x = clientX - (left + width / 2);
         const y = clientY - (top + height / 2);
-        mouseX.set(x); mouseY.set(y);
+        mouseX.set(x);
+        mouseY.set(y);
     };
-    const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
-    
-    // Generate points and connections for the data network
-    const { points, connections } = React.useMemo(() => {
-        const numPoints = 25;
-        const pts = [...Array(numPoints)].map(() => {
-            const theta = Math.random() * 2 * Math.PI;
-            const phi = Math.acos(2 * Math.random() - 1);
-            return {
-                x: 100 + 80 * Math.sin(phi) * Math.cos(theta),
-                y: 100 + 80 * Math.sin(phi) * Math.sin(theta),
-                z: 100 + 80 * Math.cos(phi)
-            };
-        });
-        const conns = [...Array(15)].map(() => {
-            const p1Index = Math.floor(Math.random() * numPoints);
-            const p2Index = Math.floor(Math.random() * numPoints);
-            return { p1: pts[p1Index], p2: pts[p2Index] };
-        });
-        return { points: pts, connections: conns };
-    }, []);
+
+    const handleMouseLeave = () => {
+        animate(mouseX, 0, { duration: 0.5, ease: 'easeOut' });
+        animate(mouseY, 0, { duration: 0.5, ease: 'easeOut' });
+    };
 
     return (
         <MotionDiv
+            ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            style={{ rotateX, rotateY, perspective: 1000 }}
-            className="w-64 h-64 md:w-80 md:h-80 relative"
+            style={{ perspective: '1500px' }}
+            className="w-full max-w-4xl"
         >
-             <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 } }}
-                className="w-full h-full"
-            >
-                 <svg viewBox="0 0 200 200" className="w-full h-full overflow-visible">
-                    <defs>
-                        <filter id="data-sphere-glow"><feGaussianBlur stdDeviation="3" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-                    </defs>
-                    <motion.circle cx="100" cy="100" r="80" fill="transparent" stroke="url(#atmosphere-grad)" strokeWidth="0.5" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 1 } }}/>
-                    
-                    {/* Pulsing Core */}
-                     <motion.circle cx="100" cy="100" r="10" className="fill-cyan-300" filter="url(#data-sphere-glow)"
-                        animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                    />
-                    
-                    {/* Network Lines & Data Pings */}
-                    {connections.map((c, i) => (
-                        <g key={i}>
-                             <MotionPath
-                                d={`M ${c.p1.x} ${c.p1.y} L ${c.p2.x} ${c.p2.y}`}
-                                stroke="rgba(75, 85, 99, 0.5)"
-                                strokeWidth="0.5"
-                                initial={{ pathLength: 0 }}
-                                animate={{ pathLength: 1, transition: { duration: 1, delay: 1.2, ease: 'easeOut' } }}
-                            />
-                             <motion.circle cx={c.p1.x} cy={c.p1.y} r="2.5" fill="rgba(0,0,0,0)">
-                                <animateMotion dur={`${2 + Math.random() * 2}s`} repeatCount="indefinite" begin={`${1.5 + Math.random()}s`}>
-                                    <mpath href={`#conn-path-${i}`}/>
-                                </animateMotion>
-                                <path id={`conn-path-${i}`} d={`M 0 0 L ${c.p2.x-c.p1.x} ${c.p2.y-c.p1.y}`} fill="none" />
-                                <motion.circle r="1.5" className="fill-cyan-400" initial={{ opacity: 0 }} animate={{ opacity: [0, 1, 0] }} transition={{ duration: 2 + Math.random() * 2, repeat: Infinity, ease: 'linear', delay: 1.5 + Math.random() }}/>
-                            </motion.circle>
-                        </g>
-                    ))}
-
-                    {/* Nodes */}
-                    {points.map((p, i) => (
-                        <motion.circle key={i} cx={p.x} cy={p.y} r={p.z / 100 * 1.5 + 0.5} className="fill-slate-400"
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1, transition: { duration: 0.5, delay: 1 + Math.random() * 0.5, ease: 'backOut' } }}
-                        />
-                    ))}
-                </svg>
-            </motion.div>
+            <MotionDiv style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}>
+                <HeroDiagram />
+            </MotionDiv>
         </MotionDiv>
     );
 };
-
 
 const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> = ({ onNext, onLearnMore }) => {
     const titleText = "Welcome to Your Kiosk";
@@ -708,18 +661,16 @@ const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> =
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full h-full flex flex-col items-center justify-center text-center p-6 relative overflow-hidden text-white"
+            className="w-full h-full flex flex-col items-center justify-center text-center p-6 relative overflow-hidden bg-slate-50 dark:bg-slate-900"
         >
-            <AnimatedGradientBackground />
-            <Particles />
-            <DataSphere />
+            <WelcomeHeroDiagram />
 
             <MotionDiv
                 variants={textContainer}
                 initial="hidden"
                 animate="visible"
                 aria-label={titleText}
-                className="text-4xl md:text-5xl font-bold section-heading mt-6" style={{textShadow: '0 2px 10px rgba(0,0,0,0.3)'}}
+                className="text-4xl md:text-5xl font-bold section-heading mt-6 text-slate-800 dark:text-white" style={{textShadow: '0 2px 10px rgba(0,0,0,0.1)'}}
             >
                 {titleText.split(" ").map((word, wordIndex) => (
                     <span key={wordIndex} className="inline-block whitespace-nowrap mr-[0.25em]">
@@ -735,7 +686,7 @@ const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> =
             <motion.p
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: 0.8, delay: 2 } }}
-                className="mt-3 text-gray-300 max-w-xl mx-auto"
+                className="mt-3 text-slate-600 dark:text-slate-300 max-w-xl mx-auto"
             >
                 {subtitleText}
             </motion.p>
@@ -747,7 +698,7 @@ const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> =
             >
                  <motion.button 
                     onClick={onNext}
-                    className="relative btn bg-white text-indigo-700 w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
+                    className="relative btn btn-primary w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
                 >
                      <MotionDiv className="absolute inset-0 bg-white/30" whileHover={{ scale: 3, opacity: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} />
                      <span className="relative z-10">Get Started</span>
@@ -755,9 +706,9 @@ const Step1Welcome: React.FC<{ onNext: () => void; onLearnMore: () => void; }> =
                 </motion.button>
                 <motion.button
                     onClick={onLearnMore} 
-                    className="relative btn bg-white/10 text-white border border-white/20 w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
+                    className="relative btn btn-secondary w-full sm:w-auto !px-8 !py-3 !text-base overflow-hidden"
                 >
-                    <MotionDiv className="absolute inset-0 bg-white/20" initial={{ scale: 0 }} whileHover={{ scale: 1 }} transition={{ duration: 0.3, ease: 'easeIn' }} />
+                    <MotionDiv className="absolute inset-0 bg-black/10" initial={{ scale: 0 }} whileHover={{ scale: 1 }} transition={{ duration: 0.3, ease: 'easeIn' }} />
                     <span className="relative z-10">Learn More</span>
                 </motion.button>
             </MotionDiv>
@@ -796,7 +747,7 @@ const ProviderCard: React.FC<{ icon: React.ReactNode; title: string; description
         >
             <MotionDiv
                 style={{ rotateX, rotateY }}
-                className={`relative bg-slate-800 border border-slate-700 rounded-2xl p-6 text-center transition-all duration-300 text-white flex flex-col items-center justify-between min-h-[220px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`relative bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center transition-all duration-300 flex flex-col items-center justify-between min-h-[220px] ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
                 <MotionDiv
                     className="absolute inset-0 rounded-2xl pointer-events-none"
@@ -809,11 +760,11 @@ const ProviderCard: React.FC<{ icon: React.ReactNode; title: string; description
                 />
                 
                 <div className="relative z-10">
-                    <motion.div whileHover={{ scale: 1.1 }} className="mx-auto w-12 h-12 flex items-center justify-center text-indigo-300">{icon}</motion.div>
-                    <h3 className="font-semibold mt-3 text-slate-100">{title}</h3>
-                    <p className="text-xs text-slate-400 mt-1">{description}</p>
+                    <motion.div whileHover={{ scale: 1.1 }} className="mx-auto w-12 h-12 flex items-center justify-center text-indigo-500 dark:text-indigo-300">{icon}</motion.div>
+                    <h3 className="font-semibold mt-3 text-slate-800 dark:text-slate-100">{title}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{description}</p>
                 </div>
-                <button onClick={onClick} disabled={disabled} className="btn bg-indigo-600 hover:bg-indigo-500 text-white mt-4 relative z-10 !py-2 !px-4">
+                <button onClick={onClick} disabled={disabled} className="btn btn-primary mt-4 relative z-10 !py-2 !px-4">
                     Connect
                 </button>
             </MotionDiv>
@@ -830,8 +781,7 @@ const Step2Storage: React.FC<{ onSelect: (provider: 'local' | 'sharedUrl' | 'cus
         exit="exit"
         className="w-full flex flex-col justify-center relative"
     >
-        <Particles count={20} />
-        <h2 className="text-2xl font-bold section-heading text-white mb-6 text-center">Choose a Storage Method</h2>
+        <h2 className="text-2xl font-bold section-heading text-slate-800 dark:text-white mb-6 text-center">Choose a Storage Method</h2>
         
         <MotionDiv variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col md:flex-row gap-6">
             <ProviderCard
@@ -857,12 +807,12 @@ const Step2Storage: React.FC<{ onSelect: (provider: 'local' | 'sharedUrl' | 'cus
             />
         </MotionDiv>
          <div className="text-center mt-6">
-            <button type="button" onClick={onShowGuides} className="text-sm text-indigo-400 hover:text-white hover:underline transition-colors">
+            <button type="button" onClick={onShowGuides} className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-white hover:underline transition-colors">
                 Need help? View setup instructions
             </button>
         </div>
-        <div className="text-center mt-4 pt-4 border-t border-slate-700">
-            <button type="button" onClick={onSkip} className="text-sm font-medium text-slate-400 hover:text-white hover:underline transition-colors">
+        <div className="text-center mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <button type="button" onClick={onSkip} className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:underline transition-colors">
                 Skip for now &amp; go to Admin Login &rarr;
             </button>
         </div>
@@ -1119,14 +1069,14 @@ const SetupWizard: React.FC = () => {
     // Conditional styling based on step
     const containerClasses = [
         "fixed inset-0 z-[100] flex items-center justify-center",
-        isWelcomeStep ? "bg-slate-900" : "bg-gray-100 dark:bg-slate-900/90 dark:backdrop-blur-sm p-4"
+        isWelcomeStep ? "" : "bg-gray-100/50 dark:bg-slate-900/90 backdrop-blur-sm p-4"
     ].join(' ');
 
     const wizardBoxClasses = [
         "bg-white dark:bg-slate-800 shadow-2xl flex flex-col transition-all duration-300",
         isWelcomeStep || isInfoStep ? "w-full h-full rounded-none p-0" : "rounded-2xl w-full max-w-xl p-8 max-h-[90vh] overflow-y-auto",
         step === 'guides' ? '!max-w-4xl h-[80vh] !p-0' : '',
-        step === 2 ? '!max-w-5xl !bg-slate-900 !border !border-slate-700 overflow-visible' : ''
+        step === 2 ? '!max-w-5xl !bg-white dark:!bg-slate-800 overflow-visible' : ''
     ].join(' ');
 
 
