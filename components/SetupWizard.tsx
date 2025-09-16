@@ -542,7 +542,7 @@ const WelcomeHeroDiagram: React.FC = () => {
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{ perspective: '1500px' }}
-            className="w-full max-w-4xl"
+            className="w-full max-w-3xl"
         >
             <MotionDiv style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}>
                 <WelcomeDiagram />
